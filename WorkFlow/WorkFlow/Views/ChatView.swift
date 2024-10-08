@@ -1,8 +1,9 @@
-//
-//  ChatView.swift
-//  WorkFlow
-//
-//  Created by AppleBytes on 10/7/24.
-//
-
 import Foundation
+import SwiftUI
+
+struct ChatView: View {
+    var body: some View {
+        Text("Chat View")
+            .navigationBarTitle("Chat", displayMode: .inline)
+    }
+}

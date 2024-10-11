@@ -2,130 +2,251 @@ import SwiftUI
 import PhotosUI
 import FirebaseStorage
 
-// PostView allows the user to post a job, including job details and an optional image
+// View for posting jobs or contractor flyers
 struct PostView: View {
-    // State variables for job details
+    // State variables for job/flyer details
     @State private var title: String = ""
     @State private var description: String = ""
-    @State private var city: String = ""  // New city field
-    @State private var selectedCategory: JobCategory = .landscaping // Default category
-    @State private var selectedImage: UIImage? = nil // Image state
-    @State private var imageURL: String = "" // Store image URL
-    @State private var isImagePickerPresented: Bool = false // Control image picker presentation
+    @State private var city: String = ""
+    @State private var email: String = ""
+    @State private var selectedCategory: JobCategory = .landscaping
+    @State private var selectedImage: UIImage? = nil
+    @State private var imageURL: String = ""
+    @State private var isImagePickerPresented: Bool = false
+    @State private var isHomeowner: Bool = true
+    @State private var isCategoryPickerPresented: Bool = false // State to show/hide category picker
 
-    @EnvironmentObject var jobController: JobController // Access the JobController
+    // Environment objects for accessing controllers
+    @EnvironmentObject var jobController: JobController
+    @EnvironmentObject var contractorController: ContractorController
 
     var body: some View {
-        NavigationView {
-            Form {
-                // Section for entering job details
-                Section(header: Text("Job Details")) {
-                    TextField("Title", text: $title)
-                    TextField("Description", text: $description)
-                    TextField("City", text: $city)
-                    Picker("Category", selection: $selectedCategory) {
-                        ForEach(JobCategory.allCases, id: \.self) { category in
-                            Text(category.rawValue).tag(category)
-                        }
-                    }
-                }
-                
-                // Image picker section
-                Section(header: Text("Add an Image")) {
-                    if let selectedImage = selectedImage {
-                        // Display the selected image
-                        Image(uiImage: selectedImage)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(height: 150)
-                    } else {
-                        // Button to select an image
-                        Button("Select Image") {
-                            isImagePickerPresented = true // Show image picker when button is tapped
-                        }
-                    }
-                }
+        ZStack {
+            // Add gradient background from light to dark blue
+            LinearGradient(
+                gradient: Gradient(colors: [Color(hex: "#a3d3eb"), Color(hex: "#355c7d")]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .edgesIgnoringSafeArea(.all) // Ensure background covers entire screen
 
-                // Button to post the job
-                Button("Post Job") {
-                    // If an image is selected, upload it before posting the job
-                    if let selectedImage = selectedImage {
-                        uploadImage(selectedImage) { url in
-                            if let url = url {
-                                imageURL = url
-                                // Create a new job with the provided details
-                                let newJob = Job(
-                                    id: UUID(),
-                                    title: title,
-                                    description: description,
-                                    city: city,
-                                    category: selectedCategory,
-                                    datePosted: Date(),
-                                    imageURL: imageURL
-                                )
-                                // Post the job using the jobController
-                                jobController.postJob(job: newJob, selectedImage: selectedImage)
+            ScrollView { // Wrap everything in a ScrollView
+                VStack(spacing: 20) {
+                    // Toggle between Homeowner and Contractor view
+                    Picker("Post Type", selection: $isHomeowner) {
+                        Text("Homeowner").tag(true)
+                        Text("Contractor").tag(false)
+                    }
+                    .pickerStyle(SegmentedPickerStyle())
+                    .padding() // Styling: Padding for the toggle
 
-                                // Reset the fields after posting
-                                resetFields()
+                    // Section for entering job or flyer details
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(isHomeowner ? "Job Details" : "Flyer Details")
+                            .font(.headline)
+                            .foregroundColor(.white) // Make the header text white
+
+                        // Custom styling for the text fields
+                        TextField(isHomeowner ? "Title" : "Name", text: $title)
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(15) // Rounded corners for text field
+                        TextField(isHomeowner ? "Description" : "Bio", text: $description)
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(15) // Rounded corners for text field
+                        TextField("City", text: $city)
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(15) // Rounded corners for text field
+                        
+                        if !isHomeowner {
+                            TextField("Email", text: $email)
+                                .padding()
+                                .background(Color.white)
+                                .cornerRadius(15) // Rounded corners for text field
+                        }
+
+                        // Button-style picker for category selection
+                        Button(action: {
+                            isCategoryPickerPresented = true // Show the category picker
+                        }) {
+                            HStack {
+                                Text(selectedCategory.rawValue)
+                                    .underline() // Underline to indicate interactivity
+                                    .foregroundColor(.white) // White text color
+                                    .font(.body)
+                                Spacer()
+                                Image(systemName: "chevron.down") // Dropdown indicator
+                                    .foregroundColor(.white)
+                            }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 15)
+                            .background(Color.white.opacity(0.2)) // Light background for clarity
+                            .cornerRadius(5) // Rounded corners
+                        }
+                        .sheet(isPresented: $isCategoryPickerPresented) {
+                            VStack {
+                                Picker("Select Category", selection: $selectedCategory) {
+                                    ForEach(JobCategory.allCases, id: \.self) { category in
+                                        Text(category.rawValue).tag(category)
+                                    }
+                                }
+                                .pickerStyle(WheelPickerStyle())
+                                .background(Color.white)
+                                .cornerRadius(15)
+                                .padding()
+                                
+                                Button("Done") {
+                                    isCategoryPickerPresented = false
+                                }
+                                .padding()
+                                .background(Color(hex: "#355c7d"))
+                                .foregroundColor(.white)
+                                .cornerRadius(10)
                             }
                         }
                     }
+                    .padding()
+
+                    // Image picker section
+                    VStack {
+                        Text("Add an Image")
+                            .font(.headline)
+                            .foregroundColor(.white) // Make the header text white
+                        if let selectedImage = selectedImage {
+                            ZStack(alignment: .topTrailing) {
+                                Image(uiImage: selectedImage)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(height: 150) // Styling: Frame height for the image
+                                    .cornerRadius(10) // Styling: Rounded corners for the image
+                                    .shadow(radius: 5) // Styling: Shadow effect for the image
+                                
+                                // Red X button to delete the image
+                                Button(action: {
+                                    self.selectedImage = nil
+                                }) {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .resizable()
+                                        .frame(width: 24, height: 24)
+                                        .foregroundColor(.red)
+                                        .background(Color.white)
+                                        .clipShape(Circle())
+                                }
+                                .padding(5) // Add padding to position the button nicely
+                            }
+                        } else {
+                            Button(action: {
+                                isImagePickerPresented = true
+                            }) {
+                                Text("Select Image")
+                                    .underline() // Add underline to indicate it's clickable
+                                    .foregroundColor(.white) // Styling: Text color
+                                    .font(.body)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 5)
+                                    .background(Color.white.opacity(0.2)) // Light background for clarity
+                                    .cornerRadius(5) // Rounded corners
+                            }
+                        }
+                    }
+                    .padding()
+
+                    // Button to post either a job or flyer with custom styling
+                    Button(action: {
+                        if let selectedImage = selectedImage {
+                            if isHomeowner {
+                                // Homeowner posting a job
+                                jobController.uploadImage(selectedImage) { url in
+                                    if let url = url {
+                                        imageURL = url
+                                        let newJob = Job(
+                                            id: UUID(),
+                                            title: title,
+                                            description: description,
+                                            city: city,
+                                            category: selectedCategory,
+                                            datePosted: Date(),
+                                            imageURL: imageURL
+                                        )
+                                        jobController.postJob(job: newJob, selectedImage: selectedImage)
+                                        resetFields()
+                                    } else {
+                                        print("Error uploading image for job.")
+                                    }
+                                }
+                            } else {
+                                // Contractor posting a flyer
+                                contractorController.uploadImage(selectedImage) { url in
+                                    if let url = url {
+                                        imageURL = url
+                                        let newFlyer = ContractorProfile(
+                                            id: UUID(),
+                                            contractorName: title,
+                                            bio: description,
+                                            skills: [selectedCategory.rawValue],
+                                            rating: 0.0,
+                                            jobsCompleted: 0,
+                                            city: city,
+                                            email: email,
+                                            imageURL: imageURL
+                                        )
+                                        contractorController.postFlyer(profile: newFlyer, selectedImage: selectedImage)
+                                        resetFields()
+                                    } else {
+                                        print("Error uploading image for flyer.")
+                                    }
+                                }
+                            }
+                        }
+                    }) {
+                        // Style for Post Button
+                        Text("Post")
+                            .frame(minWidth: 100, maxWidth: 200) // Change size of button
+                            .padding()
+                            .background(Color(hex: "#355c7d")) // Styling: Background color
+                            .foregroundColor(.white) // Styling: Text color
+                            .cornerRadius(10) // Styling: Rounded corners
+                            .shadow(color: .gray, radius: 5, x: 0, y: 2) // Styling: Shadow effect
+                    }
+                    // Disable button based on required fields for each case
+                    .disabled(isHomeowner ? title.isEmpty || description.isEmpty || city.isEmpty || selectedImage == nil : title.isEmpty || description.isEmpty || city.isEmpty || email.isEmpty || selectedImage == nil)
+                    .padding()
+                    Spacer()
+                    Spacer()
                 }
-                .disabled(title.isEmpty || description.isEmpty || city.isEmpty || selectedImage == nil) // Disable button if fields are empty
+                .padding()
             }
-            .navigationTitle("Post Job")
+            .navigationTitle(isHomeowner ? "Post Job" : "Post Flyer")
             .sheet(isPresented: $isImagePickerPresented) {
-                ImagePicker(selectedImage: $selectedImage) // Show image picker and bind selected image
+                ImagePicker(selectedImage: $selectedImage)
             }
             .toolbar {
-                // Toolbar with a Done button to hide the keyboard
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
                     Button("Done") {
-                        KeyboardHelper.hideKeyboard() // Hide the keyboard when Done is tapped
+                        KeyboardHelper.hideKeyboard()
                     }
                 }
             }
+            .padding()
         }
     }
 
-    // Function to reset fields after posting the job
+    // Function to reset fields after posting
     private func resetFields() {
         title = ""
         description = ""
         city = ""
+        email = ""
         selectedCategory = .landscaping
         selectedImage = nil
     }
-
-    // Function to upload image to Firebase Storage and return the URL
-    func uploadImage(_ image: UIImage, completion: @escaping (String?) -> Void) {
-        // Reference for the image in Firebase Storage with a unique ID
-        let storageRef = Storage.storage().reference().child("job_images/\(UUID().uuidString).jpg")
-        if let imageData = image.jpegData(compressionQuality: 0.8) {
-            // Upload image data to Firebase Storage
-            storageRef.putData(imageData, metadata: nil) { (metadata, error) in
-                if error == nil {
-                    // Fetch download URL after successful upload
-                    storageRef.downloadURL { (url, error) in
-                        completion(url?.absoluteString)
-                    }
-                } else {
-                    // Return nil if there's an error
-                    completion(nil)
-                }
-            }
-        } else {
-            completion(nil) // Return nil if image data couldn't be created
-        }
-    }
 }
 
-// Preview provider for PostView
 struct PostView_Previews: PreviewProvider {
     static var previews: some View {
-        PostView().environmentObject(JobController())
+        PostView().environmentObject(JobController()).environmentObject(ContractorController())
     }
 }
-

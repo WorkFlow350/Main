@@ -10,12 +10,14 @@ struct WorkFlowApp: App {
     
     // StateObject to manage the state of JobController throughout the app
     @StateObject private var jobController = JobController() // Initialize JobController
+    @StateObject private var contractorController = ContractorController() // Initialize ContractorController
 
     var body: some Scene {
         WindowGroup {
             // MainTabView is the starting view of the app, and it receives the jobController as an environment object
             MainTabView()
                 .environmentObject(jobController) // Provide JobController to the view hierarchy
+                .environmentObject(contractorController) // Provide ContractorController to the view hierarchy
         }
     }
 }

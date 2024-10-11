@@ -24,7 +24,6 @@
 		9EC418012CB4B72400F21C8F /* NotificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC418002CB4B72400F21C8F /* NotificationView.swift */; };
 		9EC418032CB4B73E00F21C8F /* UIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC418022CB4B73E00F21C8F /* UIView.swift */; };
 		9EC418052CB4B75600F21C8F /* ImagePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC418042CB4B75600F21C8F /* ImagePickerView.swift */; };
-		9EC418072CB4B82C00F21C8F /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9EC418062CB4B82C00F21C8F /* GoogleService-Info.plist */; };
 		9EC4180A2CB4B8BF00F21C8F /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 9EC418092CB4B8BF00F21C8F /* FirebaseAnalytics */; };
 		9EC4180C2CB4B8BF00F21C8F /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 9EC4180B2CB4B8BF00F21C8F /* FirebaseAuth */; };
 		9EC4180E2CB4B8BF00F21C8F /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 9EC4180D2CB4B8BF00F21C8F /* FirebaseDatabase */; };
@@ -38,6 +37,7 @@
 		9EC418222CB4C51A00F21C8F /* HomownerProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC418212CB4C51A00F21C8F /* HomownerProfileView.swift */; };
 		9EC418242CB4C79E00F21C8F /* ContractorController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC418232CB4C79E00F21C8F /* ContractorController.swift */; };
 		9EC418262CB4C7BC00F21C8F /* HomeownerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC418252CB4C7BC00F21C8F /* HomeownerController.swift */; };
+		9EE856112CB7579100C80D59 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9EE856102CB7579100C80D59 /* GoogleService-Info.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -78,7 +78,6 @@
 		9EC418002CB4B72400F21C8F /* NotificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationView.swift; sourceTree = "<group>"; };
 		9EC418022CB4B73E00F21C8F /* UIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIView.swift; sourceTree = "<group>"; };
 		9EC418042CB4B75600F21C8F /* ImagePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePickerView.swift; sourceTree = "<group>"; };
-		9EC418062CB4B82C00F21C8F /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		9EC418132CB4BBD200F21C8F /* ContractorProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContractorProfile.swift; sourceTree = "<group>"; };
 		9EC418152CB4BC2800F21C8F /* HomeownerProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeownerProfile.swift; sourceTree = "<group>"; };
 		9EC418172CB4C1DC00F21C8F /* ChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatView.swift; sourceTree = "<group>"; };
@@ -87,6 +86,7 @@
 		9EC418212CB4C51A00F21C8F /* HomownerProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomownerProfileView.swift; sourceTree = "<group>"; };
 		9EC418232CB4C79E00F21C8F /* ContractorController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContractorController.swift; sourceTree = "<group>"; };
 		9EC418252CB4C7BC00F21C8F /* HomeownerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeownerController.swift; sourceTree = "<group>"; };
+		9EE856102CB7579100C80D59 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -146,8 +146,8 @@
 				9EC417EE2CB4B2CE00F21C8F /* Controllers */,
 				9EC417EF2CB4B2E100F21C8F /* Views */,
 				9EC417C32CB4AF1B00F21C8F /* WorkFlowApp.swift */,
-				9EC418062CB4B82C00F21C8F /* GoogleService-Info.plist */,
 				9EC417C72CB4AF1C00F21C8F /* Assets.xcassets */,
+				9EE856102CB7579100C80D59 /* GoogleService-Info.plist */,
 				9EC417C92CB4AF1C00F21C8F /* Preview Content */,
 			);
 			path = WorkFlow;
@@ -334,7 +334,7 @@
 			files = (
 				9EC417CB2CB4AF1C00F21C8F /* Preview Assets.xcassets in Resources */,
 				9EC417C82CB4AF1C00F21C8F /* Assets.xcassets in Resources */,
-				9EC418072CB4B82C00F21C8F /* GoogleService-Info.plist in Resources */,
+				9EE856112CB7579100C80D59 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

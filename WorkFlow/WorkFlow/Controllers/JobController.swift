@@ -14,6 +14,7 @@ class JobController: ObservableObject {
         // Post a notification that a new job has been added
         NotificationCenter.default.post(name: Notification.Name("NewJobPosted"), object: nil)
     }
+
     // Function to fetch jobs from Firestore database
     func fetchJobs() {
         let db = Firestore.firestore()
@@ -62,8 +63,8 @@ class JobController: ObservableObject {
         }
     }
 
-    // Function to upload image to Firebase Storage
-    private func uploadImage(_ image: UIImage, completion: @escaping (String?) -> Void) {
+    // Change access level from private to internal (default) to make it accessible from PostView
+    func uploadImage(_ image: UIImage, completion: @escaping (String?) -> Void) {
         let storageRef = Storage.storage().reference().child("job_images/\(UUID().uuidString).jpg")
         guard let imageData = image.jpegData(compressionQuality: 0.8) else {
             print("Error: Could not convert image to JPEG format.")

@@ -54,10 +54,13 @@ struct MainTabView: View {
                 }
                 
                 Spacer() // Adds flexible space between content and tab bar
-                
-                // Custom Tab Bar at the bottom of the screen
+            }
+            
+            // Custom floating Tab Bar at the bottom of the screen
+            VStack {
+                Spacer()
                 tabBar
-                    .background(Color.white.edgesIgnoringSafeArea(.bottom))
+                    .padding(.bottom, 20) // Adjust bottom padding as needed
             }
         }
         .edgesIgnoringSafeArea(.bottom) // Ensures the view extends to the bottom of the screen
@@ -79,13 +82,13 @@ struct MainTabView: View {
             Spacer()
         }
         .padding()
-        .frame(height: 72) // Fixed height for the tab bar
-        .background {
-            RoundedRectangle(cornerRadius: 0)
+        .background(
+            RoundedRectangle(cornerRadius: 30)
                 .fill(Color.white)
-                .shadow(color: .black.opacity(0.30), radius: 15, y: 4) // Shadow effect
-        }
-        .edgesIgnoringSafeArea(.bottom) // Extends tab bar to the bottom
+                .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 4) // Shadow effect for floating appearance
+        )
+        .padding(.horizontal, 20) // Horizontal padding to center the tab bar
+        .frame(maxWidth: 350) // Optional: Limit the max width of the tab bar
     }
 
     // Custom Tab Bar Button with dynamic appearance and animation
@@ -111,7 +114,7 @@ struct MainTabView: View {
 }
 
 // Preview provider for MainTabView to visualize the view in Xcode's canvas
-struct HomeView_Previews: PreviewProvider {
+struct MainTabView_Previews: PreviewProvider {
     static var previews: some View {
         MainTabView()
     }

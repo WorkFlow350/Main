@@ -6,11 +6,12 @@ import Combine
 class JobController: ObservableObject {
     // Published property so any updates to 'jobs' will automatically update views that observe this controller
     @Published var jobs: [Job] = []
-    @Published var notifications: [String] = [] // Add notifications as a published property
+    @Published var notifications: [NotificationModel] = [] // Add notifications as a published property
 
     // Method to add a new notification when a job is posted
-    func addNotification(_ message: String) {
-        notifications.append(message)
+    func addNotification(_ job: Job) {
+        let notification = NotificationModel(jobId: job.id, message: "A new \(job.category) job has been posted in \(job.city)!")
+        notifications.append(notification)
         // Post a notification that a new job has been added
         NotificationCenter.default.post(name: Notification.Name("NewJobPosted"), object: nil)
     }

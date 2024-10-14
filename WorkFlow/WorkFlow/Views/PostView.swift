@@ -172,6 +172,8 @@ struct PostView: View {
                                         )
                                         jobController.postJob(job: newJob, selectedImage: selectedImage)
                                         resetFields()
+                                        jobController.addNotification(newJob)
+                                        jobController.jobs.append(newJob)
                                     } else {
                                         print("Error uploading image for job.")
                                     }

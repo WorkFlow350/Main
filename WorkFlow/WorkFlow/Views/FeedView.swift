@@ -23,7 +23,9 @@ struct FeedView: View {
                         if isContractor {
                             // Display job posts fetched from Firebase for contractors
                             ForEach(jobController.jobs) { job in
-                                JobCellView(job: job) // Use the JobView component to display job details
+                                NavigationLink(destination: JobDetailView(job: job)){
+                                    JobCellView(job: job) // Use the JobView component to display job details
+                                }
                             }
                         } else {
                             // Placeholder text for contractor flyers

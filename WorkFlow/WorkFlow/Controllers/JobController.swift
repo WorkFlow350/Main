@@ -118,4 +118,19 @@ class JobController: ObservableObject {
             }
         }
     }
+    func timeAgoSinceDate(_ date: Date) -> String {
+        let formatter = DateComponentsFormatter()
+        formatter.unitsStyle = .full // Use "short" or "full" depending on your needs
+        formatter.allowedUnits = [.second, .minute, .hour, .day, .weekOfMonth]
+        formatter.maximumUnitCount = 1 // Show only the largest unit (e.g., "2 hours" instead of "2 hours 5 minutes")
+        
+        let now = Date()
+        let timeInterval = now.timeIntervalSince(date)
+        
+        if let formattedString = formatter.string(from: timeInterval) {
+            return "\(formattedString) ago"
+        } else {
+            return "Just now"
+        }
+    }
 }

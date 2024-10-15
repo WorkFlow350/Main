@@ -18,16 +18,12 @@ struct FeedView: View {
 
                 // Scrollable content area displaying posts based on the toggle state
                 ScrollView {
-                    Spacer(minLength: 20) // Space between Picker and the content
-                    LazyVStack(spacing: 20) {
+                    Spacer(minLength: 5) // Space between Picker and the content
+                    LazyVStack(spacing: 1) {
                         if isContractor {
                             // Display job posts fetched from Firebase for contractors
                             ForEach(jobController.jobs) { job in
-                                JobView(job: job) // Use the JobView component to display job details
-                                    .padding()
-                                    .background(Color.white)
-                                    .cornerRadius(12)
-                                    .shadow(radius: 5)
+                                JobCellView(job: job) // Use the JobView component to display job details
                             }
                         } else {
                             // Placeholder text for contractor flyers
@@ -41,7 +37,7 @@ struct FeedView: View {
                                 .shadow(radius: 5)
                         }
                     }
-                    .padding(.horizontal)
+                    //.padding(.horizontal)
                 }
                 .navigationTitle(isContractor ? "Jobs" : "Contractors")
                 .background(Color(UIColor.systemGray6)) // Background color for the view

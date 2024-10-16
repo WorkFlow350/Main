@@ -8,17 +8,18 @@ struct FeedView: View {
 
     var body: some View {
         NavigationView {
-            VStack {
-                // Toggle between Job listings and Contractor Flyers view
-                Picker("View", selection: $isContractor) {
-                    Text("Jobs").tag(true) // Tag for Job listings (for contractors)
-                    Text("Contractors").tag(false) // Tag for Contractor Flyers (for homeowners)
-                }
-                .pickerStyle(SegmentedPickerStyle()) // Segmented picker style for the toggle
-                .padding()
-
-                // Scrollable content area displaying posts based on the toggle state
-                ScrollView {
+            ScrollView{
+                VStack {
+                    // Toggle between Job listings and Contractor Flyers view
+                    Picker("View", selection: $isContractor) {
+                        Text("Jobs").tag(true) // Tag for Job listings (for contractors)
+                        Text("Contractors").tag(false) // Tag for Contractor Flyers (for homeowners)
+                    }
+                    .pickerStyle(SegmentedPickerStyle()) // Segmented picker style for the toggle
+                    .padding()
+                    
+                    // Scrollable content area displaying posts based on the toggle state
+                    //Start of orginal DELETEMEScrollView {
                     Spacer(minLength: 5) // Space between Picker and the content
                     LazyVStack(spacing: 1) {
                         if isContractor {
@@ -38,14 +39,15 @@ struct FeedView: View {
                         }
                     }
                     //.padding(.horizontal)
+                    //this where the scrollview ends DELETEME}
+                    .navigationTitle(isContractor ? "Jobs" : "Contractors")
+                    .background(Color(UIColor.systemGray6)) // Background color for the view
                 }
-                .navigationTitle(isContractor ? "Jobs" : "Contractors")
-                .background(Color(UIColor.systemGray6)) // Background color for the view
             }
-        }
-        .onAppear {
-            jobController.fetchJobs() // Fetch jobs when the view appears
-            contractorController.fetchFlyers()
+            .onAppear {
+                jobController.fetchJobs() // Fetch jobs when the view appears
+                contractorController.fetchFlyers()
+            }
         }
     }
 }

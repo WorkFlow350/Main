@@ -1,22 +1,22 @@
 //
-//  JobDetailView.swift
+//  FlyerDetailView.swift
 //  WorkFlow
 //
-//  Created by Steve Coyotl on 10/14/24.
+//  Created by Steve Coyotl on 10/15/24.
 //
+
 
 import SwiftUI
 
-struct JobDetailView: View {
-    let job: Job
-    @StateObject private var jobController = JobController()
+struct FlyerDetailView: View {
+    let contractor: ContractorProfile
+    @StateObject private var contractController = ContractorController()
     @State private var isFullScreen: Bool = false // State to toggle full-screen view
-    
     var body: some View {
         ScrollView{
-            VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading) {
                 // Display the image that can be tapped to view full-screen
-                if let imageURL = job.imageURL, let url = URL(string: imageURL) {
+                if let imageURL = contractor.imageURL, let url = URL(string: imageURL) {
                     AsyncImage(url: url) { image in
                         image
                             .resizable()
@@ -34,41 +34,41 @@ struct JobDetailView: View {
                     }
                 }
                 
+                
                 // Job details
-                Text(job.title)
+                Text(contractor.contractorName)
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .padding(.leading)
                 
+                
                 HStack{
-                    Text(jobController.timeAgoSinceDate(job.datePosted))
-                        .font(.caption)
-                    Text("• \(job.city)")
-                        .font(.caption)
-                        .fontWeight(.bold)
+                    Text("Service Area: \(contractor.city)")
+                        .font(.subheadline)
+                       
                 }
                 .padding(.leading)
                 
-                Text(job.category.rawValue)
-                    .font(.caption)
+                Text("Contact: \(contractor.email)")
+                    .font(.subheadline)
                     .padding(.leading)
                     .padding(.bottom, 5)
                 
                 
-                Text(job.description) // Assuming there's a description in the Job model
+                Text(contractor.bio) // Assuming there's a description in the Job model
                     .font(.body)
                     .padding(.leading)
                     .padding(.top, 5)
                 
-                .padding(.bottom, 100)
+                    .padding(.bottom, 100)
             }
             //.padding(.leading)
-            .navigationTitle("Job Details") // Sets the title for the navigation bar
+            //.navigationTitle(contractor.contractorName) // Sets the title for the navigation bar
             .fullScreenCover(isPresented: $isFullScreen) { // Present full-screen view
-                fullScreenImageView(imageUrl: job.imageURL, isFullScreen: $isFullScreen)
+                fullScreenImageView(imageUrl: contractor.imageURL, isFullScreen: $isFullScreen)
                 
             }
         }
     }
+    
 }
-

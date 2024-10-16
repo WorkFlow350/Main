@@ -3,6 +3,7 @@ import SwiftUI
 // FeedView displays either job listings for contractors or placeholder for contractor flyers for homeowners
 struct FeedView: View {
     @StateObject private var jobController = JobController() // Initialize JobController to manage job data
+    @StateObject private var contractorController = ContractorController()
     @State private var isContractor: Bool = true  // State to toggle between Job listings (for contractors) or Contractor Flyers (for homeowners)
 
     var body: some View {
@@ -28,15 +29,12 @@ struct FeedView: View {
                                 }
                             }
                         } else {
-                            // Placeholder text for contractor flyers
-                            Text("Here goes the contractor flyers")
-                                .font(.headline)
-                                .foregroundColor(.gray)
-                                .padding()
-                                .frame(maxWidth: .infinity, alignment: .center)
-                                .background(Color.white)
-                                .cornerRadius(12)
-                                .shadow(radius: 5)
+                            ForEach(contractorController.flyers) { flyer in
+                                NavigationLink(destination: FlyerDetailView(contractor: flyer)){
+                                    FlyerCellView(contractor: flyer) // Use the JobView component to display job details
+                                }
+                            }
+                            
                         }
                     }
                     //.padding(.horizontal)
@@ -47,6 +45,7 @@ struct FeedView: View {
         }
         .onAppear {
             jobController.fetchJobs() // Fetch jobs when the view appears
+            contractorController.fetchFlyers()
         }
     }
 }

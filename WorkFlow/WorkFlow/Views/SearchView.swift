@@ -16,45 +16,56 @@ struct SearchView: View {
     }
 
     var body: some View {
-        VStack {
-            // Search Bar with a Done button to dismiss keyboard
-            TextField("Search by city", text: $searchText)
-                .padding(10)
-                .background(Color(.systemGray6))
-                .cornerRadius(10)
-                .padding([.horizontal, .top])
-                .toolbar {
-                    ToolbarItemGroup(placement: .keyboard) {
-                        Spacer() // Pushes the Done button to the right
-                        Button("Done") {
-                            KeyboardHelper.hideKeyboard() // Call the hideKeyboard function to dismiss keyboard
+        ZStack {
+            LinearGradient(
+                gradient: Gradient(colors: [Color(hex: "#a3d3eb"), Color(hex: "#355c7d")]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .edgesIgnoringSafeArea(.all)
+            
+            VStack {
+                // Search Bar with a Done button to dismiss keyboard
+                TextField("Search by city", text: $searchText)
+                    .padding(10)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
+                    .padding([.horizontal, .top])
+                    .toolbar {
+                        ToolbarItemGroup(placement: .keyboard) {
+                            Spacer() // Pushes the Done button to the right
+                            Button("Done") {
+                                KeyboardHelper.hideKeyboard() // Call the hideKeyboard function to dismiss keyboard
+                            }
                         }
                     }
-                }
-
-            // Display filtered results only when there is search input
-            if !searchText.isEmpty {
-                List(filteredJobs) { job in
-                    VStack(alignment: .leading) {
-                        Text(job.title) // Display job title
-                            .font(.headline)
-                        Text(job.description) // Display job description
-                            .font(.subheadline)
-                        Text(job.city) // Display the city for each job
-                            .font(.footnote)
-                            .foregroundColor(.gray)
+            
+                // Display filtered results only when there is search input
+                    if !searchText.isEmpty {
+                        List(filteredJobs) { job in
+                            VStack(alignment: .leading) {
+                                Text(job.title) // Display job title
+                                    .font(.headline)
+                                Text(job.description) // Display job description
+                                    .font(.subheadline)
+                                Text(job.city) // Display the city for each job
+                                    .font(.footnote)
+                                    .foregroundColor(.gray)
+                            }
+                        }
+                        .listStyle(InsetGroupedListStyle()) // Style the list with an inset grouped appearance
+                    } else {
+                        // Message displayed when there is no search input
+                        Text("Enter a city to search for jobs.")
+                            .foregroundColor(.white)
+                            .padding()
                     }
-                }
-                .listStyle(InsetGroupedListStyle()) // Style the list with an inset grouped appearance
-            } else {
-                // Message displayed when there is no search input
-                Text("Enter a city to search for jobs.")
-                    .foregroundColor(.gray)
-                    .padding()
+                Spacer()
             }
-        }
-        .onAppear {
-            jobController.fetchJobs()  // Fetch jobs when the view appears
+            .background(Color.clear)
+            .onAppear {
+                jobController.fetchJobs()  // Fetch jobs when the view appears
+            }
         }
     }
 }

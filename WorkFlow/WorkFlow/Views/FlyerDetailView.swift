@@ -13,6 +13,13 @@ struct FlyerDetailView: View {
     @StateObject private var contractController = ContractorController()
     @State private var isFullScreen: Bool = false // State to toggle full-screen view
     var body: some View {
+        ZStack{
+            LinearGradient(
+                gradient: Gradient(colors: [Color(hex: "#a3d3eb"), Color(hex: "#355c7d")]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .edgesIgnoringSafeArea(.all)
         ScrollView{
             VStack(alignment: .leading) {
                 // Display the image that can be tapped to view full-screen
@@ -45,7 +52,7 @@ struct FlyerDetailView: View {
                 HStack{
                     Text("Service Area: \(contractor.city)")
                         .font(.subheadline)
-                       
+                    
                 }
                 .padding(.leading)
                 
@@ -67,8 +74,8 @@ struct FlyerDetailView: View {
             .fullScreenCover(isPresented: $isFullScreen) { // Present full-screen view
                 fullScreenImageView(imageUrl: contractor.imageURL, isFullScreen: $isFullScreen)
                 
+                }
             }
         }
     }
-    
 }

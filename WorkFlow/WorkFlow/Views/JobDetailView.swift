@@ -13,6 +13,13 @@ struct JobDetailView: View {
     @State private var isFullScreen: Bool = false // State to toggle full-screen view
     
     var body: some View {
+        ZStack {
+            LinearGradient(
+                gradient: Gradient(colors: [Color(hex: "#a3d3eb"), Color(hex: "#355c7d")]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .edgesIgnoringSafeArea(.all)
         ScrollView{
             VStack(alignment: .leading, spacing: 0) {
                 // Display the image that can be tapped to view full-screen
@@ -59,14 +66,14 @@ struct JobDetailView: View {
                     .font(.body)
                     .padding(.leading)
                     .padding(.top, 5)
-                
-                .padding(.bottom, 100)
+                    .padding(.bottom, 100)
             }
             //.padding(.leading)
             .navigationTitle("Job Details") // Sets the title for the navigation bar
             .fullScreenCover(isPresented: $isFullScreen) { // Present full-screen view
                 fullScreenImageView(imageUrl: job.imageURL, isFullScreen: $isFullScreen)
                 
+                }
             }
         }
     }

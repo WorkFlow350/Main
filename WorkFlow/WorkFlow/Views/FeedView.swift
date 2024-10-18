@@ -8,45 +8,53 @@ struct FeedView: View {
 
     var body: some View {
         NavigationView {
-            ScrollView{
-                VStack {
-                    // Toggle between Job listings and Contractor Flyers view
-                    Picker("View", selection: $isContractor) {
-                        Text("Jobs").tag(true) // Tag for Job listings (for contractors)
-                        Text("Contractors").tag(false) // Tag for Contractor Flyers (for homeowners)
-                    }
-                    .pickerStyle(SegmentedPickerStyle()) // Segmented picker style for the toggle
-                    .padding()
-                    
-                    // Scrollable content area displaying posts based on the toggle state
-                    //Start of orginal DELETEMEScrollView {
-                    Spacer(minLength: 5) // Space between Picker and the content
-                    LazyVStack(spacing: 1) {
-                        if isContractor {
-                            // Display job posts fetched from Firebase for contractors
-                            ForEach(jobController.jobs) { job in
-                                NavigationLink(destination: JobDetailView(job: job)){
-                                    JobCellView(job: job) // Use the JobView component to display job details
-                                }
-                            }
-                        } else {
-                            ForEach(contractorController.flyers) { flyer in
-                                NavigationLink(destination: FlyerDetailView(contractor: flyer)){
-                                    FlyerCellView(contractor: flyer) // Use the JobView component to display job details
-                                }
-                            }
-                            
+            ZStack{
+                LinearGradient(
+                    gradient: Gradient(colors: [Color(hex: "#a3d3eb"), Color(hex: "#355c7d")]),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .edgesIgnoringSafeArea(.all)
+                ScrollView{
+                    VStack {
+                        // Toggle between Job listings and Contractor Flyers view
+                        Picker("View", selection: $isContractor) {
+                            Text("Jobs").tag(true) // Tag for Job listings (for contractors)
+                            Text("Contractors").tag(false) // Tag for Contractor Flyers (for homeowners)
                         }
+                        .pickerStyle(SegmentedPickerStyle()) // Segmented picker style for the toggle
+                        .padding()
+                        
+                        // Scrollable content area displaying posts based on the toggle state
+                        //Start of orginal DELETEMEScrollView {
+                        Spacer(minLength: 5) // Space between Picker and the content
+                        LazyVStack(spacing: 1) {
+                            if isContractor {
+                                // Display job posts fetched from Firebase for contractors
+                                ForEach(jobController.jobs) { job in
+                                    NavigationLink(destination: JobDetailView(job: job)){
+                                        JobCellView(job: job) // Use the JobView component to display job details
+                                    }
+                                }
+                            } else {
+                                ForEach(contractorController.flyers) { flyer in
+                                    NavigationLink(destination: FlyerDetailView(contractor: flyer)){
+                                        FlyerCellView(contractor: flyer) // Use the JobView component to display job details
+                                    }
+                                }
+                                
+                            }
+                        }
+                        //.padding(.horizontal)
+                        //this where the scrollview ends DELETEME}
+                        .navigationTitle(isContractor ? "Jobs" : "Contractors")
+                        .background(Color(UIColor.systemGray6)) // Background color for the view
                     }
-                    //.padding(.horizontal)
-                    //this where the scrollview ends DELETEME}
-                    .navigationTitle(isContractor ? "Jobs" : "Contractors")
-                    .background(Color(UIColor.systemGray6)) // Background color for the view
                 }
-            }
-            .onAppear {
-                jobController.fetchJobs() // Fetch jobs when the view appears
-                contractorController.fetchFlyers()
+                .onAppear {
+                    jobController.fetchJobs() // Fetch jobs when the view appears
+                    contractorController.fetchFlyers()
+                }
             }
         }
     }

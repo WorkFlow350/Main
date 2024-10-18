@@ -19,7 +19,7 @@ class JobController: ObservableObject {
     // Function to fetch jobs from Firestore database
     func fetchJobs() {
         let db = Firestore.firestore()
-        db.collection("jobs").getDocuments { snapshot, error in
+        db.collection("jobs").order(by: "datePosted", descending: true).getDocuments { snapshot, error in
             if let error = error {
                 print("Error fetching jobs: \(error.localizedDescription)")
                 return

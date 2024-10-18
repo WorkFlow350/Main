@@ -1,0 +1,44 @@
+### macOS ###
+**/.DS_Store
+**/.Appledouble
+**/.LSOverride
+
+### Xcode Patch ###
+*.xcodeproj/*
+!*.xcuserdata/
+!*.xcshareddata/
+!*.xcworkspace/contents.xcworkspacedata
+*.gcno
+!**/xcshareddata/WorkspaceSettings.xcsettings
+
+### Xcode ###
+**/*.xcuserdata/
+**/*.xcshareddata/
+**/*.xcworkspace/
+
+### macOS Patch ###
+# iCloud generated files
+*.icloud
+
+# Build products
+**/build/
+
+# Firebase
+**/GoogleService-Info.plist
+**/Pods/
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent

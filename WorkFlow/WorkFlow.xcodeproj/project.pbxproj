@@ -157,7 +157,6 @@
 				9EC417EF2CB4B2E100F21C8F /* Views */,
 				9EC417C32CB4AF1B00F21C8F /* WorkFlowApp.swift */,
 				9EC417C72CB4AF1C00F21C8F /* Assets.xcassets */,
-				29CAC12B2CC0508F00D054BB /* GoogleService-Info.plist */,
 				9EC417C92CB4AF1C00F21C8F /* Preview Content */,
 			);
 			path = WorkFlow;
@@ -348,8 +347,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				9EC417CB2CB4AF1C00F21C8F /* Preview Assets.xcassets in Resources */,
+				9ED91DB22CC0482A00974502 /* GoogleService-Info.plist in Resources */,
 				9EC417C82CB4AF1C00F21C8F /* Assets.xcassets in Resources */,
-				29CAC12C2CC0508F00D054BB /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

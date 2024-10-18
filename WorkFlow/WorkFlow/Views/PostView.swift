@@ -39,7 +39,7 @@ struct PostView: View {
                     }
                     .pickerStyle(SegmentedPickerStyle())
                     .padding() // Styling: Padding for the toggle
-
+                    
                     // Section for entering job or flyer details
                     VStack(alignment: .leading, spacing: 10) {
                         Text(isHomeowner ? "Job Details" : "Flyer Details")
@@ -51,6 +51,11 @@ struct PostView: View {
                             .padding()
                             .background(Color.white)
                             .cornerRadius(15) // Rounded corners for text field
+                            .onChange(of: title) {
+                                if title.count > 20 {
+                                    title = String(title.prefix(20))
+                                }
+                            }
                         TextField(isHomeowner ? "Description" : "Bio", text: $description)
                             .padding()
                             .background(Color.white)
@@ -59,12 +64,21 @@ struct PostView: View {
                             .padding()
                             .background(Color.white)
                             .cornerRadius(15) // Rounded corners for text field
-                        
+                            .onChange(of: city) {
+                                if city.count > 20 {
+                                    city = String(city.prefix(20))
+                                }
+                            }
                         if !isHomeowner {
                             TextField("Email", text: $email)
                                 .padding()
                                 .background(Color.white)
                                 .cornerRadius(15) // Rounded corners for text field
+                                .onChange(of: email) {
+                                    if email.count > 20 {
+                                        email = String(email.prefix(20))
+                                    }
+                                }
                         }
 
                         // Button-style picker for category selection

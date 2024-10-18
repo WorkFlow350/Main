@@ -61,7 +61,7 @@ struct JobCellView: View {
                         Text(job.category.rawValue)
                             .font(.caption)
                             .foregroundColor(.blue)
-                            
+                        
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.bottom, 0) // Remove bottom padding from HStack
@@ -71,7 +71,7 @@ struct JobCellView: View {
                         .font(.headline)
                         .foregroundColor(.black)
                         .fontWeight(.bold)
-                        //.font(.system(size: 18))
+                    //.font(.system(size: 18))
                         .padding(.top, 5) // Optional: set a small top padding for spacing
                         .padding(.bottom, 5) // Optional: set a small bottom padding for spacing
                     Text(jobController.timeAgoSinceDate(job.datePosted))
@@ -87,8 +87,6 @@ struct JobCellView: View {
         .background(Color.white) // Background color for visibility
         .cornerRadius(8) // Rounded corners
         .shadow(radius: 2) // Optional shadow for better UI
-        
-
         }
 
 }

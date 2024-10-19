@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		29CAC12C2CC0508F00D054BB /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 29CAC12B2CC0508F00D054BB /* GoogleService-Info.plist */; };
+		9E144A2E2CC30ECD00C2A39A /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9E144A2D2CC30ECD00C2A39A /* GoogleService-Info.plist */; };
 		9EC417C42CB4AF1B00F21C8F /* WorkFlowApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC417C32CB4AF1B00F21C8F /* WorkFlowApp.swift */; };
 		9EC417C82CB4AF1C00F21C8F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9EC417C72CB4AF1C00F21C8F /* Assets.xcassets */; };
 		9EC417CB2CB4AF1C00F21C8F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9EC417CA2CB4AF1C00F21C8F /* Preview Assets.xcassets */; };
@@ -63,7 +63,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		29CAC12B2CC0508F00D054BB /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../../../Downloads/GoogleService-Info.plist"; sourceTree = "<group>"; };
+		9E144A2D2CC30ECD00C2A39A /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		9EC417C02CB4AF1B00F21C8F /* WorkFlow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WorkFlow.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9EC417C32CB4AF1B00F21C8F /* WorkFlowApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkFlowApp.swift; sourceTree = "<group>"; };
 		9EC417C72CB4AF1C00F21C8F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -157,6 +157,7 @@
 				9EC417EF2CB4B2E100F21C8F /* Views */,
 				9EC417C32CB4AF1B00F21C8F /* WorkFlowApp.swift */,
 				9EC417C72CB4AF1C00F21C8F /* Assets.xcassets */,
+				9E144A2D2CC30ECD00C2A39A /* GoogleService-Info.plist */,
 				9EC417C92CB4AF1C00F21C8F /* Preview Content */,
 			);
 			path = WorkFlow;
@@ -347,8 +348,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				9EC417CB2CB4AF1C00F21C8F /* Preview Assets.xcassets in Resources */,
-				9ED91DB22CC0482A00974502 /* GoogleService-Info.plist in Resources */,
 				9EC417C82CB4AF1C00F21C8F /* Assets.xcassets in Resources */,
+				9E144A2E2CC30ECD00C2A39A /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

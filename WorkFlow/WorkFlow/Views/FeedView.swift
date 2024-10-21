@@ -48,7 +48,8 @@ struct FeedView: View {
                         //.padding(.horizontal)
                         //this where the scrollview ends DELETEME}
                         .navigationTitle(isContractor ? "Jobs" : "Contractors")
-                        .background(Color(UIColor.systemGray6)) // Background color for the view
+                        .background(.clear)
+                       // .background(Color(UIColor.systemGray6)) // Background color for the view
                     }
                 }
                 .onAppear {

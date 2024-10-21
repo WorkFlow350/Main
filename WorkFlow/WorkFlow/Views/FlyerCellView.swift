@@ -1,68 +1,76 @@
-//
-//  FlyerCellView.swift
-//  WorkFlow
-//
-//  Created by Steve Coyotl on 10/15/24.
-//
-//City
-//Specialty
-//Name
-//Wage Type
-
 import SwiftUI
 
 struct FlyerCellView: View {
     let contractor: ContractorProfile
-    @State private var isFullScreen: Bool = false // State to toggle full-screen view
+    @State private var isFullScreen: Bool = false
     @StateObject private var contractorController = ContractorController()
-    
+
     var body: some View {
-        VStack {
-          
-                VStack(alignment: .leading, spacing: 0) {
-                    HStack {
-                            Text("Specialty:")
-                                .font(.subheadline)
-                                .foregroundColor(.black)
-                            
-                            ForEach(contractor.skills, id: \.self) { skill in
-                                Text(skill)
-                                    .font(.subheadline)
-                                    .foregroundColor(.blue)
-                            }
-                        //.padding(.top, 5)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    //.padding(.bottom, 5)
-                    
-                    Text(contractor.contractorName)
-                        .font(.headline)
-                        .foregroundColor(.black)
-                        .fontWeight(.bold)
-                        .padding(.top, 5) // Optional: set a small top padding for spacing
-                        .padding(.bottom, 5) // Optional: set a small bottom padding for spacing
-                    
-                    Text("Service Area: \(contractor.city)")
-                        .font(.subheadline)
-                        .foregroundColor(.black)
-                        .fontWeight(.medium)
+        HStack {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Specialty: \(contractor.skills.joined(separator: ", "))")
+                    .font(.subheadline)
+                    .foregroundColor(.black)
 
+                Text(contractor.contractorName)
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundColor(.black)
+
+                Text("Service Area: \(contractor.city)")
+                    .font(.subheadline)
+                    .foregroundColor(.black)
             }
+
+            Spacer()
+
+            // Profile image
+            if let imageUrl = contractor.imageURL, let url = URL(string: imageUrl) {
+                AsyncImage(url: url) { image in
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 50, height: 50)
+                        .clipShape(Circle())
+                        .overlay(Circle().stroke(Color.white, lineWidth: 2))
+                } placeholder: {
+                    Color.gray
+                        .frame(width: 50, height: 50)
+                        .clipShape(Circle())
+                }
+            } else {
+                Image(systemName: "person.circle.fill")
+                    .resizable()
+                    .foregroundColor(.gray)
+                    .frame(width: 50, height: 50)
+            }
+
+            // Category color indicator
+            Rectangle()
+                .frame(width: 4)
+                .foregroundColor(categoryColor(for: contractor.skills))
+                .cornerRadius(2)
+                .padding(.vertical, 8)
         }
-        .frame(maxWidth: .infinity)
-        .padding(8) // Overall padding around the entire VStack if needed
-        .background(Color.white) // Background color for visibility
-        .cornerRadius(8) // Rounded corners
-        .shadow(radius: 2) // Optional shadow for better UI
+        .padding(8)
+        .background(
+            BlurView(style: .systemMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+        )
+        .cornerRadius(12)
+        .shadow(radius: 2)
+    }
+
+    // Helper function to determine color based on the contractor's skills
+    private func categoryColor(for skills: [String]) -> Color {
+        if skills.contains("Landscaping") {
+            return Color.green
+        } else if skills.contains("Cleaning") {
+            return Color.blue
+        } else if skills.contains("Construction") {
+            return Color.orange
+        } else {
+            return Color.purple // Default color for other skills
+        }
     }
 }
-
-
-// Preview provider for JobView
-struct FlyerCellView_Previews: PreviewProvider {
-    static var previews: some View {
-        FlyerCellView(contractor: ContractorProfile(id: UUID(), contractorName: "Bob the Builder LLC", bio:"big buttface", skills: ["plumber","landscape","welding","tile"], rating: 5.0, jobsCompleted: 0, city: "Oxnard", email: "cool9990@gmail.com"))
-    }
-}
-
-

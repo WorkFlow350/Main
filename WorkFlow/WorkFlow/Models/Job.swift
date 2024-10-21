@@ -21,9 +21,9 @@ struct Job: Identifiable, Codable, Hashable {
 
 // A structure that represents notifications and corresponds them to a post
 struct NotificationModel: Identifiable, Hashable{
-    let id: UUID = UUID()   // Unique Id for notification
-    let jobId: UUID         // The ID of corresponding job
-    let message: String     // The notification message
+    var id: UUID   // Unique Id for notification
+    var jobId: UUID         // The ID of corresponding job
+    var message: String     // The notification message
     
     // implement hash function
     func hash(into hasher: inout Hasher) {

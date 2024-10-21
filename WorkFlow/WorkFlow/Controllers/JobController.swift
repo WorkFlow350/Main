@@ -5,15 +5,130 @@ import Combine
 // ObservableObject to allow JobController to be observed by SwiftUI views
 class JobController: ObservableObject {
     // Published property so any updates to 'jobs' will automatically update views that observe this controller
+    @Published var jobsNotification: [Job] = []
     @Published var jobs: [Job] = []
     @Published var notifications: [NotificationModel] = [] // Add notifications as a published property
+    private var listener: ListenerRegistration?
+    private var listener2: ListenerRegistration?
 
     // Method to add a new notification when a job is posted
     func addNotification(_ job: Job) {
-        let notification = NotificationModel(jobId: job.id, message: "A new \(job.category) job has been posted in \(job.city)!")
-        notifications.append(notification)
+        let notification = NotificationModel(id: UUID(), jobId: job.id, message: "A new \(job.category) job has been posted in \(job.city)!")
+        let db = Firestore.firestore()
+        var jobData: [String: Any] = [
+            "id": notification.id.uuidString,
+            "jobId": notification.jobId.uuidString,
+            "message": notification.message,
+        ]
+        db.collection("notifications").addDocument(data: jobData) { error in
+            if let error = error {
+                print("Error posting notification: \(error.localizedDescription)")
+            } else {
+                print("notification successfully posted.")
+            }
+        }
         // Post a notification that a new job has been added
-        NotificationCenter.default.post(name: Notification.Name("NewJobPosted"), object: nil)
+    }
+    
+    init() {
+        observeJobs()
+        observeNotifications()
+    }
+    deinit {
+        listener?.remove()
+        listener2?.remove()
+    }
+    
+    func observeJobs() {
+        let db = Firestore.firestore()
+        listener = db.collection("jobs").addSnapshotListener {(snapshot, error) in
+            guard let snapshot = snapshot else {
+                print("Error fetching jobs: \(error?.localizedDescription ?? "Unknown error")")
+                return
+            }
+            
+            for diff in snapshot.documentChanges {
+                if diff.type == .added {
+                    let Data = diff.document.data()
+                    
+                    guard let idString = Data["id"] as? String,
+                          let id = UUID(uuidString: idString) else {
+                        return print("could not get jobs id")
+                    }
+                        
+                    guard let title = Data["title"] as? String else {
+                        return print("could not get title")
+                    }
+                    
+                   guard let description = Data["description"] as? String else {
+                        return print("could not get description")
+                    }
+                    
+                    guard let city = Data["city"] as? String else {
+                        return print("could not get city")
+                    }
+                    guard let categoryString = Data["category"] as? String,
+                          let category = JobCategory(rawValue: categoryString) else {
+                        return print("could not get job category")
+                    }
+                    guard let timestamp = Data["datePosted"] as? Timestamp else {
+                        return print("could not get date")
+                    }
+                    let datePosted = timestamp.dateValue()
+                    
+                    guard let imageURL = Data["imageURL"] as? String else{
+                        return print("could not get job data")
+                    }
+                    
+                    let newJob = Job(id: id,
+                                     title: title,
+                                     description: description,
+                                     city: city,
+                                     category: category,
+                                     datePosted: datePosted,
+                                     imageURL: imageURL
+                    )
+                    self.jobsNotification.append(newJob)
+                }
+            }
+        }
+    }
+    
+    func observeNotifications() {
+        let db = Firestore.firestore()
+        listener2 = db.collection("notifications").addSnapshotListener {(snapshot, error) in
+            guard let snapshot = snapshot else {
+                print("Error fetching notifications: \(error?.localizedDescription ?? "Unknown error")")
+                return
+            }
+            
+            for diff in snapshot.documentChanges {
+                if diff.type == .added {
+                    let Data = diff.document.data()
+                    
+                    guard let idString = Data["id"] as? String,
+                          let id = UUID(uuidString: idString) else {
+                        return print("could not get notification Id")
+                    }
+                    
+                    guard let jobIdString = Data["jobId"] as? String,
+                          let jobId = UUID(uuidString: jobIdString) else {
+                        return print("could not get jobId")
+                    }
+                    
+                    guard let message = Data["message"] as? String else {
+                        return print("could not get message")
+                    }
+                    
+                    let newNotification = NotificationModel(id: id,
+                                                            jobId: jobId,
+                                                            message: message
+                    )
+                    self.notifications.append(newNotification)
+                    NotificationCenter.default.post(name: Notification.Name("NewJobPosted"), object: nil)
+                }
+            }
+        }
     }
 
     // Function to fetch jobs from Firestore database
@@ -97,6 +212,7 @@ class JobController: ObservableObject {
     private func saveJobToFirestore(job: Job, imageURL: String?) {
         let db = Firestore.firestore()
         var jobData: [String: Any] = [
+            "id": job.id.uuidString,
             "title": job.title,
             "description": job.description,
             "city": job.city,

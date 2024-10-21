@@ -17,7 +17,7 @@ struct NotificationView: View {
                         // finds corresponding job and passes it into JobView()
                         // lists notifications as clickable navigations
                         ForEach(jobController.notifications, id: \.self) { notification in
-                            if let job = jobController.jobs.first(where: {$0.id == notification.jobId}) {
+                            if let job = jobController.jobsNotification.first(where: {$0.id == notification.jobId}) {
                                 NavigationLink(value: job) {
                                     Text(notification.message)
                                         .padding()
@@ -29,7 +29,7 @@ struct NotificationView: View {
                     }
                     .navigationTitle("Notifications")
                     .navigationDestination(for: Job.self) { selectedJob in
-                        JobView(job: selectedJob)
+                        JobDetailView(job: selectedJob)
                     }
                     .background(Color.clear)
                     .scrollContentBackground(.hidden)

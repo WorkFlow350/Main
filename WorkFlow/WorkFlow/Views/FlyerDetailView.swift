@@ -80,3 +80,4 @@ struct FlyerDetailView: View {
     }
 }
 //testing to go to main
+//add another thing for main

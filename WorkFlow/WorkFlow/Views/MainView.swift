@@ -10,6 +10,7 @@ struct MainTabView: View {
     
     // State variable to track the currently selected tab (default is home)
     @State private var selectedTab: Tab = .home
+    @State private var showProfileView = false // State to show HomeownerProfileView
     
     var body: some View {
         ZStack {
@@ -23,8 +24,9 @@ struct MainTabView: View {
 
                     Spacer() // Space between title and profile button
 
+                    // Profile button to show HomeownerProfileView
                     Button(action: {
-                        // Profile button action - can be defined later
+                        showProfileView = true // Set to true to navigate to the profile view
                     }) {
                         Image(systemName: "person.crop.square")
                             .resizable()
@@ -32,6 +34,9 @@ struct MainTabView: View {
                             .foregroundColor(.white)
                     }
                     .padding(.trailing)
+                    .fullScreenCover(isPresented: $showProfileView) {
+                        HomeownerProfileView() // Present HomeownerProfileView
+                    }
                 }
                 .padding(.top)
                 .padding(.bottom, 10)

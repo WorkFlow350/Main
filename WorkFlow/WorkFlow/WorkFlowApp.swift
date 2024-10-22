@@ -15,7 +15,8 @@ struct WorkFlowApp: App {
     var body: some Scene {
         WindowGroup {
             // MainTabView is the starting view of the app, and it receives the jobController as an environment object
-            MainTabView()
+            //MainTabView()
+            SignInView()
                 .environmentObject(jobController) // Provide JobController to the view hierarchy
                 .environmentObject(contractorController) // Provide ContractorController to the view hierarchy
         }

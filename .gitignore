@@ -15,6 +15,11 @@
 **/*.xcuserdata/
 **/*.xcshareddata/
 **/*.xcworkspace/
+*.xcuserdatad/
+*.xcuserdata/
+*.xcdebugger/
+*.xcschememanagement.plist
+
 
 ### macOS Patch ###
 # iCloud generated files

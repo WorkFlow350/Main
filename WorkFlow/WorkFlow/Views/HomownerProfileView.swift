@@ -1,19 +1,21 @@
+// HomeownerProfileView.swift - Displays the homeowner's profile with a "Done" button to dismiss the view.
 import SwiftUI
 
-// Updated HomeownerProfileView with a "Done" button
+// HomeownerProfileView with a "Done" button to dismiss the view.
 struct HomeownerProfileView: View {
-    @Environment(\.dismiss) var dismiss // Dismiss environment variable for returning
+    @Environment(\.dismiss) var dismiss  // Dismiss environment variable for returning to the previous screen.
 
     var body: some View {
         VStack {
             HStack {
+                // "Done" button to exit the profile view.
                 Button("Done") {
-                    dismiss() // Dismiss the view when "Done" is pressed
+                    dismiss()  // Dismiss the view when "Done" is pressed.
                 }
                 .padding()
                 .background(Color.blue)
                 .foregroundColor(.white)
-                .clipShape(Capsule())
+                .clipShape(Capsule())  // Capsule-shaped button for rounded appearance.
 
                 Spacer()
             }
@@ -21,6 +23,7 @@ struct HomeownerProfileView: View {
 
             Spacer()
 
+            // Placeholder text indicating profile is under construction.
             Text("Profile in Progress")
                 .font(.largeTitle)
                 .foregroundColor(.black)
@@ -29,6 +32,7 @@ struct HomeownerProfileView: View {
             Spacer()
         }
         .background(
+            // Background gradient for the view.
             LinearGradient(
                 gradient: Gradient(colors: [Color(hex: "#a3d3eb"), Color(hex: "#355c7d")]),
                 startPoint: .top,

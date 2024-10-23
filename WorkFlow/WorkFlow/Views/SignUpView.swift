@@ -14,13 +14,11 @@ struct SignUpView: View {
     @State private var password: String = ""
     @State private var passwordConfirmation: String = ""
     @State private var city: String = ""
-    
-    @State private var selectedCategory: JobCategory = .landscaping
-    @State private var selectedImage: UIImage? = nil
-    @State private var imageURL: String = ""
-    @State private var isImagePickerPresented: Bool = false
+    @Environment(\.dismiss) var dismiss
+    @StateObject private var authController = AuthController()
+    @State private var navigateToPersonalizedHome: Bool = false
     @State private var isHomeowner: Bool = true
-    @State private var isCategoryPickerPresented: Bool = false
+    
     /*
      email, name, city, password, confirm password, category, image, isImagePickerPresented, isCategoryPickerPresented
      */
@@ -97,39 +95,76 @@ struct SignUpView: View {
                                           placeholder: "Camarillo")
                             .autocapitalization(.none)
                             
-                            
+                            //change back to , isSecureField:true
                             InputCellView(text:$password,
                                           title: "Password",
-                                          placeholder: "Enter your password", isSecureField:true)
+                                          placeholder: "Enter your password")
                             .autocapitalization(.none)
                             
                             InputCellView(text:$passwordConfirmation,
                                           title: "Confirm Password",
-                                          placeholder: "Enter your password", isSecureField:true)
+                                          placeholder: "Enter your password")
                             .autocapitalization(.none)
                         }
+                    }
+                    .padding(.horizontal)
+                    .padding(.top,12)
+                    // NavigationLink to navigate when `navigateToHome` becomes true
+                    NavigationLink(destination: PLACEHOLDER(), isActive: $navigateToPersonalizedHome) {
+                        EmptyView()
+                    }
+
+                    Button {
+                        Task {
+                            // Ensure password and confirmation match
+                            guard password == passwordConfirmation else {
+                                print("Passwords do not match")
+                                return
+                            }
+
+                            do {
+                                // Determine the user role based on the isHomeowner state
+                                let role: UserRole = isHomeowner ? .homeowner : .contractor
+                                
+                                // Create user and store their data
+                                try await authController.createUser(withEmail: email, password: password, name: profileName, city: city, role: role, bio: profileBio)
+                                print("User registered successfully: \(email)")
+                                
+                                // Instead of dismissing, navigate to a new page
+                                navigateToPersonalizedHome = true // Trigger the navigation to home
+                            } catch {
+                                print("Error registering user: \(error.localizedDescription)")
+                            }
+                        }
+                    }label: {
+                        HStack{
+                            Text("SIGN UP")
+                                .fontWeight(.semibold)
+                            Image(systemName: "arrow.right")
+                        }
+                        
+                        .foregroundColor(.white)
+                        .frame(width: UIScreen.main.bounds.width - 32, height: 48)
+                    }
+                    .background(Color(.systemBlue))
+                    .cornerRadius(10)
+                    .padding(.top, 24)
+                    
+                    Spacer()
+                    
+                    Button{
+                        dismiss()
+                    } label: {
+                        HStack(spacing: 3){
+                            Text("Already Have an Account?")
+                            Text("Sign In")
+                                .fontWeight(.bold)
+                        }
+                        .font(.system(size:14))
                     }
                 }
             }
         }
-        .padding(.horizontal)
-        .padding(.top,12)
-        
-        Button{
-            print("Log User in")
-        } label: {
-            HStack{
-                Text("SIGN UP")
-                    .fontWeight(.semibold)
-                Image(systemName: "arrow.right")
-            }
-            
-            .foregroundColor(.white)
-            .frame(width: UIScreen.main.bounds.width - 32, height: 48)
-        }
-        .background(Color(.systemBlue))
-        .cornerRadius(10)
-        .padding(.top, 24)
         
     }
     

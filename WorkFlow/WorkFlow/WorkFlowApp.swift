@@ -11,6 +11,7 @@ struct WorkFlowApp: App {
     // StateObject to manage the state of JobController throughout the app
     @StateObject private var jobController = JobController() // Initialize JobController
     @StateObject private var contractorController = ContractorController() // Initialize ContractorController
+    @StateObject private var authController = AuthController()
 
     var body: some Scene {
         WindowGroup {
@@ -19,6 +20,7 @@ struct WorkFlowApp: App {
             SignInView()
                 .environmentObject(jobController) // Provide JobController to the view hierarchy
                 .environmentObject(contractorController) // Provide ContractorController to the view hierarchy
+                .environmentObject(authController)
         }
     }
 }

@@ -46,6 +46,8 @@
 		AA8714FD2CC84F1A00464D05 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8714FC2CC84F1A00464D05 /* SignInView.swift */; };
 		AA8715012CC84F6F00464D05 /* InputCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8715002CC84F6F00464D05 /* InputCellView.swift */; };
 		AA8715032CC858BA00464D05 /* SignUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8715022CC858BA00464D05 /* SignUpView.swift */; };
+		AA8715052CC874B900464D05 /* AuthController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8715042CC874B900464D05 /* AuthController.swift */; };
+		AA8715072CC8882200464D05 /* PLACEHOLDER.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8715062CC8882200464D05 /* PLACEHOLDER.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -103,6 +105,8 @@
 		AA8714FC2CC84F1A00464D05 /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
 		AA8715002CC84F6F00464D05 /* InputCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InputCellView.swift; sourceTree = "<group>"; };
 		AA8715022CC858BA00464D05 /* SignUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpView.swift; sourceTree = "<group>"; };
+		AA8715042CC874B900464D05 /* AuthController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthController.swift; sourceTree = "<group>"; };
+		AA8715062CC8882200464D05 /* PLACEHOLDER.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PLACEHOLDER.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -212,6 +216,7 @@
 				9EC417F62CB4B69900F21C8F /* UserController.swift */,
 				9EC418232CB4C79E00F21C8F /* ContractorController.swift */,
 				9EC418252CB4C7BC00F21C8F /* HomeownerController.swift */,
+				AA8715042CC874B900464D05 /* AuthController.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -238,6 +243,7 @@
 				AA8714FC2CC84F1A00464D05 /* SignInView.swift */,
 				AA8715002CC84F6F00464D05 /* InputCellView.swift */,
 				AA8715022CC858BA00464D05 /* SignUpView.swift */,
+				AA8715062CC8882200464D05 /* PLACEHOLDER.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -394,6 +400,7 @@
 				9EC418012CB4B72400F21C8F /* NotificationView.swift in Sources */,
 				9EC418162CB4BC2800F21C8F /* HomeownerProfile.swift in Sources */,
 				9EC418032CB4B73E00F21C8F /* UIView.swift in Sources */,
+				AA8715072CC8882200464D05 /* PLACEHOLDER.swift in Sources */,
 				9EC417F92CB4B6D800F21C8F /* MainView.swift in Sources */,
 				9EC418182CB4C1DC00F21C8F /* ChatView.swift in Sources */,
 				AA8714FD2CC84F1A00464D05 /* SignInView.swift in Sources */,
@@ -408,6 +415,7 @@
 				AA82E5872CBDEEF1009F916D /* JobDetailView.swift in Sources */,
 				9EC417F12CB4B5E900F21C8F /* Job.swift in Sources */,
 				AA8715032CC858BA00464D05 /* SignUpView.swift in Sources */,
+				AA8715052CC874B900464D05 /* AuthController.swift in Sources */,
 				9EC417FF2CB4B70B00F21C8F /* PostView.swift in Sources */,
 				9EC417C42CB4AF1B00F21C8F /* WorkFlowApp.swift in Sources */,
 				9EC418202CB4C50300F21C8F /* ContractorProfileView.swift in Sources */,

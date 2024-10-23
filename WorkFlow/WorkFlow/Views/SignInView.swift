@@ -10,7 +10,8 @@ import SwiftUI
 struct SignInView: View {
     @State private var email = ""
     @State private var password = ""
-    
+    @StateObject var authController = AuthController()
+    @State private var navigateToPersonalizedHome: Bool = false
     var body: some View {
         NavigationStack{
             VStack{
@@ -34,10 +35,23 @@ struct SignInView: View {
                 .padding(.horizontal)
                 .padding(.top,12)
 
+                NavigationLink(destination: PLACEHOLDER(), isActive: $navigateToPersonalizedHome) {
+                    EmptyView() 
+                }
+
                 //sign in button
-                Button{
-                    print("Log User in")
-                } label: {
+                Button {
+                    Task {
+                        do {
+                            try await authController.signIn(withEmail: email, password: password)
+                            print("User signed in successfully: \(email)")
+                            // Navigate to the home page or another view upon successful sign-in
+                            navigateToPersonalizedHome = true
+                        } catch {
+                            print("Error signing in: \(error.localizedDescription)")
+                        }
+                    }
+                }label: {
                     HStack{
                         Text("SIGN IN")
                             .fontWeight(.semibold)
@@ -57,7 +71,7 @@ struct SignInView: View {
                 // Sign Up & Continue as Guest Buttons
                 VStack(spacing: 16) {
                     // Sign Up Button
-                    NavigationLink(destination: SignUpView()) {
+                    NavigationLink(destination: SignUpView().navigationBarBackButtonHidden(true)) {
                         Text("Don't have an account? Sign Up")
                             .fontWeight(.bold)
                             .foregroundColor(.blue)

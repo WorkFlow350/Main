@@ -1,67 +1,67 @@
+// FeedView.swift - Displays job listings for contractors or contractor flyers for homeowners.
 import SwiftUI
 
-// FeedView displays either job listings for contractors or placeholder for contractor flyers for homeowners
+// FeedView displays either job listings for contractors or contractor flyers for homeowners.
 struct FeedView: View {
-    @StateObject private var jobController = JobController() // Initialize JobController to manage job data
-    @StateObject private var contractorController = ContractorController()
-    @State private var isContractor: Bool = true  // State to toggle between Job listings (for contractors) or Contractor Flyers (for homeowners)
+    @StateObject private var jobController = JobController()  // Initialize JobController to manage job data.
+    @StateObject private var contractorController = ContractorController()  // Initialize ContractorController to manage contractor flyer data.
+    @State private var isContractor: Bool = true  // State to toggle between Job listings or Contractor Flyers.
 
     var body: some View {
         NavigationView {
-            ZStack{
+            ZStack {
+                // Background gradient for the view.
                 LinearGradient(
                     gradient: Gradient(colors: [Color(hex: "#a3d3eb"), Color(hex: "#355c7d")]),
                     startPoint: .top,
                     endPoint: .bottom
                 )
                 .edgesIgnoringSafeArea(.all)
-                ScrollView{
+                
+                ScrollView {
                     VStack {
-                        // Toggle between Job listings and Contractor Flyers view
+                        // Toggle between Job listings and Contractor Flyers view.
                         Picker("View", selection: $isContractor) {
-                            Text("Jobs").tag(true) // Tag for Job listings (for contractors)
-                            Text("Contractors").tag(false) // Tag for Contractor Flyers (for homeowners)
+                            Text("Jobs").tag(true)        // Tag for Job listings (for contractors).
+                            Text("Contractors").tag(false) // Tag for Contractor Flyers (for homeowners).
                         }
-                        .pickerStyle(SegmentedPickerStyle()) // Segmented picker style for the toggle
+                        .pickerStyle(SegmentedPickerStyle())  // Segmented picker style for the toggle.
                         .padding()
                         
-                        // Scrollable content area displaying posts based on the toggle state
-                        //Start of orginal DELETEMEScrollView {
-                        Spacer(minLength: 5) // Space between Picker and the content
+                        Spacer(minLength: 5)  // Space between Picker and the content.
+
+                        // Scrollable content area displaying posts based on the toggle state.
                         LazyVStack(spacing: 1) {
                             if isContractor {
-                                // Display job posts fetched from Firebase for contractors
+                                // Display job posts fetched from Firebase for contractors.
                                 ForEach(jobController.jobs) { job in
-                                    NavigationLink(destination: JobDetailView(job: job)){
-                                        JobCellView(job: job) // Use the JobView component to display job details
+                                    NavigationLink(destination: JobDetailView(job: job)) {
+                                        JobCellView(job: job)  // Use the JobCellView component to display job details.
                                     }
                                 }
                             } else {
+                                // Display contractor flyers fetched from Firebase for homeowners.
                                 ForEach(contractorController.flyers) { flyer in
-                                    NavigationLink(destination: FlyerDetailView(contractor: flyer)){
-                                        FlyerCellView(contractor: flyer) // Use the JobView component to display job details
+                                    NavigationLink(destination: FlyerDetailView(contractor: flyer)) {
+                                        FlyerCellView(contractor: flyer)  // Use the FlyerCellView component to display flyer details.
                                     }
                                 }
-                                
                             }
                         }
-                        //.padding(.horizontal)
-                        //this where the scrollview ends DELETEME}
-                        .navigationTitle(isContractor ? "Jobs" : "Contractors")
-                        .background(.clear)
-                       // .background(Color(UIColor.systemGray6)) // Background color for the view
+                        .navigationTitle(isContractor ? "Jobs" : "Contractors")  // Set navigation title based on toggle state.
+                        .background(.clear)  // Background color set to clear.
                     }
                 }
                 .onAppear {
-                    jobController.fetchJobs() // Fetch jobs when the view appears
-                    contractorController.fetchFlyers()
+                    jobController.fetchJobs()  // Fetch jobs when the view appears.
+                    contractorController.fetchFlyers()  // Fetch contractor flyers when the view appears.
                 }
             }
         }
     }
 }
 
-// Preview provider for FeedView
+// Preview provider for FeedView to visualize the view in Xcode's canvas.
 struct FeedView_Previews: PreviewProvider {
     static var previews: some View {
         FeedView()

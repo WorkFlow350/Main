@@ -38,7 +38,7 @@ struct SignInView: View {
                 .padding(.top, 12)
 
                 // NavigationLink for transitioning to personalized home upon successful sign-in.
-                NavigationLink(destination: PLACEHOLDER(), isActive: $navigateToPersonalizedHome) {
+                NavigationLink(destination: DifferentiateView(), isActive: $navigateToPersonalizedHome) {
                     EmptyView()  // Invisible navigation link placeholder.
                 }
 
@@ -49,6 +49,8 @@ struct SignInView: View {
                             // Attempt to sign in with the provided email and password.
                             try await authController.signIn(withEmail: email, password: password)
                             print("User signed in successfully: \(email)")
+                            // set User
+                            await authController.setUser()
                             navigateToPersonalizedHome = true  // Navigate to home upon successful sign-in.
                         } catch {
                             print("Error signing in: \(error.localizedDescription)")

@@ -84,7 +84,7 @@ struct SignUpView: View {
                     .padding(.top, 12)
 
                     // NavigationLink to navigate when `navigateToPersonalizedHome` becomes true
-                    NavigationLink(destination: PLACEHOLDER(), isActive: $navigateToPersonalizedHome) {
+                    NavigationLink(destination: DifferentiateView(), isActive: $navigateToPersonalizedHome) {
                         EmptyView()
                     }
 
@@ -104,6 +104,9 @@ struct SignUpView: View {
                                 // Create user and store their data
                                 try await authController.createUser(withEmail: email, password: password, name: profileName, city: city, role: role, bio: profileBio)
                                 print("User registered successfully: \(email)")
+                                
+                                // set User
+                                await authController.setUser()
                                 
                                 // Instead of dismissing, navigate to a new page
                                 navigateToPersonalizedHome = true  // Trigger the navigation to home

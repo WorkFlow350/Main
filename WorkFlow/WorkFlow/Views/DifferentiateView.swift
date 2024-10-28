@@ -1,29 +1,44 @@
-//
-//  PLACEHOLDER.swift
-//  WorkFlow
-//
-//  Created by Steve Coyotl on 10/22/24.
-//
-
 import SwiftUI
 
 struct DifferentiateView: View {
-    @EnvironmentObject var AuthController: AuthController
+    @EnvironmentObject var authController: AuthController
+
     var body: some View {
-        if AuthController.appUser?.role == .homeowner {
-            // displays homeowner view
-           HoMainView()
-        } else if AuthController.appUser?.role == .contractor {
-            // displays contractor view
-            CoMainView()
-        } else {
-            Text("theres no user type")
-            Text("\(String(describing: AuthController.appUser?.id))")
+        VStack {
+            if let appUser = authController.appUser {
+                // Displaying views based on user role
+                switch appUser.role {
+                case .homeowner:
+                    HoMainView()
+                case .contractor:
+                    CoMainView()
+                default:
+                    Text("Unknown user type")
+                        .foregroundColor(.red)
+                }
+            } else {
+                // Display loading or placeholder while user data is fetched
+                Text("Loading user data...")
+                    .padding()
+                
+                // Display debug info if userSession or appUser is nil
+                Text("Session ID: \(authController.userSession?.uid ?? "No session")")
+                Text("User: \(String(describing: authController.appUser))")
+                    .padding()
+            }
+        }
+        .onAppear {
+            Task {
+                // Fetch user information when the view appears
+                await authController.setUser()
+
+                // Debug log to ensure correct user role is fetched
+                if let role = authController.appUser?.role {
+                    print("Fetched user role: \(role.rawValue)")
+                } else {
+                    print("Failed to fetch user role")
+                }
+            }
         }
     }
 }
-
-/*#Preview {
-    DifferentiateView()
-}
-*/

@@ -1,9 +1,15 @@
-// ChatView.swift - Displays the chat interface for users to communicate within the app.
+//
+//  HoChatView.swift
+//  WorkFlow
+//
+//  Created by Jason Rincon on 10/26/24.
+//
+
 import Foundation
 import SwiftUI
 
 // ChatView represents the chat interface.
-struct ChatView: View {
+struct HoChatView: View {
     var body: some View {
         ZStack {
             // Background gradient for the view.
@@ -15,17 +21,18 @@ struct ChatView: View {
             .edgesIgnoringSafeArea(.all)
 
             // Placeholder text for the chat view.
-            Text("Chat View")
+            Text("Homeowner Chat View")
                 .navigationBarTitle("Chat", displayMode: .inline)
         }
     }
 }
 
 // Preview for ChatView to visualize the view in Xcode's canvas.
-struct ChatView_Previews: PreviewProvider {
+struct HoChatView_Previews: PreviewProvider {
     static var previews: some View {
-        ChatView()
+        HoChatView()
             .environmentObject(JobController())
             .environmentObject(ContractorController())
     }
 }
+

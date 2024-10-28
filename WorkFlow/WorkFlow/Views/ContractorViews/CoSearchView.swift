@@ -1,10 +1,15 @@
-// SearchView.swift - Allows users to search for jobs and contractor flyers with filtering options.
+//
+//  CoSearchView.swift
+//  WorkFlow
+//
+//  Created by Jason Rincon on 10/27/24.
+//
+
 import SwiftUI
 
 // SearchView to show search results for jobs and flyers.
-struct SearchView: View {
+struct CoSearchView: View {
     @State private var searchText: String = ""  // State to hold the user's search input.
-    @State private var isSearchingJobs: Bool = true  // Toggle to switch between Jobs and Flyers.
     @State private var selectedCategory: JobCategory? = nil  // State for category filter.
     @EnvironmentObject var jobController: JobController  // Access JobController.
     @EnvironmentObject var contractorController: ContractorController  // Access ContractorController for flyers.
@@ -16,15 +21,6 @@ struct SearchView: View {
             jobs = jobs.filter { $0.category == category }
         }
         return jobs
-    }
-
-    // Computed property to filter flyers based on the search text and selected category.
-    var filteredFlyers: [ContractorProfile] {
-        var flyers = contractorController.flyers.filter { $0.city.lowercased().contains(searchText.lowercased()) }
-        if let category = selectedCategory {
-            flyers = flyers.filter { $0.skills.contains(category.rawValue) }
-        }
-        return flyers
     }
 
     var body: some View {
@@ -39,14 +35,6 @@ struct SearchView: View {
                 .edgesIgnoringSafeArea(.all)
 
                 VStack(spacing: 10) {
-                    // Toggle to switch between Jobs and Flyers.
-                    Picker("Select Category", selection: $isSearchingJobs) {
-                        Text("Jobs").tag(true)
-                        Text("Flyers").tag(false)
-                    }
-                    .pickerStyle(SegmentedPickerStyle())
-                    .padding(.horizontal)
-
                     // Category filter picker.
                     Picker("Filter by Category", selection: $selectedCategory) {
                         Text("All").tag(nil as JobCategory?)
@@ -65,7 +53,6 @@ struct SearchView: View {
                         .padding(.horizontal)
                         .onChange(of: searchText) {
                             jobController.objectWillChange.send()
-                            contractorController.objectWillChange.send()
                         }
                         .toolbar {
                             ToolbarItemGroup(placement: .keyboard) {
@@ -78,7 +65,6 @@ struct SearchView: View {
 
                     // Display filtered results based on the selected toggle.
                     if !searchText.isEmpty {
-                        if isSearchingJobs {
                             // Display filtered jobs.
                             List(filteredJobs) { job in
                                 NavigationLink(destination: JobDetailView(job: job)) {
@@ -88,20 +74,9 @@ struct SearchView: View {
                             }
                             .listStyle(PlainListStyle())
                             .scrollContentBackground(.hidden)  // Clear list background.
-                        } else {
-                            // Display filtered flyers.
-                            List(filteredFlyers) { flyer in
-                                NavigationLink(destination: FlyerDetailView(contractor: flyer)) {
-                                    SearchCard(flyer: flyer)
-                                }
-                                .listRowBackground(Color.clear)  // Make each row transparent.
-                            }
-                            .listStyle(PlainListStyle())
-                            .scrollContentBackground(.hidden)  // Clear list background.
-                        }
                     } else {
                         // Message displayed when there is no search input.
-                        Text("Enter a city to search for \(isSearchingJobs ? "jobs" : "contractors").")
+                        Text("Enter a city to search for jobs")
                             .foregroundColor(.white)
                             .padding(.top, 20)  // Add a little top padding for visual spacing.
                     }
@@ -112,13 +87,9 @@ struct SearchView: View {
                 .background(Color.clear)
                 .onAppear {
                     jobController.fetchJobs()  // Fetch jobs when the view appears.
-                    contractorController.fetchFlyers()  // Fetch flyers when the view appears.
                 }
                 .onChange(of: jobController.jobs) {
                     jobController.objectWillChange.send()  // Refresh when new jobs are added.
-                }
-                .onChange(of: contractorController.flyers) {
-                    contractorController.objectWillChange.send()  // Refresh when new flyers are added.
                 }
             }
             .navigationTitle("Search")
@@ -127,7 +98,7 @@ struct SearchView: View {
 }
 
 // SearchCard to display job or flyer details with a blue blur effect.
-struct SearchCard: View {
+/*struct SearchCard: View {
     let job: Job?
     let flyer: ContractorProfile?
     
@@ -214,3 +185,11 @@ extension UIApplication {
         sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
+*/
+
+struct CoSearchView_Previews: PreviewProvider {
+    static var previews: some View {
+        CoSearchView().environmentObject(JobController()).environmentObject(ContractorController())
+    }
+}
+

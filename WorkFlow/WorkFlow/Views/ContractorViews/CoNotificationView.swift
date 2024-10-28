@@ -1,8 +1,14 @@
-// NotificationView.swift - Displays user notifications related to jobs, allowing users to view, delete, or clear notifications.
+//
+//  CoNotificationView.swift
+//  WorkFlow
+//
+//  Created by Jason Rincon on 10/27/24.
+//
+
 import SwiftUI
 
 // NotificationView to display notifications related to job postings.
-struct NotificationView: View {
+struct CoNotificationView: View {
     @EnvironmentObject var jobController: JobController  // Access the JobController for notifications.
 
     var body: some View {
@@ -83,7 +89,7 @@ struct NotificationView: View {
 }
 
 // Custom NotificationCard to display individual notifications.
-struct NotificationCard: View {
+/*struct NotificationCard: View {
     let notification: NotificationModel
     let job: Job
     var jobController: JobController
@@ -163,10 +169,10 @@ struct NotificationCard: View {
         }
     }
 }
-
+*/
 // Preview for NotificationView.
-struct NotificationView_Previews: PreviewProvider {
+struct CoNotificationView_Previews: PreviewProvider {
     static var previews: some View {
-        NotificationView().environmentObject(JobController())
+        CoNotificationView().environmentObject(JobController())
     }
 }

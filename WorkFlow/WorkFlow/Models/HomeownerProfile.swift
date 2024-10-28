@@ -1,3 +1,4 @@
+// HomeownerProfile.swift - Defines the model for a homeowner's profile in the app.
 import Foundation
 
 // A structure representing the profile of a homeowner.

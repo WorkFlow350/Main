@@ -1,9 +1,15 @@
-// MainTabView.swift - Defines the main tab navigation interface for the app.
+//
+//  File.swift
+//  WorkFlow
+//
+//  Created by Jason Rincon on 10/26/24.
+//
+
 import SwiftUI
 import Firebase
 
 // MainTabView is the entry point for the app's tab navigation.
-struct MainTabView: View {
+struct HoMainView: View {
     // Enum to represent each tab option in the tab bar.
     enum Tab {
         case home, search, post, chat, notifications
@@ -47,13 +53,13 @@ struct MainTabView: View {
                 ZStack {
                     switch selectedTab {
                     case .home:
-                        FeedView()  // Displays the feed (home) view.
+                        HoFeedView()  // Displays the feed (home) view.
                     case .search:
-                        SearchView()  // Displays the search view.
+                        HoSearchView()  // Displays the search view.
                     case .post:
-                        PostView()  // Displays the post view.
+                        HoPostView()  // Displays the post view.
                     case .chat:
-                        ChatView()  // Displays the chat view.
+                        HoChatView()  // Displays the chat view.
                     case .notifications:
                         NotificationView()  // Displays the notifications view.
                     }
@@ -120,8 +126,8 @@ struct MainTabView: View {
 }
 
 // Preview provider for MainTabView to visualize the view in Xcode's canvas.
-struct MainTabView_Previews: PreviewProvider {
+struct HoMainView_Previews: PreviewProvider {
     static var previews: some View {
-        MainTabView()
+        HoMainView()
     }
 }

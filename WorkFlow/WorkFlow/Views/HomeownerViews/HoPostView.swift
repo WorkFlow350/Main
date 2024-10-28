@@ -1,10 +1,16 @@
-// PostView.swift - Allows users to post jobs or contractor flyers, with options to add details, categories, and images.
+//
+//  HoPostView.swift
+//  WorkFlow
+//
+//  Created by Jason Rincon on 10/26/24.
+//
+
 import SwiftUI
 import PhotosUI
 import FirebaseStorage
 
 // View for posting jobs or contractor flyers.
-struct PostView: View {
+struct HoPostView: View {
     // State variables for job/flyer details.
     @State private var title: String = ""
     @State private var description: String = ""
@@ -14,7 +20,6 @@ struct PostView: View {
     @State private var selectedImage: UIImage? = nil
     @State private var imageURL: String = ""
     @State private var isImagePickerPresented: Bool = false
-    @State private var isHomeowner: Bool = true
     @State private var isCategoryPickerPresented: Bool = false  // State to show/hide category picker.
     @State private var isDescriptionEditorPresented: Bool = false  // State for description popup.
 
@@ -34,22 +39,15 @@ struct PostView: View {
 
             ScrollView {
                 VStack(spacing: 20) {
-                    // Toggle between Homeowner and Contractor view.
-                    Picker("Post Type", selection: $isHomeowner) {
-                        Text("Homeowner").tag(true)
-                        Text("Contractor").tag(false)
-                    }
-                    .pickerStyle(SegmentedPickerStyle())
-                    .padding()
 
-                    // Section for entering job or flyer details.
+                    // Section for entering job details.
                     VStack(alignment: .leading, spacing: 10) {
-                        Text(isHomeowner ? "Job Details" : "Flyer Details")
+                        Text("Job Details")
                             .font(.headline)
                             .foregroundColor(.white)
 
                         // Custom text field for title or name.
-                        TextField(isHomeowner ? "Title" : "Name", text: $title)
+                        TextField("Title", text: $title)
                             .padding()
                             .background(Color.white)
                             .cornerRadius(15)
@@ -72,26 +70,12 @@ struct PostView: View {
                                 }
                             }
 
-                        // Email field (visible for contractors only).
-                        if !isHomeowner {
-                            TextField("Email", text: $email)
-                                .padding()
-                                .background(Color.white)
-                                .cornerRadius(15)
-                                .overlay(RoundedRectangle(cornerRadius: 15).stroke(Color.gray.opacity(0.5), lineWidth: 1))
-                                .onChange(of: email) {
-                                    if email.count > 20 {
-                                        email = String(email.prefix(20))  // Limit email to 20 characters.
-                                    }
-                                }
-                        }
-
                         // Description button styled like an input field.
                         Button(action: {
                             isDescriptionEditorPresented = true
                         }) {
                             HStack {
-                                Text(description.isEmpty ? (isHomeowner ? "Description" : "Bio") : description)
+                                Text(description.isEmpty ? ("Description") : description)
                                     .foregroundColor(description.isEmpty ? .gray : .black)
                                     .padding(.vertical, 12)
                                     .padding(.horizontal)
@@ -110,30 +94,6 @@ struct PostView: View {
                                     .stroke(Color.gray.opacity(0.5), lineWidth: 1)
                             )
                         }
-
-                        // Button-style picker for category selection.
-                        if !isHomeowner {
-                            // For contractors, allow multiple skill selection.
-                            Button(action: {
-                                isCategoryPickerPresented = true
-                            }) {
-                                HStack {
-                                    Text(selectedCategories.isEmpty ? "Select Skills" : selectedCategories.map { $0.rawValue }.joined(separator: ", "))
-                                        .foregroundColor(.white)
-                                        .font(.body)
-                                    Spacer()
-                                    Image(systemName: "chevron.down")
-                                        .foregroundColor(.white)
-                                }
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 15)
-                                .background(Color.white.opacity(0.2))
-                                .cornerRadius(5)
-                            }
-                            .sheet(isPresented: $isCategoryPickerPresented) {
-                                MultiCategoryPicker(selectedCategories: $selectedCategories, isPresented: $isCategoryPickerPresented)
-                            }
-                        } else {
                             // For homeowners, allow single category selection.
                             Button(action: {
                                 isCategoryPickerPresented = true
@@ -172,7 +132,6 @@ struct PostView: View {
                                     .cornerRadius(10)
                                 }
                             }
-                        }
                     }
                     .padding()
 
@@ -224,7 +183,6 @@ struct PostView: View {
                     // Post Button.
                     Button(action: {
                         if let selectedImage = selectedImage {
-                            if isHomeowner {
                                 // Upload job for homeowners.
                                 jobController.uploadImage(selectedImage) { url in
                                     if let url = url {
@@ -244,29 +202,7 @@ struct PostView: View {
                                         print("Error uploading image for job.")
                                     }
                                 }
-                            } else {
-                                // Upload flyer for contractors.
-                                contractorController.uploadImage(selectedImage) { url in
-                                    if let url = url {
-                                        let newFlyer = ContractorProfile(
-                                            id: UUID(),
-                                            contractorName: title,
-                                            bio: description,
-                                            skills: selectedCategories.map { $0.rawValue },
-                                            rating: 0.0,
-                                            jobsCompleted: 0,
-                                            city: city,
-                                            email: email,
-                                            imageURL: url
-                                        )
-                                        contractorController.postFlyer(profile: newFlyer, selectedImage: selectedImage)
-                                        resetFields()
-                                    } else {
-                                        print("Error uploading image for flyer.")
-                                    }
-                                }
                             }
-                        }
                     }) {
                         Text("Post")
                             .frame(minWidth: 100, maxWidth: 200)
@@ -276,7 +212,7 @@ struct PostView: View {
                             .cornerRadius(10)
                             .shadow(color: .gray, radius: 5, x: 0, y: 2)
                     }
-                    .disabled(isHomeowner ? title.isEmpty || description.isEmpty || city.isEmpty || selectedImage == nil : title.isEmpty || description.isEmpty || city.isEmpty || email.isEmpty || selectedImage == nil)
+                    .disabled(title.isEmpty || description.isEmpty || city.isEmpty || selectedImage == nil)
                     .padding(.horizontal)
                     .padding(.vertical, 0)
 
@@ -284,7 +220,7 @@ struct PostView: View {
                 }
                 .padding()
             }
-            .navigationTitle(isHomeowner ? "Post Job" : "Post Flyer")
+            .navigationTitle("Post Job")
             .sheet(isPresented: $isImagePickerPresented) {
                 ImagePicker(selectedImage: $selectedImage)
             }
@@ -292,7 +228,7 @@ struct PostView: View {
                 CustomDescriptionPopup(
                     isPresented: $isDescriptionEditorPresented,
                     description: $description,
-                    title: isHomeowner ? "Enter your job description" : "Enter your bio"
+                    title: "Enter your job description"
                 )
             )
             .toolbar {
@@ -318,7 +254,7 @@ struct PostView: View {
 }
 
 // MultiCategoryPicker for contractors to select multiple skills.
-struct MultiCategoryPicker: View {
+/*struct MultiCategoryPicker2: View {
     @Binding var selectedCategories: [JobCategory]
     @Binding var isPresented: Bool
 
@@ -344,7 +280,7 @@ struct MultiCategoryPicker: View {
 }
 
 // Row for multiple selection in picker.
-struct MultipleSelectionRow: View {
+struct MultipleSelectionRow2: View {
     var title: String
     var isSelected: Bool
     var action: () -> Void
@@ -363,7 +299,7 @@ struct MultipleSelectionRow: View {
 }
 
 // Custom Popup View for Description/Bio.
-struct CustomDescriptionPopup: View {
+struct CustomDescriptionPopup2: View {
     @Binding var isPresented: Bool
     @Binding var description: String
     var title: String
@@ -413,11 +349,11 @@ struct CustomDescriptionPopup: View {
             }
         }
     }
-}
+}*/
 
 // Preview for PostView.
-struct PostView_Previews: PreviewProvider {
+struct HoPostView_Previews: PreviewProvider {
     static var previews: some View {
-        PostView().environmentObject(JobController()).environmentObject(ContractorController())
+        HoPostView().environmentObject(JobController()).environmentObject(ContractorController())
     }
 }

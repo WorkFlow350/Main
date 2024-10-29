@@ -1,14 +1,12 @@
-// ContractorController.swift - Manages contractor flyer data and image uploads using Firestore and Firebase Storage.
 import Firebase
 import FirebaseStorage
 import Combine
 
-// ObservableObject to allow ContractorController to be observed by SwiftUI views.
+// MARK: - ContractorController
 class ContractorController: ObservableObject {
-    // Published property to hold contractor flyers, allowing UI to update when data changes.
     @Published var flyers: [ContractorProfile] = []
 
-    // Fetches contractor flyers from Firestore and updates the 'flyers' array.
+    // MARK: - Fetch Flyers
     func fetchFlyers() {
         let db = Firestore.firestore()
         db.collection("flyers").getDocuments { snapshot, error in
@@ -17,7 +15,6 @@ class ContractorController: ObservableObject {
                 return
             }
             
-            // Converts Firestore documents into ContractorProfile models.
             self.flyers = snapshot?.documents.compactMap { document in
                 let data = document.data()
                 return ContractorProfile(
@@ -32,16 +29,13 @@ class ContractorController: ObservableObject {
                     imageURL: data["imageURL"] as? String
                 )
             } ?? []
-
-            // Debugging: Print total flyers fetched to the console.
             print("Total flyers fetched: \(self.flyers.count)")
         }
     }
 
-    // Posts a new contractor flyer to Firestore, with optional image upload to Firebase Storage.
+    // MARK: - Post Flyer
     func postFlyer(profile: ContractorProfile, selectedImage: UIImage?) {
         if let selectedImage = selectedImage {
-            // Uploads the image first if provided.
             uploadImage(selectedImage) { [weak self] imageURL in
                 guard let self = self else { return }
                 
@@ -52,12 +46,11 @@ class ContractorController: ObservableObject {
                 }
             }
         } else {
-            // Saves the flyer without an image URL.
             saveFlyerToFirestore(profile: profile, imageURL: nil)
         }
     }
 
-    // Uploads an image to Firebase Storage and returns its URL.
+    // MARK: - Upload Image
     func uploadImage(_ image: UIImage, completion: @escaping (String?) -> Void) {
         let storageRef = Storage.storage().reference().child("flyer_images/\(UUID().uuidString).jpg")
         guard let imageData = image.jpegData(compressionQuality: 0.8) else {
@@ -66,7 +59,6 @@ class ContractorController: ObservableObject {
             return
         }
 
-        // Uploads image to Firebase Storage.
         storageRef.putData(imageData, metadata: nil) { (metadata, error) in
             if let error = error {
                 print("Error uploading image: \(error.localizedDescription)")
@@ -74,7 +66,6 @@ class ContractorController: ObservableObject {
                 return
             }
 
-            // Gets the download URL for the uploaded image.
             storageRef.downloadURL { (url, error) in
                 if let error = error {
                     print("Error getting download URL: \(error.localizedDescription)")
@@ -86,7 +77,7 @@ class ContractorController: ObservableObject {
         }
     }
 
-    // Saves flyer data to Firestore, optionally with an image URL.
+    // MARK: - Save Flyer to Firestore
     private func saveFlyerToFirestore(profile: ContractorProfile, imageURL: String?) {
         let db = Firestore.firestore()
         var flyerData: [String: Any] = [
@@ -99,12 +90,10 @@ class ContractorController: ObservableObject {
             "email": profile.email
         ]
 
-        // Adds imageURL if available.
         if let imageURL = imageURL {
             flyerData["imageURL"] = imageURL
         }
 
-        // Saves the flyer data to the Firestore database.
         db.collection("flyers").addDocument(data: flyerData) { error in
             if let error = error {
                 print("Error posting flyer: \(error.localizedDescription)")

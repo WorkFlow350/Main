@@ -1,27 +1,25 @@
-// FlyerCellView.swift - Displays a contractor's flyer in a compact cell with profile image, details, and a category color indicator.
 import SwiftUI
 
 struct FlyerCellView: View {
+    // MARK: - Properties
     let contractor: ContractorProfile
     @State private var isFullScreen: Bool = false
-    @StateObject private var contractorController = ContractorController()  // Initialize ContractorController to manage contractor data.
+    @StateObject private var contractorController = ContractorController()
 
+    // MARK: - Body
     var body: some View {
         HStack {
-            // Contractor details.
+            // MARK: - Contractor Details
             VStack(alignment: .leading, spacing: 4) {
-                // Display contractor's skills.
                 Text("Specialty: \(contractor.skills.joined(separator: ", "))")
                     .font(.subheadline)
                     .foregroundColor(.black)
 
-                // Display contractor's name.
                 Text(contractor.contractorName)
                     .font(.headline)
                     .fontWeight(.bold)
                     .foregroundColor(.black)
 
-                // Display contractor's service area.
                 Text("Service Area: \(contractor.city)")
                     .font(.subheadline)
                     .foregroundColor(.black)
@@ -29,46 +27,44 @@ struct FlyerCellView: View {
 
             Spacer()
 
-            // Profile image.
+            // MARK: - Profile Image
             if let imageUrl = contractor.imageURL, let url = URL(string: imageUrl) {
                 AsyncImage(url: url) { image in
                     image
                         .resizable()
                         .aspectRatio(contentMode: .fill)
-                        .frame(width: 50, height: 50)  // Set to a circular frame.
-                        .clipShape(Circle())  // Make the image circular.
-                        .overlay(Circle().stroke(Color.white, lineWidth: 2))  // Add a white border.
+                        .frame(width: 50, height: 50)
+                        .clipShape(Circle())
+                        .overlay(Circle().stroke(Color.white, lineWidth: 2))
                 } placeholder: {
-                    // Placeholder in case the image is loading or missing.
                     Color.gray
                         .frame(width: 50, height: 50)
                         .clipShape(Circle())
                 }
             } else {
-                // Default image if no profile picture is available.
                 Image(systemName: "person.circle.fill")
                     .resizable()
                     .foregroundColor(.gray)
                     .frame(width: 50, height: 50)
             }
 
-            // Category color indicator.
+            // MARK: - Category Color Indicator
             Rectangle()
                 .frame(width: 4)
-                .foregroundColor(categoryColor(for: contractor.skills))  // Set color based on skills.
+                .foregroundColor(categoryColor(for: contractor.skills))
                 .cornerRadius(2)
                 .padding(.vertical, 8)
         }
         .padding(8)
         .background(
-            BlurView(style: .systemMaterial)  // Apply blur effect for material design.
+            BlurView(style: .systemMaterial)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
         )
         .cornerRadius(12)
-        .shadow(radius: 2)  // Add a subtle shadow for depth.
+        .shadow(radius: 2)
     }
 
-    // Helper function to determine color based on the contractor's skills.
+    // MARK: - Helper Functions
     private func categoryColor(for skills: [String]) -> Color {
         if skills.contains("Landscaping") {
             return Color.green
@@ -77,7 +73,7 @@ struct FlyerCellView: View {
         } else if skills.contains("Construction") {
             return Color.orange
         } else {
-            return Color.purple  // Default color for other skills.
+            return Color.purple
         }
     }
 }

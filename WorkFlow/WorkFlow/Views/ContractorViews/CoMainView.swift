@@ -1,39 +1,30 @@
-//
-//  CoMainView.swift
-//  WorkFlow
-//
-//  Created by Jason Rincon on 10/26/24.
-//
-
 import SwiftUI
 import Firebase
 
-// MainTabView is the entry point for the app's tab navigation.
+// MARK: - Contractor Main View
 struct CoMainView: View {
-    // Enum to represent each tab option in the tab bar.
+    // MARK: - Tab Enumeration
     enum Tab {
         case home, search, post, chat, notifications
     }
     
-    // State variable to track the currently selected tab (default is home).
     @State private var selectedTab: Tab = .home
-    @State private var showProfileView = false  // State to show HomeownerProfileView.
-    
+    @State private var showProfileView = false
+
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
-                // Top header with app title and profile button.
+                // MARK: - Top Header
                 HStack {
-                    Text("WorkFlow")  // App title.
+                    Text("WorkFlow")
                         .font(.system(size: 24, weight: .bold))
                         .foregroundColor(.white)
                         .padding(.leading)
 
-                    Spacer()  // Space between title and profile button.
+                    Spacer()
 
-                    // Profile button to show HomeownerProfileView.
                     Button(action: {
-                        showProfileView = true  // Set to true to navigate to the profile view.
+                        showProfileView = true
                     }) {
                         Image(systemName: "person.crop.square")
                             .resizable()
@@ -42,90 +33,91 @@ struct CoMainView: View {
                     }
                     .padding(.trailing)
                     .fullScreenCover(isPresented: $showProfileView) {
-                        HomeownerProfileView()  // Present HomeownerProfileView.
+                        HomeownerProfileView()
                     }
                 }
                 .padding(.top)
                 .padding(.bottom, 10)
-                .background(Color(hex: "#355c7d"))  // Background color for header.
+                .background(Color(hex: "#355c7d"))
 
-                // Main content area that displays the selected tab view.
+                // MARK: - Main Content Area
                 ZStack {
                     switch selectedTab {
                     case .home:
-                        CoFeedView()  // Displays the feed (home) view.
+                        CoFeedView()
                     case .search:
-                        CoSearchView()  // Displays the search view.
+                        CoSearchView()
                     case .post:
-                        CoPostView()  // Displays the post view.
+                        CoPostView()
                     case .chat:
-                        CoChatView()  // Displays the chat view.
+                        CoChatView()
                     case .notifications:
-                        CoNotificationView()  // Displays the notifications view.
+                        CoNotificationView()
                     }
                 }
                 
-                Spacer()  // Adds flexible space between content and tab bar.
+                Spacer()
             }
             
-            // Custom floating Tab Bar at the bottom of the screen.
+            // MARK: - Tab Bar
             VStack {
                 Spacer()
                 tabBar
-                    .padding(.bottom, 20)  // Adjust bottom padding as needed.
+                    .padding(.bottom, 20)
             }
         }
-        .edgesIgnoringSafeArea(.bottom)  // Ensures the view extends to the bottom of the screen.
+        .edgesIgnoringSafeArea(.bottom)
+        .navigationBarBackButtonHidden(true)
     }
 
-    // Custom Tab Bar layout and design.
+    // MARK: - Custom Tab Bar
     var tabBar: some View {
         HStack {
             Spacer()
-            tabBarButton(imageName: "house", text: "Home", tab: .home)  // Home tab.
+            tabBarButton(imageName: "house", text: "Home", tab: .home)
             Spacer()
-            tabBarButton(imageName: "magnifyingglass", text: "Search", tab: .search)  // Search tab.
+            tabBarButton(imageName: "magnifyingglass", text: "Search", tab: .search)
             Spacer()
-            tabBarButton(imageName: "plus.square", text: "Post", tab: .post)  // Post tab.
+            tabBarButton(imageName: "plus.square", text: "Post", tab: .post)
             Spacer()
-            tabBarButton(imageName: "message", text: "Chat", tab: .chat)  // Chat tab.
+            tabBarButton(imageName: "message", text: "Chat", tab: .chat)
             Spacer()
-            tabBarButton(imageName: "bell", text: "Notifications", tab: .notifications)  // Notifications tab.
+            tabBarButton(imageName: "bell", text: "Notifications", tab: .notifications)
             Spacer()
         }
         .padding()
         .background(
             RoundedRectangle(cornerRadius: 30)
                 .fill(Color.white)
-                .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 4)  // Shadow effect for floating appearance.
+                .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 4)
         )
-        .padding(.horizontal, 20)  // Horizontal padding to center the tab bar.
-        .frame(maxWidth: 350)  // Optional: Limit the max width of the tab bar.
+        .padding(.horizontal, 20)
+        .frame(maxWidth: 350)
     }
 
-    // Custom Tab Bar Button with dynamic appearance and animation.
+    // MARK: - Tab Bar Button
     @ViewBuilder
     func tabBarButton(imageName: String, text: String, tab: Tab) -> some View {
         Button {
-            selectedTab = tab  // Updates the selected tab when tapped.
+            selectedTab = tab
         } label: {
             VStack {
-                Image(systemName: imageName)  // Icon for the tab.
+                Image(systemName: imageName)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 22)  // Icon size.
+                    .frame(width: 22)
                 if selectedTab == tab {
-                    Text(text)  // Text label for the selected tab.
+                    Text(text)
                         .font(.system(size: 11))
                 }
             }
-            .foregroundColor(selectedTab == tab ? .black : .gray)  // Highlight the selected tab.
-            .animation(.easeInOut(duration: 0.25), value: selectedTab)  // Animate the tab change.
+            .foregroundColor(selectedTab == tab ? .black : .gray)
+            .animation(.easeInOut(duration: 0.25), value: selectedTab)
         }
     }
 }
 
-// Preview provider for MainTabView to visualize the view in Xcode's canvas.
+// MARK: - Preview
 struct CoMainView_Previews: PreviewProvider {
     static var previews: some View {
         CoMainView()

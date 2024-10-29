@@ -9,27 +9,26 @@ import SwiftUI
 import PhotosUI
 import FirebaseStorage
 
-// View for posting jobs or contractor flyers.
 struct CoPostView: View {
-    // State variables for job/flyer details.
+    // MARK: - State Variables
     @State private var title: String = ""
     @State private var description: String = ""
     @State private var city: String = ""
     @State private var email: String = ""
-    @State private var selectedCategories: [JobCategory] = []  // Multiple categories for contractors.
+    @State private var selectedCategories: [JobCategory] = []
     @State private var selectedImage: UIImage? = nil
     @State private var imageURL: String = ""
     @State private var isImagePickerPresented: Bool = false
-    @State private var isCategoryPickerPresented: Bool = false  // State to show/hide category picker.
-    @State private var isDescriptionEditorPresented: Bool = false  // State for description popup.
+    @State private var isCategoryPickerPresented: Bool = false
+    @State private var isDescriptionEditorPresented: Bool = false
 
-    // Environment objects for accessing controllers.
+    // MARK: - Environment Objects
     @EnvironmentObject var jobController: JobController
     @EnvironmentObject var contractorController: ContractorController
 
     var body: some View {
         ZStack {
-            // Background gradient from light to dark blue.
+            // MARK: - Background
             LinearGradient(
                 gradient: Gradient(colors: [Color(hex: "#a3d3eb"), Color(hex: "#355c7d")]),
                 startPoint: .top,
@@ -39,13 +38,12 @@ struct CoPostView: View {
 
             ScrollView {
                 VStack(spacing: 20) {
-                    // Section for entering job or flyer details.
+                    // MARK: - Flyer Details Section
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Flyer Details")
                             .font(.headline)
                             .foregroundColor(.white)
 
-                        // Custom text field for title or name.
                         TextField("Name", text: $title)
                             .padding()
                             .background(Color.white)
@@ -53,11 +51,10 @@ struct CoPostView: View {
                             .overlay(RoundedRectangle(cornerRadius: 15).stroke(Color.gray.opacity(0.5), lineWidth: 1))
                             .onChange(of: title) {
                                 if title.count > 20 {
-                                    title = String(title.prefix(20))  // Limit title to 20 characters.
+                                    title = String(title.prefix(20))
                                 }
                             }
 
-                        // Custom text field for city.
                         TextField("City", text: $city)
                             .padding()
                             .background(Color.white)
@@ -65,28 +62,26 @@ struct CoPostView: View {
                             .overlay(RoundedRectangle(cornerRadius: 15).stroke(Color.gray.opacity(0.5), lineWidth: 1))
                             .onChange(of: city) {
                                 if city.count > 20 {
-                                    city = String(city.prefix(20))  // Limit city name to 20 characters.
+                                    city = String(city.prefix(20))
                                 }
                             }
 
-                        // Email field (visible for contractors only).
-                            TextField("Email", text: $email)
-                                .padding()
-                                .background(Color.white)
-                                .cornerRadius(15)
-                                .overlay(RoundedRectangle(cornerRadius: 15).stroke(Color.gray.opacity(0.5), lineWidth: 1))
-                                .onChange(of: email) {
-                                    if email.count > 20 {
-                                        email = String(email.prefix(20))  // Limit email to 20 characters.
-                                    }
+                        TextField("Email", text: $email)
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(15)
+                            .overlay(RoundedRectangle(cornerRadius: 15).stroke(Color.gray.opacity(0.5), lineWidth: 1))
+                            .onChange(of: email) {
+                                if email.count > 20 {
+                                    email = String(email.prefix(20))
                                 }
+                            }
 
-                        // Description button styled like an input field.
                         Button(action: {
                             isDescriptionEditorPresented = true
                         }) {
                             HStack {
-                                Text(description.isEmpty ? ("Bio") : description)
+                                Text(description.isEmpty ? "Bio" : description)
                                     .foregroundColor(description.isEmpty ? .gray : .black)
                                     .padding(.vertical, 12)
                                     .padding(.horizontal)
@@ -106,30 +101,29 @@ struct CoPostView: View {
                             )
                         }
 
-                            // For contractors, allow multiple skill selection.
-                            Button(action: {
-                                isCategoryPickerPresented = true
-                            }) {
-                                HStack {
-                                    Text(selectedCategories.isEmpty ? "Select Skills" : selectedCategories.map { $0.rawValue }.joined(separator: ", "))
-                                        .foregroundColor(.white)
-                                        .font(.body)
-                                    Spacer()
-                                    Image(systemName: "chevron.down")
-                                        .foregroundColor(.white)
-                                }
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 15)
-                                .background(Color.white.opacity(0.2))
-                                .cornerRadius(5)
+                        Button(action: {
+                            isCategoryPickerPresented = true
+                        }) {
+                            HStack {
+                                Text(selectedCategories.isEmpty ? "Select Skills" : selectedCategories.map { $0.rawValue }.joined(separator: ", "))
+                                    .foregroundColor(.white)
+                                    .font(.body)
+                                Spacer()
+                                Image(systemName: "chevron.down")
+                                    .foregroundColor(.white)
                             }
-                            .sheet(isPresented: $isCategoryPickerPresented) {
-                                MultiCategoryPicker(selectedCategories: $selectedCategories, isPresented: $isCategoryPickerPresented)
-                            }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 15)
+                            .background(Color.white.opacity(0.2))
+                            .cornerRadius(5)
+                        }
+                        .sheet(isPresented: $isCategoryPickerPresented) {
+                            MultiCategoryPicker(selectedCategories: $selectedCategories, isPresented: $isCategoryPickerPresented)
+                        }
                     }
                     .padding()
 
-                    // Image picker section.
+                    // MARK: - Image Picker Section
                     VStack {
                         Text("Add an Image")
                             .font(.headline)
@@ -144,7 +138,6 @@ struct CoPostView: View {
                                     .cornerRadius(10)
                                     .shadow(radius: 5)
 
-                                // Red X button to delete the image.
                                 Button(action: {
                                     self.selectedImage = nil
                                 }) {
@@ -158,7 +151,6 @@ struct CoPostView: View {
                                 .padding(5)
                             }
                         } else {
-                            // Button to select image.
                             Button(action: {
                                 isImagePickerPresented = true
                             }) {
@@ -174,29 +166,28 @@ struct CoPostView: View {
                         }
                     }
 
-                    // Post Button.
+                    // MARK: - Post Button
                     Button(action: {
                         if let selectedImage = selectedImage {
-                                // Upload flyer for contractors.
-                                contractorController.uploadImage(selectedImage) { url in
-                                    if let url = url {
-                                        let newFlyer = ContractorProfile(
-                                            id: UUID(),
-                                            contractorName: title,
-                                            bio: description,
-                                            skills: selectedCategories.map { $0.rawValue },
-                                            rating: 0.0,
-                                            jobsCompleted: 0,
-                                            city: city,
-                                            email: email,
-                                            imageURL: url
-                                        )
-                                        contractorController.postFlyer(profile: newFlyer, selectedImage: selectedImage)
-                                        resetFields()
-                                    } else {
-                                        print("Error uploading image for flyer.")
-                                    }
+                            contractorController.uploadImage(selectedImage) { url in
+                                if let url = url {
+                                    let newFlyer = ContractorProfile(
+                                        id: UUID(),
+                                        contractorName: title,
+                                        bio: description,
+                                        skills: selectedCategories.map { $0.rawValue },
+                                        rating: 0.0,
+                                        jobsCompleted: 0,
+                                        city: city,
+                                        email: email,
+                                        imageURL: url
+                                    )
+                                    contractorController.postFlyer(profile: newFlyer, selectedImage: selectedImage)
+                                    resetFields()
+                                } else {
+                                    print("Error uploading image for flyer.")
                                 }
+                            }
                         }
                     }) {
                         Text("Post")
@@ -209,7 +200,6 @@ struct CoPostView: View {
                     }
                     .disabled(title.isEmpty || description.isEmpty || city.isEmpty || email.isEmpty || selectedImage == nil)
                     .padding(.horizontal)
-                    .padding(.vertical, 0)
 
                     Spacer()
                 }
@@ -230,14 +220,14 @@ struct CoPostView: View {
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
                     Button("Done") {
-                        UIApplication.shared.endEditing()  // Hide the keyboard.
+                        UIApplication.shared.endEditing()
                     }
                 }
             }
         }
     }
 
-    // Function to reset fields after posting.
+    // MARK: - Helper Functions
     private func resetFields() {
         title = ""
         description = ""
@@ -248,105 +238,7 @@ struct CoPostView: View {
     }
 }
 
-// MultiCategoryPicker for contractors to select multiple skills.
-/*struct MultiCategoryPicker: View {
-    @Binding var selectedCategories: [JobCategory]
-    @Binding var isPresented: Bool
-
-    var body: some View {
-        NavigationView {
-            List {
-                ForEach(JobCategory.allCases, id: \.self) { category in
-                    MultipleSelectionRow(title: category.rawValue, isSelected: selectedCategories.contains(category)) {
-                        if selectedCategories.contains(category) {
-                            selectedCategories.removeAll { $0 == category }
-                        } else {
-                            selectedCategories.append(category)
-                        }
-                    }
-                }
-            }
-            .navigationBarTitle("Select Skills", displayMode: .inline)
-            .navigationBarItems(trailing: Button("Done") {
-                isPresented = false
-            })
-        }
-    }
-}
-
-// Row for multiple selection in picker.
-struct MultipleSelectionRow: View {
-    var title: String
-    var isSelected: Bool
-    var action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack {
-                Text(title)
-                if isSelected {
-                    Spacer()
-                    Image(systemName: "checkmark")
-                }
-            }
-        }
-    }
-}
-
-// Custom Popup View for Description/Bio.
-struct CustomDescriptionPopup: View {
-    @Binding var isPresented: Bool
-    @Binding var description: String
-    var title: String
-
-    var body: some View {
-        if isPresented {
-            ZStack {
-                Color.black.opacity(0.3)
-                    .edgesIgnoringSafeArea(.all)
-
-                VStack(spacing: 20) {
-                    Text(title)
-                        .font(.headline)
-
-                    TextEditor(text: $description)
-                        .frame(height: 150)
-                        .padding()
-                        .background(Color.white)
-                        .cornerRadius(10)
-                        .shadow(radius: 5)
-
-                    HStack {
-                        Button("Cancel") {
-                            isPresented = false
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.gray.opacity(0.7))
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-
-                        Button("Done") {
-                            isPresented = false
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color(hex: "#355c7d"))
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                    }
-                }
-                .padding()
-                .background(Color.white)
-                .cornerRadius(20)
-                .padding(.horizontal, 20)
-                .shadow(radius: 10)
-            }
-        }
-    }
-}
-*/
-// Preview for PostView.
+// MARK: - Preview
 struct CoPostView_Previews: PreviewProvider {
     static var previews: some View {
         CoPostView().environmentObject(JobController()).environmentObject(ContractorController())

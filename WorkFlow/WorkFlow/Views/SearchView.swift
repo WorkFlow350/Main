@@ -1,15 +1,16 @@
-// SearchView.swift - Allows users to search for jobs and contractor flyers with filtering options.
 import SwiftUI
 
-// SearchView to show search results for jobs and flyers.
 struct SearchView: View {
-    @State private var searchText: String = ""  // State to hold the user's search input.
-    @State private var isSearchingJobs: Bool = true  // Toggle to switch between Jobs and Flyers.
-    @State private var selectedCategory: JobCategory? = nil  // State for category filter.
-    @EnvironmentObject var jobController: JobController  // Access JobController.
-    @EnvironmentObject var contractorController: ContractorController  // Access ContractorController for flyers.
+    // MARK: - State Variables
+    @State private var searchText: String = ""
+    @State private var isSearchingJobs: Bool = true
+    @State private var selectedCategory: JobCategory? = nil
 
-    // Computed property to filter jobs based on the search text and selected category.
+    // MARK: - Environment Objects
+    @EnvironmentObject var jobController: JobController
+    @EnvironmentObject var contractorController: ContractorController
+
+    // MARK: - Filtered Jobs
     var filteredJobs: [Job] {
         var jobs = jobController.jobs.filter { $0.city.lowercased().contains(searchText.lowercased()) }
         if let category = selectedCategory {
@@ -18,7 +19,7 @@ struct SearchView: View {
         return jobs
     }
 
-    // Computed property to filter flyers based on the search text and selected category.
+    // MARK: - Filtered Flyers
     var filteredFlyers: [ContractorProfile] {
         var flyers = contractorController.flyers.filter { $0.city.lowercased().contains(searchText.lowercased()) }
         if let category = selectedCategory {
@@ -30,7 +31,7 @@ struct SearchView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Background gradient for the view.
+                // MARK: - Background
                 LinearGradient(
                     gradient: Gradient(colors: [Color(hex: "#a3d3eb"), Color(hex: "#355c7d")]),
                     startPoint: .top,
@@ -39,7 +40,7 @@ struct SearchView: View {
                 .edgesIgnoringSafeArea(.all)
 
                 VStack(spacing: 10) {
-                    // Toggle to switch between Jobs and Flyers.
+                    // MARK: - Toggle Picker
                     Picker("Select Category", selection: $isSearchingJobs) {
                         Text("Jobs").tag(true)
                         Text("Flyers").tag(false)
@@ -47,7 +48,7 @@ struct SearchView: View {
                     .pickerStyle(SegmentedPickerStyle())
                     .padding(.horizontal)
 
-                    // Category filter picker.
+                    // MARK: - Category Filter Picker
                     Picker("Filter by Category", selection: $selectedCategory) {
                         Text("All").tag(nil as JobCategory?)
                         Text("Landscaping").tag(JobCategory.landscaping)
@@ -57,7 +58,7 @@ struct SearchView: View {
                     .pickerStyle(SegmentedPickerStyle())
                     .padding(.horizontal)
 
-                    // Search Bar with a Done button to dismiss the keyboard.
+                    // MARK: - Search Bar
                     TextField("Search by city", text: $searchText)
                         .padding(10)
                         .background(Color(.systemGray6))
@@ -71,54 +72,51 @@ struct SearchView: View {
                             ToolbarItemGroup(placement: .keyboard) {
                                 Spacer()
                                 Button("Done") {
-                                    UIApplication.shared.endEditing()  // Hide the keyboard.
+                                    UIApplication.shared.endEditing()
                                 }
                             }
                         }
 
-                    // Display filtered results based on the selected toggle.
+                    // MARK: - Filtered Results
                     if !searchText.isEmpty {
                         if isSearchingJobs {
-                            // Display filtered jobs.
                             List(filteredJobs) { job in
                                 NavigationLink(destination: JobDetailView(job: job)) {
                                     SearchCard(job: job)
                                 }
-                                .listRowBackground(Color.clear)  // Make each row transparent.
+                                .listRowBackground(Color.clear)
                             }
                             .listStyle(PlainListStyle())
-                            .scrollContentBackground(.hidden)  // Clear list background.
+                            .scrollContentBackground(.hidden)
                         } else {
-                            // Display filtered flyers.
                             List(filteredFlyers) { flyer in
                                 NavigationLink(destination: FlyerDetailView(contractor: flyer)) {
                                     SearchCard(flyer: flyer)
                                 }
-                                .listRowBackground(Color.clear)  // Make each row transparent.
+                                .listRowBackground(Color.clear)
                             }
                             .listStyle(PlainListStyle())
-                            .scrollContentBackground(.hidden)  // Clear list background.
+                            .scrollContentBackground(.hidden)
                         }
                     } else {
-                        // Message displayed when there is no search input.
                         Text("Enter a city to search for \(isSearchingJobs ? "jobs" : "contractors").")
                             .foregroundColor(.white)
-                            .padding(.top, 20)  // Add a little top padding for visual spacing.
+                            .padding(.top, 20)
                     }
 
-                    Spacer(minLength: 0)  // Remove large spacers to reduce the gap.
+                    Spacer(minLength: 0)
                 }
-                .padding(.top, 8)  // Add a small top padding to the VStack.
+                .padding(.top, 8)
                 .background(Color.clear)
                 .onAppear {
-                    jobController.fetchJobs()  // Fetch jobs when the view appears.
-                    contractorController.fetchFlyers()  // Fetch flyers when the view appears.
+                    jobController.fetchJobs()
+                    contractorController.fetchFlyers()
                 }
                 .onChange(of: jobController.jobs) {
-                    jobController.objectWillChange.send()  // Refresh when new jobs are added.
+                    jobController.objectWillChange.send()
                 }
                 .onChange(of: contractorController.flyers) {
-                    contractorController.objectWillChange.send()  // Refresh when new flyers are added.
+                    contractorController.objectWillChange.send()
                 }
             }
             .navigationTitle("Search")
@@ -126,11 +124,11 @@ struct SearchView: View {
     }
 }
 
-// SearchCard to display job or flyer details with a blue blur effect.
+// MARK: - SearchCard
 struct SearchCard: View {
     let job: Job?
     let flyer: ContractorProfile?
-    
+
     init(job: Job? = nil, flyer: ContractorProfile? = nil) {
         self.job = job
         self.flyer = flyer
@@ -138,7 +136,6 @@ struct SearchCard: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
-            // Category indicator line.
             Rectangle()
                 .frame(width: 4)
                 .foregroundColor(categoryColor(for: job?.category))
@@ -146,7 +143,6 @@ struct SearchCard: View {
                 .padding(.vertical, 8)
 
             VStack(alignment: .leading, spacing: 4) {
-                // Title and message.
                 Text(titleText)
                     .font(.headline)
                     .foregroundColor(.black)
@@ -156,7 +152,6 @@ struct SearchCard: View {
                     .foregroundColor(.black.opacity(0.8))
                     .lineLimit(2)
 
-                // City information.
                 Text(cityText)
                     .font(.caption)
                     .foregroundColor(.black.opacity(0.6))
@@ -164,7 +159,6 @@ struct SearchCard: View {
 
             Spacer()
 
-            // Image on the right side.
             if let imageUrl = imageUrl, let url = URL(string: imageUrl) {
                 AsyncImage(url: url) { image in
                     image
@@ -182,7 +176,7 @@ struct SearchCard: View {
         }
         .padding(10)
         .background(
-            BlurView(style: .systemMaterial)  // Apply blur effect here.
+            BlurView(style: .systemMaterial)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
         )
         .cornerRadius(12)
@@ -208,7 +202,7 @@ struct SearchCard: View {
     }
 }
 
-// Extension to dismiss the keyboard.
+// MARK: - Extension to dismiss the keyboard
 extension UIApplication {
     func endEditing() {
         sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)

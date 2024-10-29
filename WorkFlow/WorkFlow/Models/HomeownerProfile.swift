@@ -1,11 +1,9 @@
-// HomeownerProfile.swift - Defines the model for a homeowner's profile in the app.
 import Foundation
 
-// A structure representing the profile of a homeowner.
-// This structure conforms to the Identifiable protocol, allowing each profile to have a unique ID.
+// MARK: - HomeownerProfile Struct
 struct HomeownerProfile: Identifiable {
-    var id: UUID              // Unique identifier for the homeowner profile.
-    var homeowner: User       // The homeowner associated with this profile (references the User struct).
-    var address: String       // The physical address of the homeowner.
-    var phone: String         // The phone number of the homeowner for contact purposes.
+    var id: UUID
+    var homeowner: User
+    var address: String
+    var phone: String
 }

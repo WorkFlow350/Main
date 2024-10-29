@@ -1,21 +1,18 @@
-// User.swift - Defines models for managing user roles and profiles in the app.
 import Foundation
 
-// An enumeration defining the different roles a user can have in the app.
-// This helps categorize users as either homeowners or contractors.
+// MARK: - UserRole Enum
 enum UserRole: String, Codable {
-    case homeowner     // Represents a user who is a homeowner (can post jobs).
-    case contractor    // Represents a user who is a contractor (can apply for jobs).
+    case homeowner
+    case contractor
 }
 
-// A structure representing a user, conforming to the Identifiable protocol.
-// It includes basic user information, such as name, role, and profile details.
+// MARK: - User Struct
 struct User: Identifiable, Codable {
-    var id: String                     // Unique identifier for each user.
-    var name: String                   // Name of the user.
-    var city: String                   // The city where the user is located.
-    var bio: String?                   // Optional biography of the user.
-    var role: UserRole                 // Role of the user, defined by the UserRole enum.
-    var email: String                  // Email address of the user for communication and login purposes.
-    var profilePictureURL: String?     // Optional URL for the user's profile picture.
+    var id: String
+    var name: String
+    var city: String
+    var bio: String?
+    var role: UserRole
+    var email: String
+    var profilePictureURL: String?
 }

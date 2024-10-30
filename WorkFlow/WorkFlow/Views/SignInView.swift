@@ -1,30 +1,31 @@
-//  SignInView.swift - Provides a sign-in interface for users, with options to navigate to sign-up or continue as a guest.
 import SwiftUI
 
 struct SignInView: View {
-    @State private var email = ""  // State variable for user email input.
-    @State private var password = ""  // State variable for user password input.
-    @StateObject var authController = AuthController()  // Initialize AuthController for handling authentication.
-    @State private var navigateToPersonalizedHome: Bool = false  // State to manage navigation to the home view.
+    // MARK: - State Variables
+    @State private var email = ""
+    @State private var password = ""
+    @StateObject var authController = AuthController()
+    @State private var navigateToPersonalizedHome: Bool = false
 
+    // MARK: - Body
     var body: some View {
         NavigationStack {
             VStack {
-                // App icon display.
+                // MARK: - App Icon
                 Image("Applcon")
                     .resizable()
                     .scaledToFill()
                     .frame(width: 100, height: 120)
                     .padding(.vertical, 32)
 
-                // Form fields for email and password using InputCellView.
+                // MARK: - Input Fields
                 VStack(spacing: 24) {
                     InputCellView(
                         text: $email,
                         title: "Email Address",
                         placeholder: "name@example"
                     )
-                    .autocapitalization(.none)  // Prevent automatic capitalization of email.
+                    .autocapitalization(.none)
 
                     InputCellView(
                         text: $password,
@@ -32,26 +33,23 @@ struct SignInView: View {
                         placeholder: "Enter your password",
                         isSecureField: true
                     )
-                    .autocapitalization(.none)  // Prevent automatic capitalization of password.
+                    .autocapitalization(.none)
                 }
                 .padding(.horizontal)
                 .padding(.top, 12)
 
-                // NavigationLink for transitioning to personalized home upon successful sign-in.
+                // MARK: - Navigation Link
                 NavigationLink(destination: DifferentiateView(), isActive: $navigateToPersonalizedHome) {
-                    EmptyView()  // Invisible navigation link placeholder.
+                    EmptyView()
                 }
 
-                // Sign-In button.
+                // MARK: - Sign-In Button
                 Button {
                     Task {
                         do {
-                            // Attempt to sign in with the provided email and password.
                             try await authController.signIn(withEmail: email, password: password)
                             print("User signed in successfully: \(email)")
-                            // set User
-                            await authController.setUser()
-                            navigateToPersonalizedHome = true  // Navigate to home upon successful sign-in.
+                            navigateToPersonalizedHome = true
                         } catch {
                             print("Error signing in: \(error.localizedDescription)")
                         }
@@ -65,22 +63,19 @@ struct SignInView: View {
                     .foregroundColor(.white)
                     .frame(width: UIScreen.main.bounds.width - 32, height: 48)
                 }
-                .background(Color(.systemBlue))  // Set button background color.
+                .background(Color(.systemBlue))
                 .cornerRadius(10)
                 .padding(.top, 24)
 
                 Spacer()
 
-                // Sign-Up & Continue as Guest buttons.
+                // MARK: - Sign-Up & Continue as Guest
                 VStack(spacing: 16) {
-                    // Sign-Up button to navigate to SignUpView.
                     NavigationLink(destination: SignUpView().navigationBarBackButtonHidden(true)) {
                         Text("Don't have an account? Sign Up")
                             .fontWeight(.bold)
                             .foregroundColor(.blue)
                     }
-
-                    // Continue as Guest button to navigate to MainTabView.
                     NavigationLink(destination: MainTabView()) {
                         Text("Continue as Guest")
                             .fontWeight(.bold)
@@ -93,7 +88,6 @@ struct SignInView: View {
     }
 }
 
-// Preview for SignInView.
 #Preview {
     SignInView()
 }

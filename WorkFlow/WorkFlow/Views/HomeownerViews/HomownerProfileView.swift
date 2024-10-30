@@ -11,8 +11,8 @@ struct IdentifiableError: Identifiable {
 
 // MARK: - HomeownerProfileView
 struct HomeownerProfileView: View {
-    @Environment(\.presentationMode) var presentationMode  // To handle view dismissal
-    @EnvironmentObject var authController: AuthController  // To access signOut()
+    @Environment(\.presentationMode) var presentationMode
+    @EnvironmentObject var authController: AuthController
     @State private var profileImage: Image? = Image("profilePlaceholder")
     @State private var name: String = ""
     @State private var location: String = ""
@@ -29,9 +29,8 @@ struct HomeownerProfileView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                // Background gradient
                 LinearGradient(
-                    gradient: Gradient(colors: [Color(hex: "#dcdcdc"), Color(hex: "#5f9ea0")]),
+                    gradient: Gradient(colors: [Color(hex: "#d3d3d3"), Color(hex: "#708090")]),
                     startPoint: .top,
                     endPoint: .bottom
                 )
@@ -49,26 +48,31 @@ struct HomeownerProfileView: View {
                             Spacer()
                         }
                         .padding(.top, 50)
+                        .padding(.horizontal)
+                        // MARK: - Data Fetching & Notification Handling
+                        .onAppear(perform: loadUserData)
+                        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("NewJobPosted"))) { notification in
+                            if let newJob = notification.object as? Job {
+                                self.jobs.append(newJob)
+                            }
+                        }
                     }
-                    .padding(.horizontal)
                 }
             }
             .navigationTitle("Profile")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                // "Back" button
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: {
-                        presentationMode.wrappedValue.dismiss()  // Go back to the previous view
+                        presentationMode.wrappedValue.dismiss()
                     }) {
                         Text("Back")
                             .foregroundColor(.white)
                     }
                 }
-                // "Sign Out" button
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
-                        signOut()  // Call the sign-out function
+                        signOut()
                     }) {
                         Text("Sign Out")
                             .foregroundColor(.white)
@@ -82,7 +86,6 @@ struct HomeownerProfileView: View {
                 Alert(title: Text("Error"), message: Text(error.message), dismissButton: .default(Text("OK")))
             }
             .background(
-                // Navigation to HoChatView
                 NavigationLink(destination: HoChatView(), isActive: $navigateToHoChat) {
                     EmptyView()
                 }
@@ -237,8 +240,7 @@ struct HomeownerProfileView: View {
     private func signOut() {
         do {
             try authController.signOut()
-            presentationMode.wrappedValue.dismiss()  // Dismiss current view
-            // Navigate to sign-in view
+            //presentationMode.wrappedValue.dismiss()
             if let window = UIApplication.shared.windows.first {
                 window.rootViewController = UIHostingController(rootView: SignInView().environmentObject(authController))
                 window.makeKeyAndVisible()

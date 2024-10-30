@@ -1,14 +1,13 @@
-// NotificationView.swift - Displays user notifications related to jobs, allowing users to view, delete, or clear notifications.
 import SwiftUI
 
-// NotificationView to display notifications related to job postings.
 struct NotificationView: View {
-    @EnvironmentObject var jobController: JobController  // Access the JobController for notifications.
+    // MARK: - Environment Objects
+    @EnvironmentObject var jobController: JobController
 
     var body: some View {
         NavigationStack {
             ZStack {
-                // Background gradient for the view.
+                // MARK: - Background
                 LinearGradient(
                     gradient: Gradient(colors: [Color(hex: "#a3d3eb"), Color(hex: "#355c7d")]),
                     startPoint: .top,
@@ -16,16 +15,15 @@ struct NotificationView: View {
                 )
                 .edgesIgnoringSafeArea(.all)
 
+                // MARK: - Notifications List
                 VStack {
                     if jobController.notifications.isEmpty {
-                        // Display "No new notifications" message if the list is empty.
                         Text("No new notifications")
                             .font(.headline)
                             .foregroundColor(.black)
                             .padding()
                     } else {
                         List {
-                            // Sort notifications by the date the associated job was posted, in descending order.
                             ForEach(jobController.notifications.sorted(by: { notification1, notification2 in
                                 let job1 = jobController.jobsNotification.first { $0.id == notification1.jobId }
                                 let job2 = jobController.jobsNotification.first { $0.id == notification2.jobId }
@@ -35,16 +33,15 @@ struct NotificationView: View {
                                     NavigationLink(value: job) {
                                         NotificationCard(notification: notification, job: job, jobController: jobController)
                                     }
-                                    .listRowBackground(Color.clear)  // Make row background transparent.
+                                    .listRowBackground(Color.clear)
                                 }
                             }
-                            .onDelete(perform: deleteNotification)  // Enable swipe-to-delete.
+                            .onDelete(perform: deleteNotification)
                         }
                     }
                 }
                 .navigationTitle("Notifications")
                 .toolbar {
-                    // Conditionally display the "Clear All" button if there are notifications.
                     if !jobController.notifications.isEmpty {
                         ToolbarItem(placement: .navigationBarTrailing) {
                             Button(action: clearAllNotifications) {
@@ -63,26 +60,26 @@ struct NotificationView: View {
                     }
                 }
                 .navigationDestination(for: Job.self) { selectedJob in
-                    JobDetailView(job: selectedJob)  // Navigate to job detail view when selected.
+                    JobDetailView(job: selectedJob)
                 }
                 .background(Color.clear)
-                .scrollContentBackground(.hidden)  // Clear list background.
+                .scrollContentBackground(.hidden)
             }
         }
     }
 
-    // Function to remove a notification from the list.
+    // MARK: - Delete Notification
     private func deleteNotification(at offsets: IndexSet) {
         jobController.notifications.remove(atOffsets: offsets)
     }
 
-    // Function to clear all notifications from the list.
+    // MARK: - Clear All Notifications
     private func clearAllNotifications() {
         jobController.notifications.removeAll()
     }
 }
 
-// Custom NotificationCard to display individual notifications.
+// MARK: - NotificationCard View
 struct NotificationCard: View {
     let notification: NotificationModel
     let job: Job
@@ -91,7 +88,6 @@ struct NotificationCard: View {
     var body: some View {
         ZStack {
             HStack(alignment: .top, spacing: 8) {
-                // Category indicator line with color based on job category.
                 Rectangle()
                     .frame(width: 4)
                     .foregroundColor(categoryColor(for: job.category))
@@ -99,22 +95,18 @@ struct NotificationCard: View {
                     .padding(.vertical, 8)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    // Notification message.
                     Text(notification.message)
                         .font(.system(size: 16, weight: .bold))
                         .foregroundColor(.black)
 
-                    // Job title.
                     Text("Job: \(job.title)")
                         .font(.subheadline)
                         .foregroundColor(.black.opacity(0.8))
 
-                    // Job city.
                     Text("Location: \(job.city)")
                         .font(.caption)
                         .foregroundColor(.black.opacity(0.6))
 
-                    // Job category with capitalized text.
                     Text("Category: \(String(describing: job.category).capitalized)")
                         .font(.caption)
                         .foregroundColor(.black.opacity(0.6))
@@ -122,7 +114,6 @@ struct NotificationCard: View {
                 
                 Spacer()
 
-                // Job image (if available).
                 if let imageUrl = job.imageURL, let url = URL(string: imageUrl) {
                     AsyncImage(url: url) { image in
                         image
@@ -139,17 +130,16 @@ struct NotificationCard: View {
                 }
             }
             .padding(8)
-            .frame(maxWidth: .infinity)  // Make card wider.
+            .frame(maxWidth: .infinity)
             .background(
                 BlurView(style: .systemMaterial)
                     .clipShape(RoundedRectangle(cornerRadius: 12))
             )
             .cornerRadius(12)
             .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
-            .padding(.horizontal, -8)  // Adjust padding to make card thinner.
-            .padding(.vertical, -2)  // Adjust padding to make card shorter.
+            .padding(.horizontal, -8)
+            .padding(.vertical, -2)
 
-            // Position timestamp at the bottom right.
             VStack {
                 Spacer()
                 HStack {
@@ -164,7 +154,7 @@ struct NotificationCard: View {
     }
 }
 
-// Preview for NotificationView.
+// MARK: - Preview for NotificationView
 struct NotificationView_Previews: PreviewProvider {
     static var previews: some View {
         NotificationView().environmentObject(JobController())

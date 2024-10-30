@@ -1,68 +1,67 @@
-// Utilities.swift - Contains helper structs for keyboard management, color support, full-screen image display, and blur effects.
 import SwiftUI
 import UIKit
 
-// Helper for keyboard management.
+// MARK: - Keyboard Helper
 struct KeyboardHelper {
-    // Hides the keyboard programmatically.
     static func hideKeyboard() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
 
-// View for displaying an image in full-screen mode.
+// MARK: - Full-Screen Image View
 struct FullScreenImageView: View {
-    let imageUrl: String?  // Optional URL of the image to display.
-    @Binding var isFullScreen: Bool  // Binding to toggle full-screen state.
+    // MARK: - Properties
+    let imageUrl: String?
+    @Binding var isFullScreen: Bool
 
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()  // Set the background to black, covering safe areas.
+            // MARK: - Background
+            Color.black.ignoresSafeArea()
 
-            // Display the image if the URL is valid.
+            // MARK: - Image Display
             if let imageURL = imageUrl, let url = URL(string: imageURL) {
                 AsyncImage(url: url) { image in
                     image
                         .resizable()
-                        .scaledToFit()  // Maintain aspect ratio for full-screen image.
-                        .ignoresSafeArea()  // Cover the entire screen.
+                        .scaledToFit()
+                        .ignoresSafeArea()
                         .onTapGesture {
                             withAnimation {
-                                isFullScreen = false  // Dismiss full-screen on tap.
+                                isFullScreen = false
                             }
                         }
                 } placeholder: {
-                    // Placeholder while the image is loading.
+                    // MARK: - Placeholder
                     ProgressView()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .progressViewStyle(CircularProgressViewStyle(tint: .white))
                 }
             }
 
-            // Back button to dismiss the full-screen view.
+            // MARK: - Back Button
             VStack {
                 HStack {
                     Button(action: {
                         withAnimation {
-                            isFullScreen = false  // Dismiss the full-screen view when tapped.
+                            isFullScreen = false
                         }
                     }) {
-                        Image(systemName: "chevron.left")  // Back arrow icon.
+                        Image(systemName: "chevron.left")
                             .font(.title)
                             .foregroundColor(.white)
                             .padding()
                     }
-                    Spacer()  // Push the back button to the left.
+                    Spacer()
                 }
-                Spacer()  // Push content to the top.
+                Spacer()
             }
         }
     }
 }
 
-// Extension for Color to support Hex color initialization.
+// MARK: - Color Extension
 extension Color {
-    // Initializes a Color from a Hex string.
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         var int: UInt64 = 0
@@ -76,7 +75,7 @@ extension Color {
         case 8: // ARGB (32-bit)
             (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
         default:
-            (a, r, g, b) = (255, 0, 0, 0)  // Default to black color.
+            (a, r, g, b) = (255, 0, 0, 0)
         }
         self.init(
             .sRGB,
@@ -88,22 +87,21 @@ extension Color {
     }
 }
 
-// Custom UIViewRepresentable for a blur effect.
+// MARK: - Blur View
 struct BlurView: UIViewRepresentable {
+    // MARK: - Properties
     var style: UIBlurEffect.Style
 
-    // Creates the UIVisualEffectView with the specified blur style.
     func makeUIView(context: Context) -> UIVisualEffectView {
         return UIVisualEffectView(effect: UIBlurEffect(style: style))
     }
 
-    // Updates the UIVisualEffectView with the specified blur style.
     func updateUIView(_ uiView: UIVisualEffectView, context: Context) {
         uiView.effect = UIBlurEffect(style: style)
     }
 }
 
-// Returns a color based on the provided JobCategory.
+// MARK: - Category Color
 func categoryColor(for category: JobCategory?) -> Color {
     switch category {
     case .landscaping:
@@ -113,6 +111,104 @@ func categoryColor(for category: JobCategory?) -> Color {
     case .construction:
         return .orange
     default:
-        return .purple // Default color for flyers or undefined categories.
+        return .purple
+    }
+}
+
+// MARK: - MultiCategoryPicker for Contractors
+struct MultiCategoryPicker: View {
+    @Binding var selectedCategories: [JobCategory]
+    @Binding var isPresented: Bool
+
+    var body: some View {
+        NavigationView {
+            List {
+                ForEach(JobCategory.allCases, id: \.self) { category in
+                    MultipleSelectionRow(title: category.rawValue, isSelected: selectedCategories.contains(category)) {
+                        if selectedCategories.contains(category) {
+                            selectedCategories.removeAll { $0 == category }
+                        } else {
+                            selectedCategories.append(category)
+                        }
+                    }
+                }
+            }
+            .navigationBarTitle("Select Skills", displayMode: .inline)
+            .navigationBarItems(trailing: Button("Done") {
+                isPresented = false
+            })
+        }
+    }
+}
+
+// MARK: - Multiple Selection Row
+struct MultipleSelectionRow: View {
+    var title: String
+    var isSelected: Bool
+    var action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack {
+                Text(title)
+                if isSelected {
+                    Spacer()
+                    Image(systemName: "checkmark")
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Custom Popup for Description/Bio
+struct CustomDescriptionPopup: View {
+    @Binding var isPresented: Bool
+    @Binding var description: String
+    var title: String
+
+    var body: some View {
+        if isPresented {
+            ZStack {
+                Color.black.opacity(0.3)
+                    .edgesIgnoringSafeArea(.all)
+
+                VStack(spacing: 20) {
+                    Text(title)
+                        .font(.headline)
+
+                    TextEditor(text: $description)
+                        .frame(height: 150)
+                        .padding()
+                        .background(Color.white)
+                        .cornerRadius(10)
+                        .shadow(radius: 5)
+
+                    HStack {
+                        Button("Cancel") {
+                            isPresented = false
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.gray.opacity(0.7))
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+
+                        Button("Done") {
+                            isPresented = false
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color(hex: "#355c7d"))
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                    }
+                }
+                .padding()
+                .background(Color.white)
+                .cornerRadius(20)
+                .padding(.horizontal, 20)
+                .shadow(radius: 10)
+            }
+        }
     }
 }

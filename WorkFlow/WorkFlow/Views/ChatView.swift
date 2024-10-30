@@ -1,12 +1,10 @@
-// ChatView.swift - Displays the chat interface for users to communicate within the app.
 import Foundation
 import SwiftUI
 
-// ChatView represents the chat interface.
 struct ChatView: View {
     var body: some View {
         ZStack {
-            // Background gradient for the view.
+            // MARK: - Background
             LinearGradient(
                 gradient: Gradient(colors: [Color(hex: "#a3d3eb"), Color(hex: "#355c7d")]),
                 startPoint: .top,
@@ -14,14 +12,14 @@ struct ChatView: View {
             )
             .edgesIgnoringSafeArea(.all)
 
-            // Placeholder text for the chat view.
+            // MARK: - Placeholder Text
             Text("Chat View")
                 .navigationBarTitle("Chat", displayMode: .inline)
         }
     }
 }
 
-// Preview for ChatView to visualize the view in Xcode's canvas.
+// MARK: - Preview for ChatView
 struct ChatView_Previews: PreviewProvider {
     static var previews: some View {
         ChatView()

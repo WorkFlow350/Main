@@ -5,35 +5,29 @@ struct DifferentiateView: View {
 
     var body: some View {
         VStack {
+            // MARK: - Display Views Based on User Role
             if let appUser = authController.appUser {
-                // MARK: - Display Views Based on User Role
                 switch appUser.role {
                 case .homeowner:
                     HoMainView()
                 case .contractor:
-                    CoMainView()
-                default:
-                    Text("Unknown user type")
-                        .foregroundColor(.red)
+                    CoMainView() 
                 }
-            } else {
+            }
+            else {
                 // MARK: - Loading Placeholder
-                Text("Loading user data...")
-                    .padding()
-
+                Text("Loading user data...").padding()
                 // MARK: - Debug Info
                 Text("Session ID: \(authController.userSession?.uid ?? "No session")")
-                Text("User: \(String(describing: authController.appUser))")
-                    .padding()
             }
         }
         .onAppear {
+            guard !authController.isUserSet else { return }
             Task {
-                await authController.setUser()
-                if let role = authController.appUser?.role {
-                    print("Fetched user role: \(role.rawValue)")
-                } else {
-                    print("Failed to fetch user role")
+                if authController.userSession != nil && authController.appUser == nil {
+                    print("appUser is nil, calling setUser()")
+                    await authController.setUser()
+                    print("Finished calling setUser()")
                 }
             }
         }

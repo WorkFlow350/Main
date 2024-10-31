@@ -12,10 +12,8 @@ struct HoNotificationView: View {
                 endPoint: .bottom
             )
             .edgesIgnoringSafeArea(.all)
-            
-            // MARK: - Notification Text
             Text("Reserved view for chat notifications and bids")
-                .navigationBarTitle("Chat", displayMode: .inline)
+                .navigationBarTitle("Notifications", displayMode: .inline)
         }
     }
 }

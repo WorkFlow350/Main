@@ -15,9 +15,9 @@ struct WorkFlowApp: App {
     var body: some Scene {
         WindowGroup {
             SignInView()
+                .environmentObject(authController)
                 .environmentObject(jobController)
                 .environmentObject(contractorController)
-                .environmentObject(authController)
         }
     }
 }

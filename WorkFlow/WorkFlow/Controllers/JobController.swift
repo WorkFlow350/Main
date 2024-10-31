@@ -93,7 +93,6 @@ class JobController: ObservableObject {
                                      category: category,
                                      datePosted: datePosted,
                                      imageURL: imageURL)
-                    
                     self.jobsNotification.append(newJob)
                 }
             }

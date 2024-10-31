@@ -62,8 +62,8 @@ struct SignUpView: View {
                     .padding(.top, 12)
 
                     // MARK: - Navigation Link
-                    NavigationLink(destination: DifferentiateView(), isActive: $navigateToPersonalizedHome) {
-                        EmptyView()
+                    .navigationDestination(isPresented: $navigateToPersonalizedHome) {
+                        DifferentiateView().environmentObject(authController)
                     }
 
                     // MARK: - Sign-Up Button

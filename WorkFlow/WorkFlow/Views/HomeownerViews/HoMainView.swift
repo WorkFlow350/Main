@@ -3,86 +3,135 @@ import Firebase
 
 // MARK: - HoMainView
 struct HoMainView: View {
-    
+
     // MARK: - Tab Enum
     enum Tab {
         case home, search, post, chat, notifications
     }
-    
+
     @State private var selectedTab: Tab = .home
     @State private var showProfileView = false
-    
+    @State private var profilePictureURL: String? = nil
+
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
-                
+
                 // MARK: - Header
-                HStack {
-                    Text("WorkFlow")
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundColor(.white)
-                        .padding(.leading)
-                    Spacer()
-                    Button(action: {
-                        showProfileView = true
-                    }) {
-                        Image(systemName: "person.crop.square")
-                            .resizable()
-                            .frame(width: 35, height: 35)
+                ZStack {
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color(hex: "#4A90E2"),
+                            Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0),
+                        ]),
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .ignoresSafeArea(edges: .top)
+                    HStack {
+                        Text("WorkFlow")
+                            .font(.system(size: 26, weight: .semibold))
                             .foregroundColor(.white)
+                            .padding(.leading, 16)
+                        Spacer()
+                        // MARK: - Profile Picture
+                        Button(action: {
+                            showProfileView = true
+                        }) {
+                            if let profilePictureURL = profilePictureURL, let url = URL(string: profilePictureURL) {
+                                AsyncImage(url: url) { phase in
+                                    switch phase {
+                                    case .success(let image):
+                                        image
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 30, height: 30)
+                                            .clipShape(Circle())
+                                            .overlay(
+                                                Circle()
+                                                    .stroke(Color.white, lineWidth: 2)
+                                            )
+                                    default:
+                                        Image(systemName: "person.crop.circle.fill")
+                                            .resizable()
+                                            .frame(width: 30, height: 30)
+                                            .foregroundColor(.white)
+                                            .background(
+                                                Circle()
+                                                    .fill(Color.white.opacity(0.2))
+                                                    .frame(width: 40, height: 40)
+                                            )
+                                    }
+                                }
+                            } else {
+                                Image(systemName: "person.crop.circle.fill")
+                                    .resizable()
+                                    .frame(width: 30, height: 30)
+                                    .foregroundColor(.white)
+                                    .background(
+                                        Circle()
+                                            .fill(Color.white.opacity(0.2))
+                                            .frame(width: 40, height: 40)
+                                    )
+                            }
+                        }
+                        .padding(.trailing, 16)
+                        .fullScreenCover(isPresented: $showProfileView) {
+                            HomeownerProfileView()
+                        }
                     }
-                    .padding(.trailing)
-                    .fullScreenCover(isPresented: $showProfileView) {
-                        HomeownerProfileView()
-                    }
+                    .padding(.vertical, 10)
                 }
-                .padding(.top)
-                .padding(.bottom, 10)
-                .background(Color(hex: "#355c7d"))
-                
+                .frame(height: 100)
+
                 // MARK: - Content
                 ZStack {
                     switch selectedTab {
                     case .home:
                         HoFeedView()
+                            .transition(.opacity)
                     case .search:
                         HoSearchView()
+                            .transition(.slide)
                     case .post:
                         HoPostView()
+                            .transition(.opacity)
                     case .chat:
                         HoChatView()
+                            .transition(.slide)
                     case .notifications:
                         HoNotificationView()
+                            .transition(.opacity)
                     }
                 }
-                
+                .animation(.easeInOut(duration: 0.3), value: selectedTab)
                 Spacer()
             }
-            
+
             // MARK: - Tab Bar
             VStack {
                 Spacer()
                 tabBar
-                    .padding(.bottom, 20)
+                    .padding(.bottom, 20) // Adjust padding to move it up
             }
         }
         .edgesIgnoringSafeArea(.bottom)
         .navigationBarBackButtonHidden(true)
     }
-    
+
     // MARK: - Custom Tab Bar
     var tabBar: some View {
         HStack {
             Spacer()
-            tabBarButton(imageName: "house", text: "Home", tab: .home)
+            tabBarButton(imageName: "house.fill", text: "Home", tab: .home)
             Spacer()
             tabBarButton(imageName: "magnifyingglass", text: "Search", tab: .search)
             Spacer()
-            tabBarButton(imageName: "plus.square", text: "Post", tab: .post)
+            tabBarButton(imageName: "plus.app.fill", text: "Post", tab: .post)
             Spacer()
-            tabBarButton(imageName: "message", text: "Chat", tab: .chat)
+            tabBarButton(imageName: "bubble.left.fill", text: "Chat", tab: .chat)
             Spacer()
-            tabBarButton(imageName: "bell", text: "Notifications", tab: .notifications)
+            tabBarButton(imageName: "bell.fill", text: "Notifications", tab: .notifications)
             Spacer()
         }
         .padding()

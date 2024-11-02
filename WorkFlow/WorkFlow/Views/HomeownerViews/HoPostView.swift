@@ -18,7 +18,7 @@ struct HoPostView: View {
     @State private var isDescriptionEditorPresented: Bool = false
 
     // MARK: - Environment Objects
-    @EnvironmentObject var jobController: JobController
+    @EnvironmentObject var homeownerJobController: HomeownerJobController
     @EnvironmentObject var contractorController: ContractorController
 
     var body: some View {
@@ -28,6 +28,15 @@ struct HoPostView: View {
 
             ScrollView {
                 VStack(spacing: 20) {
+                    HStack {
+                        Text("Post Job")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                            .padding(.horizontal)
+                            .padding(.top, 10)
+                        Spacer()
+                    }
                     jobDetailsSection
                     imagePickerSection
                     postButton
@@ -35,7 +44,6 @@ struct HoPostView: View {
                 }
                 .padding()
             }
-            .navigationTitle("Post Job")
             .sheet(isPresented: $isImagePickerPresented) {
                 ImagePicker(selectedImage: $selectedImage)
             }
@@ -60,11 +68,14 @@ struct HoPostView: View {
     // MARK: - Background Gradient
     private var gradientBackground: some View {
         LinearGradient(
-            gradient: Gradient(colors: [Color(hex: "#a3d3eb"), Color(hex: "#355c7d")]),
+            gradient: Gradient(colors: [
+                Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0),
+                Color.black.opacity(0.99)
+            ]),
             startPoint: .top,
             endPoint: .bottom
         )
-        .edgesIgnoringSafeArea(.all)
+        .ignoresSafeArea()
     }
 
     // MARK: - Job Details Section
@@ -133,7 +144,8 @@ struct HoPostView: View {
             )
         }
     }
-
+    
+    // MARK: - Category Picker
     private var categoryPickerButton: some View {
         Button(action: {
             isCategoryPickerPresented = true
@@ -167,15 +179,19 @@ struct HoPostView: View {
                 }
             }
             .pickerStyle(WheelPickerStyle())
-            .background(Color.white)
-            .cornerRadius(15)
+            .background(.white)
+            .cornerRadius(20)
             .padding()
 
             Button("Done") {
                 isCategoryPickerPresented = false
             }
             .padding()
-            .background(Color(hex: "#355c7d"))
+            .background(LinearGradient(
+                gradient: Gradient(colors: [Color(hex: "#1E3A8A"), Color(hex: "#2563EB")]),
+                startPoint: .leading,
+                endPoint: .trailing
+            ))
             .foregroundColor(.white)
             .cornerRadius(10)
         }
@@ -238,7 +254,7 @@ struct HoPostView: View {
     private var postButton: some View {
         Button(action: {
             if let selectedImage = selectedImage {
-                jobController.uploadImage(selectedImage) { url in
+                homeownerJobController.uploadImage(selectedImage) { url in
                     if let url = url {
                         let newJob = Job(
                             id: UUID(),
@@ -249,9 +265,7 @@ struct HoPostView: View {
                             datePosted: Date(),
                             imageURL: url
                         )
-                        jobController.postJob(job: newJob, selectedImage: selectedImage)
-                        jobController.addNotification(newJob)
-                        updateHomeownerProfileJobs(newJob)
+                        homeownerJobController.postJob(job: newJob, selectedImage: selectedImage)
                         resetFields()
                     } else {
                         print("Error uploading image for job.")
@@ -262,19 +276,20 @@ struct HoPostView: View {
             Text("Post")
                 .frame(minWidth: 100, maxWidth: 200)
                 .padding()
-                .background(Color(hex: "#355c7d"))
+                .background(
+                    LinearGradient(
+                        gradient: Gradient(colors: [Color(hex: "#1E3A8A"), Color(hex: "#2563EB")]),
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .cornerRadius(20)
                 .foregroundColor(.white)
-                .cornerRadius(10)
-                .shadow(color: .gray, radius: 5, x: 0, y: 2)
+                .shadow(color: .white, radius: 2, x: 0, y: 0)
         }
         .disabled(title.isEmpty || description.isEmpty || city.isEmpty || selectedImage == nil)
         .padding(.horizontal)
         .padding(.vertical, 0)
-    }
-
-    // MARK: - Post Job To Profile
-    private func updateHomeownerProfileJobs(_ job: Job) {
-        NotificationCenter.default.post(name: Notification.Name("NewJobPosted"), object: job)
     }
 
     // MARK: - Reset Fields
@@ -291,6 +306,6 @@ struct HoPostView: View {
 // MARK: - Preview
 struct HoPostView_Previews: PreviewProvider {
     static var previews: some View {
-        HoPostView().environmentObject(JobController()).environmentObject(ContractorController()).environmentObject(AuthController())
+        HoPostView().environmentObject(HomeownerJobController()).environmentObject(ContractorController()).environmentObject(AuthController())
     }
 }

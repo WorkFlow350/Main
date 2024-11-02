@@ -8,13 +8,15 @@ struct WorkFlowApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
     // MARK: - State Objects
+    @StateObject private var homeownerJobController = HomeownerJobController()
+    @StateObject private var authController = AuthController()
     @StateObject private var jobController = JobController()
     @StateObject private var contractorController = ContractorController()
-    @StateObject private var authController = AuthController()
-
+    
     var body: some Scene {
         WindowGroup {
             SignInView()
+                .environmentObject(homeownerJobController)
                 .environmentObject(authController)
                 .environmentObject(jobController)
                 .environmentObject(contractorController)

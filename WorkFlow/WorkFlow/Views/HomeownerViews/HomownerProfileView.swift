@@ -13,12 +13,14 @@ struct IdentifiableError: Identifiable {
 struct HomeownerProfileView: View {
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var authController: AuthController
+    @EnvironmentObject var homeownerJobController: HomeownerJobController
     @State private var profileImage: Image? = Image("profilePlaceholder")
     @State private var name: String = ""
     @State private var location: String = ""
     @State private var bio: String = ""
     @State private var jobs: [Job] = []
     @State private var navigateToHoChat: Bool = false
+    @State private var navigateToBiography: Bool = false
     @State private var isLoading: Bool = true
     @State private var errorMessage: IdentifiableError?
     @State private var profilePictureURL: String? = nil
@@ -32,11 +34,15 @@ struct HomeownerProfileView: View {
         NavigationStack {
             ZStack {
                 LinearGradient(
-                    gradient: Gradient(colors: [Color(hex: "#d3d3d3"), Color(hex: "#708090")]),
+                    gradient: Gradient(colors: [
+                        Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0),
+                        Color.black.opacity(0.99)
+                    ]),
                     startPoint: .top,
                     endPoint: .bottom
                 )
                 .ignoresSafeArea()
+                .blur(radius: 4)
 
                 if isLoading {
                     ProgressView()
@@ -44,9 +50,9 @@ struct HomeownerProfileView: View {
                     ScrollView {
                         VStack(spacing: 20) {
                             profileHeader
-                            bioSection
+                            buttonSection
+                            //bioSection
                             jobSection
-                            messageButton
                             Spacer()
                         }
                         .padding(.top, 50)
@@ -72,16 +78,36 @@ struct HomeownerProfileView: View {
                         Text("Sign Out")
                             .foregroundColor(.white)
                             .padding(8)
-                            .background(Color.red.opacity(0.7))
+                            .background(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [Color.blue, Color.clear]),
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                ))
                             .cornerRadius(8)
                     }
                 }
+            }
+            .onAppear {
+                let appearance = UINavigationBarAppearance()
+                appearance.configureWithOpaqueBackground()
+                appearance.backgroundColor = UIColor.clear
+                appearance.titleTextAttributes = [.foregroundColor: UIColor.white]
+                appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
+                let backButtonAppearance = UIBarButtonItemAppearance()
+                backButtonAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.white]
+                appearance.backButtonAppearance = backButtonAppearance
+                UINavigationBar.appearance().standardAppearance = appearance
+                UINavigationBar.appearance().scrollEdgeAppearance = appearance
             }
             .alert(item: $errorMessage) { error in
                 Alert(title: Text("Error"), message: Text(error.message), dismissButton: .default(Text("OK")))
             }
             .navigationDestination(isPresented: $navigateToHoChat) {
                 HoChatView()
+            }
+            .navigationDestination(isPresented: $navigateToBiography) {
+                BiographyView(bio: bio)
             }
             .onAppear(perform: loadUserData)
             .sheet(isPresented: $isImagePickerPresented) {
@@ -113,6 +139,7 @@ struct HomeownerProfileView: View {
                 self.bio = data["bio"] as? String ?? "No bio available."
                 self.profilePictureURL = data["profilePictureURL"] as? String
                 loadProfileImage()
+                homeownerJobController.fetchJobsForHomeowner(homeownerId: userId)
             } else {
                 self.errorMessage = IdentifiableError(message: "User data not found.")
                 self.isLoading = false
@@ -202,12 +229,57 @@ struct HomeownerProfileView: View {
         }
     }
 
+    // MARK: - Button Section
+    private var buttonSection: some View {
+        HStack(spacing: 16) {
+            // Message Button
+            Button(action: {
+                navigateToHoChat = true
+            }) {
+                Text("Message")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
+                    .background(
+                        LinearGradient(
+                            gradient: Gradient(colors: [Color(hex: "#1E3A8A"), Color(hex: "#2563EB")]),
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .cornerRadius(20)
+            }
+
+            // Biography Button
+            Button(action: {
+                navigateToBiography = true
+            }) {
+                Text("Biography")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
+                    .background(
+                        LinearGradient(
+                            gradient: Gradient(colors: [Color(hex: "#708090"), Color(hex: "#2F4F4F")]),
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .cornerRadius(20)
+            }
+        }
+        .padding(.vertical, 10)
+    }
+
     // MARK: - Bio Section
     private var bioSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Bio")
                 .font(.headline)
                 .foregroundColor(.white)
+            
             Text(bio)
                 .font(.body)
                 .foregroundColor(.white.opacity(0.8))
@@ -219,34 +291,70 @@ struct HomeownerProfileView: View {
 
     // MARK: - Job Section
     private var jobSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Jobs")
+        VStack(alignment: .leading, spacing: 16) {
+            Text("My Jobs")
                 .font(.headline)
                 .foregroundColor(.white)
-            ForEach(jobs) { job in
-                Text(job.title)
-                    .font(.body)
-                    .foregroundColor(.white.opacity(0.8))
+                .padding(.bottom, 5)
+
+            ForEach(homeownerJobController.homeownerJobs) { job in
+                NavigationLink(destination: JobDetailView(job: job)) {
+                    HStack {
+                        if let imageURL = job.imageURL, let url = URL(string: imageURL) {
+                            AsyncImage(url: url) { image in
+                                image
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 125, height: 125)
+                                    .clipShape(RoundedRectangle(cornerRadius: 15))
+                                    .shadow(radius: 3)
+                            } placeholder: {
+                                ProgressView()
+                                    .frame(width: 125, height: 125)
+                                    .background(Color.gray.opacity(0.2))
+                                    .clipShape(RoundedRectangle(cornerRadius: 15))
+                            }
+                        }
+
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text(job.title)
+                                .font(.title3)
+                                .fontWeight(.bold)
+                                .foregroundColor(.white)
+                            Text("City: \(job.city)")
+                                .font(.subheadline)
+                                .foregroundColor(.white.opacity(0.8))
+                            Text("Category: \(job.category.rawValue)")
+                                .font(.subheadline)
+                                .foregroundColor(.white.opacity(0.8))
+                            Text("Describtion: \(job.description)")
+                                .font(.subheadline)
+                                .foregroundColor(.white.opacity(0.8))
+                                .lineLimit(2)
+                        }
+                        .padding(.leading, 10)
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 120)
+                    .padding()
+                    .background(
+                        RoundedRectangle(cornerRadius: 15)
+                            .fill(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [
+                                        categoryColor(for: job.category).opacity(0.8),
+                                        categoryColor(for: job.category).opacity(0.3)
+                                    ]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                    )
+                    .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 2)
+                }
             }
         }
-        .padding(.top, 10)
         .padding(.horizontal)
-    }
-
-    // MARK: - Message Button
-    private var messageButton: some View {
-        Button(action: {
-            navigateToHoChat = true
-        }) {
-            Text("Message")
-                .font(.headline)
-                .foregroundColor(.white)
-                .padding(.horizontal, 80)
-                .padding(.vertical, 12)
-                .background(Color.red.opacity(0.8))
-                .cornerRadius(25)
-        }
-        .padding(.vertical, 10)
+        .padding(.top, 10)
     }
 
     // MARK: - Sign Out
@@ -261,6 +369,40 @@ struct HomeownerProfileView: View {
         } catch {
             print("Failed to sign out: \(error.localizedDescription)")
         }
+    }
+}
+
+// MARK: - Biography View
+struct BiographyView: View {
+    let bio: String
+
+    var body: some View {
+        ZStack {
+            // Gradient Background
+            LinearGradient(
+                gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.black.opacity(0.9)]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
+            VStack {
+                Text("Biography")
+                    .font(.largeTitle)
+                    .foregroundColor(.white)
+                    .padding(.bottom, 20)
+
+                ScrollView {
+                    Text(bio)
+                        .font(.body)
+                        .foregroundColor(.white)
+                        .padding()
+                        .multilineTextAlignment(.leading)
+                }
+            }
+            .padding()
+        }
+        //.navigationTitle("Biography")
+        //.navigationBarTitleDisplayMode(.inline)
     }
 }
 

@@ -9,18 +9,28 @@ struct HoFeedView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                
                 // MARK: - Background
                 LinearGradient(
-                    gradient: Gradient(colors: [Color(hex: "#a3d3eb"), Color(hex: "#355c7d")]),
+                    gradient: Gradient(colors: [
+                        Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0),
+                        Color.black.opacity(0.99)
+                    ]),
                     startPoint: .top,
                     endPoint: .bottom
                 )
-                .edgesIgnoringSafeArea(.all)
-                
+                .ignoresSafeArea()
+
                 // MARK: - Scrollable Content
                 ScrollView {
-                    VStack {
+                    VStack(alignment: .leading) {
+                        // MARK: - Title
+                        Text("Contractors")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                            .padding(.horizontal)
+                            .padding(.top, 20)
+
                         Spacer(minLength: 10)
 
                         // MARK: - Contractor Flyers
@@ -32,8 +42,7 @@ struct HoFeedView: View {
                             }
                         }
                     }
-                    .navigationTitle("Contractors")
-                    .background(.clear)
+                    .background(Color.clear)
                 }
             }
             .onAppear {

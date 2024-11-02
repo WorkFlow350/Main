@@ -7,15 +7,18 @@ struct HoChatView: View {
         ZStack {
             // MARK: - Background Gradient
             LinearGradient(
-                gradient: Gradient(colors: [Color(hex: "#a3d3eb"), Color(hex: "#355c7d")]),
+                gradient: Gradient(colors: [
+                    Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0),
+                    Color.black.opacity(0.99)
+                ]),
                 startPoint: .top,
                 endPoint: .bottom
             )
-            .edgesIgnoringSafeArea(.all)
+            .ignoresSafeArea()
 
             // MARK: - Chat Text
             Text("Homeowner Chat View")
-                .navigationBarTitle("Chat", displayMode: .inline)
+                .foregroundColor(.white)
         }
     }
 }

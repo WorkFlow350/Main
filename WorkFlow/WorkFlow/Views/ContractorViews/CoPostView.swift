@@ -1,10 +1,3 @@
-//
-//  CoPostView.swift
-//  WorkFlow
-//
-//  Created by Jason Rincon on 10/27/24.
-//
-
 import SwiftUI
 import PhotosUI
 import FirebaseStorage

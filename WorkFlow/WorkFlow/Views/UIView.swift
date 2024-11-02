@@ -189,18 +189,30 @@ struct CustomDescriptionPopup: View {
                         }
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color.gray.opacity(0.7))
+                        .background(
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color(hex: "#708090"), Color(hex: "#2F4F4F")]),
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .cornerRadius(20)
                         .foregroundColor(.white)
-                        .cornerRadius(10)
 
                         Button("Done") {
                             isPresented = false
                         }
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color(hex: "#355c7d"))
+                        .background(
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color(hex: "#1E3A8A"), Color(hex: "#2563EB")]),
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .cornerRadius(20)
                         .foregroundColor(.white)
-                        .cornerRadius(10)
                     }
                 }
                 .padding()

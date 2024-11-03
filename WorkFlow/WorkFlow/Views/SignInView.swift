@@ -39,17 +39,18 @@ struct SignInView: View {
                 .padding(.top, 12)
 
                 // MARK: - Navigation Link
-                NavigationLink(destination: DifferentiateView(), isActive: $navigateToPersonalizedHome) {
-                    EmptyView()
+                .navigationDestination(isPresented: $navigateToPersonalizedHome) {
+                    DifferentiateView().environmentObject(authController)
                 }
-
                 // MARK: - Sign-In Button
                 Button {
                     Task {
                         do {
                             try await authController.signIn(withEmail: email, password: password)
                             print("User signed in successfully: \(email)")
-                            navigateToPersonalizedHome = true
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                navigateToPersonalizedHome = true
+                            }
                         } catch {
                             print("Error signing in: \(error.localizedDescription)")
                         }
@@ -83,6 +84,12 @@ struct SignInView: View {
                     }
                 }
                 .padding(.bottom, 32)
+            }
+            .onAppear {
+                email = ""
+                password = ""
+                navigateToPersonalizedHome = false
+                authController.isUserSet = false
             }
         }
     }

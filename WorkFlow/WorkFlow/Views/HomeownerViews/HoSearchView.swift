@@ -17,73 +17,91 @@ struct HoSearchView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                LinearGradient(
-                    gradient: Gradient(colors: [Color(hex: "#a3d3eb"), Color(hex: "#355c7d")]),
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .edgesIgnoringSafeArea(.all)
+        ZStack {
+            // Background Gradient
+            LinearGradient(
+                gradient: Gradient(colors: [
+                    Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0),
+                    Color.black.opacity(0.99)
+                ]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
 
-                VStack(spacing: 10) {
-                    // MARK: - Category Filter Picker
-                    Picker("Filter by Category", selection: $selectedCategory) {
-                        Text("All").tag(nil as JobCategory?)
-                        Text("Landscaping").tag(JobCategory.landscaping)
-                        Text("Construction").tag(JobCategory.construction)
-                        Text("Cleaning").tag(JobCategory.cleaning)
-                    }
-                    .pickerStyle(SegmentedPickerStyle())
+            VStack(alignment: .leading, spacing: 10) {
+                // MARK: - Title
+                Text("Search")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
                     .padding(.horizontal)
+                    .padding(.top, 20)
 
-                    // MARK: - Search Bar
-                    TextField("Search by city", text: $searchText)
-                        .padding(10)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(10)
-                        .padding(.horizontal)
-                        .onChange(of: searchText) {
-                            contractorController.objectWillChange.send()
+                // MARK: - Custom Category Filter Picker
+                HStack {
+                    ForEach([nil, JobCategory.landscaping, JobCategory.construction, JobCategory.cleaning], id: \.self) { category in
+                        Button(action: {
+                            selectedCategory = category
+                        }) {
+                            Text(category?.rawValue.capitalized ?? "All")
+                                .font(.system(size: 12))
+                                .fontWeight(.semibold)
+                                .foregroundColor(selectedCategory == category ? .black : .white)
+                                .padding(.vertical, 8)
+                                .padding(.horizontal, 14)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .fill(selectedCategory == category ? Color.white : Color.clear)
+                                )
                         }
-                        .toolbar {
-                            ToolbarItemGroup(placement: .keyboard) {
-                                Spacer()
-                                Button("Done") {
-                                    UIApplication.shared.endEditing()
-                                }
+                    }
+                }
+                .padding(.horizontal)
+
+                // MARK: - Search Bar
+                TextField("Search by city", text: $searchText)
+                    .padding(10)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
+                    .padding(.horizontal)
+                    .onChange(of: searchText) {
+                        contractorController.objectWillChange.send()
+                    }
+                    .toolbar {
+                        ToolbarItemGroup(placement: .keyboard) {
+                            Spacer()
+                            Button("Done") {
+                                UIApplication.shared.endEditing()
                             }
                         }
-
-                    // MARK: - Search Results
-                    if !searchText.isEmpty {
-                        // Display filtered flyers.
-                        List(filteredFlyers) { flyer in
-                            NavigationLink(destination: FlyerDetailView(contractor: flyer)) {
-                                SearchCard(flyer: flyer)
-                            }
-                            .listRowBackground(Color.clear)
-                        }
-                        .listStyle(PlainListStyle())
-                        .scrollContentBackground(.hidden)
-                    } else {
-                        Text("Enter a city to search for contractors")
-                            .foregroundColor(.white)
-                            .padding(.top, 20)
                     }
 
-                    Spacer(minLength: 0)
+                // MARK: - Search Results
+                if !searchText.isEmpty {
+                    List(filteredFlyers) { flyer in
+                        NavigationLink(destination: FlyerDetailView(contractor: flyer)) {
+                            SearchCard(flyer: flyer)
+                        }
+                        .listRowBackground(Color.clear)
+                    }
+                    .listStyle(PlainListStyle())
+                    .scrollContentBackground(.hidden)
+                } else {
+                    Text("Enter a city to search for contractors")
+                        .foregroundColor(.white)
+                        .padding(.top, 20)
+                        .frame(maxWidth: .infinity, alignment: .center)
                 }
-                .padding(.top, 8)
-                .background(Color.clear)
-                .onAppear {
-                    contractorController.fetchFlyers()
-                }
-                .onChange(of: contractorController.flyers) {
-                    contractorController.objectWillChange.send()
-                }
+
+                Spacer(minLength: 0)
             }
-            .navigationTitle("Search")
+            .onAppear {
+                contractorController.fetchFlyers()
+            }
+            .onChange(of: contractorController.flyers) {
+                contractorController.objectWillChange.send()
+            }
         }
     }
 }
@@ -91,6 +109,8 @@ struct HoSearchView: View {
 // MARK: - Preview
 struct HoSearchView_Previews: PreviewProvider {
     static var previews: some View {
-        HoSearchView().environmentObject(JobController()).environmentObject(ContractorController())
+        HoSearchView()
+            .environmentObject(JobController())
+            .environmentObject(ContractorController())
     }
 }

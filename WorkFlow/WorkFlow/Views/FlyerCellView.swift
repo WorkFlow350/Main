@@ -11,18 +11,20 @@ struct FlyerCellView: View {
         HStack {
             // MARK: - Contractor Details
             VStack(alignment: .leading, spacing: 4) {
-                Text("Specialty: \(contractor.skills.joined(separator: ", "))")
-                    .font(.subheadline)
-                    .foregroundColor(.black)
-
                 Text(contractor.contractorName)
                     .font(.headline)
                     .fontWeight(.bold)
                     .foregroundColor(.black)
-
+                
                 Text("Service Area: \(contractor.city)")
                     .font(.subheadline)
                     .foregroundColor(.black)
+                
+                Text("Specialty: \(contractor.skills.joined(separator: ", "))")
+                    .font(.footnote) // Use a smaller font size
+                    .foregroundColor(.black)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
             }
 
             Spacer()

@@ -33,7 +33,7 @@ struct CoMainView: View {
                     }
                     .padding(.trailing)
                     .fullScreenCover(isPresented: $showProfileView) {
-                        HomeownerProfileView()
+                        ContractorProfileView()
                     }
                 }
                 .padding(.top)

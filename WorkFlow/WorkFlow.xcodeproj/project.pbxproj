@@ -182,8 +182,8 @@
 			children = (
 				291AAA5C2CCDE1A2008757E3 /* HoMainView.swift */,
 				291AAA5E2CCDE250008757E3 /* HoFeedView.swift */,
-				291AAA602CCDE4E9008757E3 /* HoPostView.swift */,
 				291AAA622CCDECA0008757E3 /* HoSearchView.swift */,
+				291AAA602CCDE4E9008757E3 /* HoPostView.swift */,
 				291AAA642CCDF26A008757E3 /* HoChatView.swift */,
 				291AAA662CCDF335008757E3 /* HoNotificationView.swift */,
 				9EC418212CB4C51A00F21C8F /* HomownerProfileView.swift */,

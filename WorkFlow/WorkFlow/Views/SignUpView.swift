@@ -37,6 +37,8 @@ struct SignUpView: View {
                                 .autocapitalization(.none)
                             InputCellView(text: $profileName, title: "Full Name", placeholder: "John Smith")
                                 .autocapitalization(.none)
+                            InputCellView(text: $profileBio, title: "Bio", placeholder: "Describtiobn")
+                                .autocapitalization(.none)
                             InputCellView(text: $city, title: "City", placeholder: "Camarillo")
                                 .autocapitalization(.none)
                             InputCellView(text: $password, title: "Password", placeholder: "Enter your password", isSecureField: true)
@@ -62,8 +64,8 @@ struct SignUpView: View {
                     .padding(.top, 12)
 
                     // MARK: - Navigation Link
-                    NavigationLink(destination: DifferentiateView(), isActive: $navigateToPersonalizedHome) {
-                        EmptyView()
+                    .navigationDestination(isPresented: $navigateToPersonalizedHome) {
+                        DifferentiateView().environmentObject(authController)
                     }
 
                     // MARK: - Sign-Up Button

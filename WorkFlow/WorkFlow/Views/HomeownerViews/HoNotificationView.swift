@@ -25,5 +25,9 @@ struct HoNotificationView: View {
 struct HoNotificationView_Previews: PreviewProvider {
     static var previews: some View {
         HoNotificationView()
+            .environmentObject(HomeownerJobController())
+            .environmentObject(AuthController())
+            .environmentObject(JobController())
+            .environmentObject(ContractorController())
     }
 }

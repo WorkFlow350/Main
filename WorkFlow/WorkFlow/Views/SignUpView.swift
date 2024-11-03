@@ -13,7 +13,7 @@ struct SignUpView: View {
 
     // MARK: - Environment Variables
     @Environment(\.dismiss) var dismiss
-    @StateObject private var authController = AuthController()
+    @EnvironmentObject var authController: AuthController
     @EnvironmentObject var jobController: JobController
     @EnvironmentObject var contractorController: ContractorController
 
@@ -141,5 +141,9 @@ struct SignUpView: View {
 struct SignUpView_Previews: PreviewProvider {
     static var previews: some View {
         SignUpView()
+            .environmentObject(HomeownerJobController())
+            .environmentObject(AuthController())
+            .environmentObject(JobController())
+            .environmentObject(ContractorController())
     }
 }

@@ -2,33 +2,32 @@ import SwiftUI
 
 struct DifferentiateView: View {
     @EnvironmentObject var authController: AuthController
-
+    @State private var isLoading = true
+    
+    // MARK: - Display Views Based on User Role
     var body: some View {
         VStack {
-            // MARK: - Display Views Based on User Role
-            if let appUser = authController.appUser {
+            if isLoading {
+                ProgressView("Loading user data...").padding()
+            } else if let appUser = authController.appUser {
                 switch appUser.role {
                 case .homeowner:
                     HoMainView()
                 case .contractor:
-                    CoMainView() 
+                    CoMainView()
                 }
-            }
-            else {
-                // MARK: - Loading Placeholder
-                Text("Loading user data...").padding()
-                // MARK: - Debug Info
+            } else {
                 Text("Session ID: \(authController.userSession?.uid ?? "No session")")
             }
         }
         .onAppear {
             guard !authController.isUserSet else { return }
             Task {
+                isLoading = true
                 if authController.userSession != nil && authController.appUser == nil {
-                    print("appUser is nil, calling setUser()")
                     await authController.setUser()
-                    print("Finished calling setUser()")
                 }
+                isLoading = false
             }
         }
     }

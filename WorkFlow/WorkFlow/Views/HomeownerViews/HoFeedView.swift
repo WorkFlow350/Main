@@ -2,8 +2,8 @@ import SwiftUI
 
 // MARK: - HoFeedView
 struct HoFeedView: View {
-    @StateObject private var jobController = JobController()
-    @StateObject private var contractorController = ContractorController()
+    @EnvironmentObject var jobController: JobController
+    @EnvironmentObject var contractorController: ContractorController
     @State private var isContractor: Bool = true
 
     var body: some View {
@@ -56,5 +56,9 @@ struct HoFeedView: View {
 struct HoFeedView_Previews: PreviewProvider {
     static var previews: some View {
         HoFeedView()
+            .environmentObject(HomeownerJobController())
+            .environmentObject(AuthController())
+            .environmentObject(JobController())
+            .environmentObject(ContractorController())
     }
 }

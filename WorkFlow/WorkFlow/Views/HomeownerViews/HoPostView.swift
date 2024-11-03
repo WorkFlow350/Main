@@ -306,6 +306,10 @@ struct HoPostView: View {
 // MARK: - Preview
 struct HoPostView_Previews: PreviewProvider {
     static var previews: some View {
-        HoPostView().environmentObject(HomeownerJobController()).environmentObject(ContractorController()).environmentObject(AuthController())
+        HoPostView()
+            .environmentObject(HomeownerJobController())
+            .environmentObject(AuthController())
+            .environmentObject(JobController())
+            .environmentObject(ContractorController())
     }
 }

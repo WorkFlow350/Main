@@ -73,8 +73,8 @@ struct JobView: View {
 }
 
 // MARK: - Preview for JobView
-//struct JobView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        JobView(job: Job(id: UUID(), title: "Sample Job", description: "Job description goes here.", city: "Sample City", category: .construction, datePosted: Date(), imageURL: nil))
-//    }
-//}
+struct JobView_Previews: PreviewProvider {
+    static var previews: some View {
+        JobView(job: Job(id: UUID(), title: "Sample Job", description: "Job description goes here.", city: "Sample City", category: .construction, datePosted: Date(), imageURL: nil))
+    }
+}

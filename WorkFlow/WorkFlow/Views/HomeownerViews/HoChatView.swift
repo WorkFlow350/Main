@@ -27,6 +27,8 @@ struct HoChatView: View {
 struct HoChatView_Previews: PreviewProvider {
     static var previews: some View {
         HoChatView()
+            .environmentObject(HomeownerJobController())
+            .environmentObject(AuthController())
             .environmentObject(JobController())
             .environmentObject(ContractorController())
     }

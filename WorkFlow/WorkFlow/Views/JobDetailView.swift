@@ -3,7 +3,7 @@ import SwiftUI
 struct JobDetailView: View {
     // MARK: - Properties
     let job: Job
-    @StateObject private var jobController = JobController()
+    @EnvironmentObject var jobController: JobController
     @State private var isFullScreen: Bool = false
 
     // MARK: - Body
@@ -11,11 +11,11 @@ struct JobDetailView: View {
         ZStack {
             // MARK: - Background
             LinearGradient(
-                gradient: Gradient(colors: [Color(hex: "#a3d3eb"), Color(hex: "#355c7d")]),
+                gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.black.opacity(0.9)]),
                 startPoint: .top,
                 endPoint: .bottom
             )
-            .edgesIgnoringSafeArea(.all)
+            .ignoresSafeArea()
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
@@ -42,37 +42,61 @@ struct JobDetailView: View {
                     Text(job.title)
                         .font(.largeTitle)
                         .fontWeight(.bold)
+                        .foregroundColor(.white)
                         .padding(.leading)
 
                     // MARK: - Job Metadata
                     HStack {
                         Text(jobController.timeAgoSinceDate(job.datePosted))
                             .font(.caption)
-
+                            .foregroundColor(.white)
                         Text("• \(job.city)")
                             .font(.caption)
                             .fontWeight(.bold)
+                            .foregroundColor(.white)
                     }
                     .padding(.leading)
 
                     // MARK: - Job Category
                     Text(job.category.rawValue)
                         .font(.caption)
+                        .foregroundColor(.white)
                         .padding(.leading)
                         .padding(.bottom, 5)
 
                     // MARK: - Job Description
                     Text(job.description)
                         .font(.body)
+                        .foregroundColor(.white)
                         .padding(.leading)
                         .padding(.top, 5)
                         .padding(.bottom, 100)
                 }
-                .navigationTitle("Job Details")
                 .fullScreenCover(isPresented: $isFullScreen) {
                     FullScreenImageView(imageUrl: job.imageURL, isFullScreen: $isFullScreen)
                 }
             }
         }
+    }
+}
+
+// MARK: - Preview
+struct JobDetailView_Previews: PreviewProvider {
+    static var previews: some View {
+        let sampleJob = Job(
+            id: UUID(),
+            title: "Sample Job Title",
+            description: "This is a sample job description that provides details about the job.",
+            city: "Sample City",
+            category: .landscaping,
+            datePosted: Date(),
+            imageURL: "https://via.placeholder.com/300"
+        )
+
+        JobDetailView(job: sampleJob)
+            .environmentObject(JobController())
+            .previewLayout(.sizeThatFits)
+            .padding()
+            .background(Color.white)
     }
 }

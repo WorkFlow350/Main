@@ -26,10 +26,10 @@ struct HomeownerProfileView: View {
     @State private var profilePictureURL: String? = nil
     @State private var isImagePickerPresented = false
     @State private var selectedImage: UIImage?
-
+    
     private let db = Firestore.firestore()
     private let storage = Storage.storage()
-
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -43,7 +43,7 @@ struct HomeownerProfileView: View {
                 )
                 .ignoresSafeArea()
                 .blur(radius: 4)
-
+                
                 if isLoading {
                     ProgressView()
                 } else {
@@ -120,7 +120,7 @@ struct HomeownerProfileView: View {
             }
         }
     }
-
+    
     // MARK: - Load User Data
     private func loadUserData() {
         guard let userId = Auth.auth().currentUser?.uid else { return }
@@ -146,7 +146,7 @@ struct HomeownerProfileView: View {
             }
         }
     }
-
+    
     // MARK: - Load Profile Image
     private func loadProfileImage() {
         guard let profilePictureURL = profilePictureURL else {
@@ -163,13 +163,13 @@ struct HomeownerProfileView: View {
             self.isLoading = false
         }
     }
-
+    
     // MARK: - Upload Profile Image
     private func uploadProfileImage(_ image: UIImage) {
         guard let userId = Auth.auth().currentUser?.uid else { return }
         let imageRef = storage.reference().child("profilePictures/\(userId).jpg")
         guard let imageData = image.jpegData(compressionQuality: 0.8) else { return }
-
+        
         imageRef.putData(imageData, metadata: nil) { _, error in
             if let error = error {
                 self.errorMessage = IdentifiableError(message: "Failed to upload image: \(error.localizedDescription)")
@@ -193,7 +193,7 @@ struct HomeownerProfileView: View {
             }
         }
     }
-
+    
     // MARK: - Profile Header
     private var profileHeader: some View {
         VStack(spacing: 16) {
@@ -228,7 +228,7 @@ struct HomeownerProfileView: View {
                 .foregroundColor(.white.opacity(0.8))
         }
     }
-
+    
     // MARK: - Button Section
     private var buttonSection: some View {
         HStack(spacing: 16) {
@@ -250,7 +250,7 @@ struct HomeownerProfileView: View {
                     )
                     .cornerRadius(20)
             }
-
+            
             // Biography Button
             Button(action: {
                 navigateToBiography = true
@@ -272,7 +272,7 @@ struct HomeownerProfileView: View {
         }
         .padding(.vertical, 10)
     }
-
+    
     // MARK: - Bio Section
     private var bioSection: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -288,7 +288,7 @@ struct HomeownerProfileView: View {
         .padding(.top, 10)
         .padding(.horizontal)
     }
-
+    
     // MARK: - Job Section
     private var jobSection: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -296,7 +296,7 @@ struct HomeownerProfileView: View {
                 .font(.headline)
                 .foregroundColor(.white)
                 .padding(.bottom, 5)
-
+            
             ForEach(homeownerJobController.homeownerJobs) { job in
                 NavigationLink(destination: JobDetailView(job: job)) {
                     HStack {
@@ -315,7 +315,7 @@ struct HomeownerProfileView: View {
                                     .clipShape(RoundedRectangle(cornerRadius: 15))
                             }
                         }
-
+                        
                         VStack(alignment: .leading, spacing: 5) {
                             Text(job.title)
                                 .font(.title3)
@@ -356,14 +356,20 @@ struct HomeownerProfileView: View {
         .padding(.horizontal)
         .padding(.top, 10)
     }
-
+    
     // MARK: - Sign Out
     private func signOut() {
         do {
             try authController.signOut()
             if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
                let window = windowScene.windows.first {
-                window.rootViewController = UIHostingController(rootView: SignInView().environmentObject(authController))
+                window.rootViewController = UIHostingController(
+                    rootView: SignInView()
+                        .environmentObject(HomeownerJobController())
+                        .environmentObject(AuthController())
+                        .environmentObject(JobController())
+                        .environmentObject(ContractorController())
+                )
                 window.makeKeyAndVisible()
             }
         } catch {
@@ -378,7 +384,6 @@ struct BiographyView: View {
 
     var body: some View {
         ZStack {
-            // Gradient Background
             LinearGradient(
                 gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.black.opacity(0.9)]),
                 startPoint: .top,
@@ -409,6 +414,10 @@ struct BiographyView: View {
 // MARK: - Preview
 struct HomeownerProfileView_Previews: PreviewProvider {
     static var previews: some View {
-        HomeownerProfileView().environmentObject(AuthController())
+        HomeownerProfileView()
+            .environmentObject(HomeownerJobController())
+            .environmentObject(AuthController())
+            .environmentObject(JobController())
+            .environmentObject(ContractorController())
     }
 }

@@ -24,7 +24,7 @@ struct PostView: View {
         ZStack {
             // MARK: - Background
             LinearGradient(
-                gradient: Gradient(colors: [Color(hex: "#a3d3eb"), Color(hex: "#355c7d")]),
+                gradient: Gradient(colors: [Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0), Color.black.opacity(0.99)]),
                 startPoint: .top,
                 endPoint: .bottom
             )
@@ -32,6 +32,15 @@ struct PostView: View {
 
             ScrollView {
                 VStack(spacing: 20) {
+                    HStack {
+                        Text(isHomeowner ? "Post Job" : "Post Flyer")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                            .padding(.horizontal)
+                            .padding(.top, 10)
+                        Spacer()
+                    }
                     // MARK: - Post Type Picker
                     Picker("Post Type", selection: $isHomeowner) {
                         Text("Homeowner").tag(true)
@@ -146,7 +155,6 @@ struct PostView: View {
                             }
                             .sheet(isPresented: $isCategoryPickerPresented) {
                                 VStack {
-                                    // Using a temporary optional binding for selection
                                     Picker("Select Category", selection: Binding(
                                         get: {
                                             selectedCategories.first ?? JobCategory.landscaping
@@ -168,7 +176,11 @@ struct PostView: View {
                                         isCategoryPickerPresented = false
                                     }
                                     .padding()
-                                    .background(Color(hex: "#355c7d"))
+                                    .background(LinearGradient(
+                                        gradient: Gradient(colors: [Color(hex: "#1E3A8A"), Color(hex: "#2563EB")]),
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    ))
                                     .foregroundColor(.white)
                                     .cornerRadius(10)
                                 }
@@ -268,20 +280,24 @@ struct PostView: View {
                         Text("Post")
                             .frame(minWidth: 100, maxWidth: 200)
                             .padding()
-                            .background(Color(hex: "#355c7d"))
+                            .background(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [Color(hex: "#1E3A8A"), Color(hex: "#2563EB")]),
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .cornerRadius(20)
                             .foregroundColor(.white)
-                            .cornerRadius(10)
-                            .shadow(color: .gray, radius: 5, x: 0, y: 2)
+                            .shadow(color: .white, radius: 2, x: 0, y: 0)
                     }
                     .disabled(isHomeowner ? title.isEmpty || description.isEmpty || city.isEmpty || selectedImage == nil : title.isEmpty || description.isEmpty || city.isEmpty || email.isEmpty || selectedImage == nil)
                     .padding(.horizontal)
                     .padding(.vertical, 0)
-
-                    Spacer()
+                    Spacer(minLength: 100)
                 }
                 .padding()
             }
-            .navigationTitle(isHomeowner ? "Post Job" : "Post Flyer")
             .sheet(isPresented: $isImagePickerPresented) {
                 ImagePicker(selectedImage: $selectedImage)
             }
@@ -313,10 +329,13 @@ struct PostView: View {
         selectedImage = nil
     }
 }
+
 // MARK: - Preview for PostView
 struct PostView_Previews: PreviewProvider {
     static var previews: some View {
         PostView()
+            .environmentObject(HomeownerJobController())
+            .environmentObject(AuthController())
             .environmentObject(JobController())
             .environmentObject(ContractorController())
     }

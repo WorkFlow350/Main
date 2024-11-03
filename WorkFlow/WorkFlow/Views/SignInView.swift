@@ -1,11 +1,18 @@
 import SwiftUI
+import FirebaseAuth
 
 struct SignInView: View {
     // MARK: - State Variables
     @State private var email = ""
     @State private var password = ""
-    @StateObject var authController = AuthController()
     @State private var navigateToPersonalizedHome: Bool = false
+    
+    // MARK: - Environment Object
+    @EnvironmentObject var authController: AuthController
+    @EnvironmentObject var homeownerJobController: HomeownerJobController
+    @EnvironmentObject var jobController: JobController
+    @EnvironmentObject var contractorController: ContractorController
+
 
     // MARK: - Body
     var body: some View {
@@ -40,7 +47,11 @@ struct SignInView: View {
 
                 // MARK: - Navigation Link
                 .navigationDestination(isPresented: $navigateToPersonalizedHome) {
-                    DifferentiateView().environmentObject(authController)
+                    DifferentiateView()
+                        .environmentObject(authController)
+                        .environmentObject(homeownerJobController)
+                        .environmentObject(jobController)
+                        .environmentObject(contractorController)
                 }
                 // MARK: - Sign-In Button
                 Button {
@@ -97,4 +108,8 @@ struct SignInView: View {
 
 #Preview {
     SignInView()
+        .environmentObject(HomeownerJobController())
+        .environmentObject(AuthController())
+        .environmentObject(JobController())
+        .environmentObject(ContractorController())
 }

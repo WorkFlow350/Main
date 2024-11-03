@@ -4,8 +4,8 @@ struct JobCellView: View {
     // MARK: - Properties
     let job: Job
     @State private var isFullScreen: Bool = false
-    @StateObject private var jobController = JobController()
-
+    @EnvironmentObject var jobController: JobController
+    
     // MARK: - Body
     var body: some View {
         HStack {
@@ -57,5 +57,25 @@ struct JobCellView: View {
         )
         .cornerRadius(12)
         .shadow(radius: 2)
+    }
+}
+// MARK: - Preview
+struct JobCellView_Previews: PreviewProvider {
+    static var previews: some View {
+        let sampleJob = Job(
+            id: UUID(),
+            title: "Sample Job Title",
+            description: "This is a sample job description.",
+            city: "Sample City",
+            category: .landscaping, // Use an appropriate enum case
+            datePosted: Date(),
+            imageURL: "https://via.placeholder.com/150" // Sample image URL
+        )
+        
+        JobCellView(job: sampleJob)
+            .environmentObject(JobController()) // Provide the environment object
+            .previewLayout(.sizeThatFits)
+            .padding()
+            .background(Color.white) // To see the preview clearly
     }
 }

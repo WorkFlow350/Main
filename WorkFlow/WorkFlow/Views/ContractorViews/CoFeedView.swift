@@ -2,8 +2,8 @@ import SwiftUI
 
 // MARK: - Contractor Feed View
 struct CoFeedView: View {
-    @StateObject private var jobController = JobController()
-    @StateObject private var contractorController = ContractorController()
+    @EnvironmentObject var jobController: JobController
+    @EnvironmentObject var contractorController: ContractorController
     @State private var isContractor: Bool = true
 
     var body: some View {
@@ -11,15 +11,26 @@ struct CoFeedView: View {
             ZStack {
                 // MARK: - Background Gradient
                 LinearGradient(
-                    gradient: Gradient(colors: [Color(hex: "#a3d3eb"), Color(hex: "#355c7d")]),
+                    gradient: Gradient(colors: [
+                        Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0),
+                        Color.black.opacity(0.99)
+                    ]),
                     startPoint: .top,
                     endPoint: .bottom
                 )
-                .edgesIgnoringSafeArea(.all)
-                
-                // MARK: - Content Area
+                .ignoresSafeArea()
+
+                // MARK: - Scrollable Content
                 ScrollView {
-                    VStack {
+                    VStack(alignment: .leading) {
+                        // MARK: - Title
+                        Text("Jobs")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                            .padding(.horizontal)
+                            .padding(.top, 20)
+
                         Spacer(minLength: 10)
 
                         // MARK: - Job Listings
@@ -30,9 +41,8 @@ struct CoFeedView: View {
                                 }
                             }
                         }
-                        .navigationTitle("Jobs")
-                        .background(.clear)
                     }
+                    .background(Color.clear)
                 }
                 .onAppear {
                     jobController.fetchJobs()
@@ -46,5 +56,9 @@ struct CoFeedView: View {
 struct CoFeedView_Previews: PreviewProvider {
     static var previews: some View {
         CoFeedView()
+            .environmentObject(HomeownerJobController())
+            .environmentObject(AuthController())
+            .environmentObject(JobController())
+            .environmentObject(ContractorController())
     }
 }

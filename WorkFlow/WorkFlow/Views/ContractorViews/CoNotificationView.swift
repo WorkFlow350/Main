@@ -8,18 +8,53 @@ struct CoNotificationView: View {
             ZStack {
                 // MARK: - Background Gradient
                 LinearGradient(
-                    gradient: Gradient(colors: [Color(hex: "#a3d3eb"), Color(hex: "#355c7d")]),
+                    gradient: Gradient(colors: [
+                        Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0),
+                        Color.black.opacity(0.99)
+                    ]),
                     startPoint: .top,
                     endPoint: .bottom
                 )
-                .edgesIgnoringSafeArea(.all)
+                .ignoresSafeArea()
 
                 VStack {
+                    // MARK: - Title and Clear Button in HStack
+                    HStack {
+                        Text("Notifications")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                            .padding(.horizontal)
+                            .padding(.top, 10)
+                        
+                        Spacer()
+
+                        if !jobController.notifications.isEmpty {
+                            Button(action: clearAllNotifications) {
+                                Text("Clear")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(
+                                        LinearGradient(
+                                            gradient: Gradient(colors: [Color(hex: "#4A90E2"), Color(hex: "#1E3A8A")]),
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
+                                    .cornerRadius(20)
+                            }
+                            .padding(.top, 10)
+                            .padding(.trailing)
+                        }
+                    }
+
                     if jobController.notifications.isEmpty {
                         // MARK: - No Notifications Message
                         Text("No new notifications")
                             .font(.headline)
-                            .foregroundColor(.black)
+                            .foregroundColor(.white)
                             .padding()
                     } else {
                         // MARK: - Notifications List
@@ -30,7 +65,7 @@ struct CoNotificationView: View {
                                 return (job1?.datePosted ?? Date()) > (job2?.datePosted ?? Date())
                             }), id: \.self) { notification in
                                 if let job = jobController.jobsNotification.first(where: { $0.id == notification.jobId }) {
-                                    NavigationLink(value: job) {
+                                    NavigationLink(destination: JobDetailView(job: job)) {
                                         NotificationCard(notification: notification, job: job, jobController: jobController)
                                     }
                                     .listRowBackground(Color.clear)
@@ -38,33 +73,10 @@ struct CoNotificationView: View {
                             }
                             .onDelete(perform: deleteNotification)
                         }
+                        .listStyle(PlainListStyle())
+                        .scrollContentBackground(.hidden)
                     }
                 }
-                .navigationTitle("Notifications")
-                .toolbar {
-                    if !jobController.notifications.isEmpty {
-                        // MARK: - Clear All Button
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            Button(action: clearAllNotifications) {
-                                Text("Clear")
-                                    .font(.system(size: 14, weight: .semibold))
-                                    .foregroundColor(.black)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 6)
-                                    .background(
-                                        BlurView(style: .systemMaterial)
-                                            .clipShape(Capsule())
-                                    )
-                                    .shadow(color: .black.opacity(0.2), radius: 3, x: 0, y: 2)
-                            }
-                        }
-                    }
-                }
-                .navigationDestination(for: Job.self) { selectedJob in
-                    JobDetailView(job: selectedJob)
-                }
-                .background(Color.clear)
-                .scrollContentBackground(.hidden)
             }
         }
     }
@@ -80,8 +92,12 @@ struct CoNotificationView: View {
     }
 }
 
+// MARK: - Preview
 struct CoNotificationView_Previews: PreviewProvider {
     static var previews: some View {
-        CoNotificationView().environmentObject(JobController())
-    }
+        CoNotificationView()
+            .environmentObject(HomeownerJobController())
+            .environmentObject(AuthController())
+            .environmentObject(JobController())
+            .environmentObject(ContractorController())    }
 }

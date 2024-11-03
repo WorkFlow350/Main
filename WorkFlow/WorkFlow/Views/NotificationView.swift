@@ -7,22 +7,58 @@ struct NotificationView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // MARK: - Background
+                // MARK: - Background Gradient
                 LinearGradient(
-                    gradient: Gradient(colors: [Color(hex: "#a3d3eb"), Color(hex: "#355c7d")]),
+                    gradient: Gradient(colors: [
+                        Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0),
+                        Color.black.opacity(0.99)
+                    ]),
                     startPoint: .top,
                     endPoint: .bottom
                 )
-                .edgesIgnoringSafeArea(.all)
+                .ignoresSafeArea()
 
-                // MARK: - Notifications List
                 VStack {
+                    // MARK: - Title and Clear Button
+                    HStack {
+                        Text("Notifications")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                            .padding(.horizontal)
+                            .padding(.top, 10)
+                        
+                        Spacer()
+
+                        if !jobController.notifications.isEmpty {
+                            Button(action: clearAllNotifications) {
+                                Text("Clear")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundColor(.white)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(
+                                        LinearGradient(
+                                            gradient: Gradient(colors: [Color(hex: "#4A90E2"), Color(hex: "#1E3A8A")]),
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
+                                    .cornerRadius(20)
+                            }
+                            .padding(.top, 10)
+                            .padding(.trailing)
+                        }
+                    }
+
                     if jobController.notifications.isEmpty {
+                        // MARK: - No Notifications Message
                         Text("No new notifications")
                             .font(.headline)
-                            .foregroundColor(.black)
+                            .foregroundColor(.white)
                             .padding()
                     } else {
+                        // MARK: - Notifications List
                         List {
                             ForEach(jobController.notifications.sorted(by: { notification1, notification2 in
                                 let job1 = jobController.jobsNotification.first { $0.id == notification1.jobId }
@@ -30,7 +66,7 @@ struct NotificationView: View {
                                 return (job1?.datePosted ?? Date()) > (job2?.datePosted ?? Date())
                             }), id: \.self) { notification in
                                 if let job = jobController.jobsNotification.first(where: { $0.id == notification.jobId }) {
-                                    NavigationLink(value: job) {
+                                    NavigationLink(destination: JobDetailView(job: job)) {
                                         NotificationCard(notification: notification, job: job, jobController: jobController)
                                     }
                                     .listRowBackground(Color.clear)
@@ -38,32 +74,10 @@ struct NotificationView: View {
                             }
                             .onDelete(perform: deleteNotification)
                         }
+                        .listStyle(PlainListStyle())
+                        .scrollContentBackground(.hidden)
                     }
                 }
-                .navigationTitle("Notifications")
-                .toolbar {
-                    if !jobController.notifications.isEmpty {
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            Button(action: clearAllNotifications) {
-                                Text("Clear")
-                                    .font(.system(size: 14, weight: .semibold))
-                                    .foregroundColor(.black)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 6)
-                                    .background(
-                                        BlurView(style: .systemMaterial)
-                                            .clipShape(Capsule())
-                                    )
-                                    .shadow(color: .black.opacity(0.2), radius: 3, x: 0, y: 2)
-                            }
-                        }
-                    }
-                }
-                .navigationDestination(for: Job.self) { selectedJob in
-                    JobDetailView(job: selectedJob)
-                }
-                .background(Color.clear)
-                .scrollContentBackground(.hidden)
             }
         }
     }
@@ -97,19 +111,19 @@ struct NotificationCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(notification.message)
                         .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(.black)
+                        .foregroundColor(.white)
 
                     Text("Job: \(job.title)")
                         .font(.subheadline)
-                        .foregroundColor(.black.opacity(0.8))
+                        .foregroundColor(.white.opacity(0.8))
 
                     Text("Location: \(job.city)")
                         .font(.caption)
-                        .foregroundColor(.black.opacity(0.6))
+                        .foregroundColor(.white.opacity(0.6))
 
                     Text("Category: \(String(describing: job.category).capitalized)")
                         .font(.caption)
-                        .foregroundColor(.black.opacity(0.6))
+                        .foregroundColor(.white.opacity(0.6))
                 }
                 
                 Spacer()
@@ -157,6 +171,10 @@ struct NotificationCard: View {
 // MARK: - Preview for NotificationView
 struct NotificationView_Previews: PreviewProvider {
     static var previews: some View {
-        NotificationView().environmentObject(JobController())
+        NotificationView()
+            .environmentObject(HomeownerJobController())
+            .environmentObject(AuthController())
+            .environmentObject(JobController())
+            .environmentObject(ContractorController())
     }
 }

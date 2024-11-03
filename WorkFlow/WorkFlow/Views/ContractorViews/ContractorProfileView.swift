@@ -13,7 +13,6 @@ struct IdentifiableErrorCO: Identifiable {
 struct ContractorProfileView: View {
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var authController: AuthController
-    @EnvironmentObject var homeownerJobController: HomeownerJobController
     @State private var profileImage: Image? = Image("profilePlaceholder")
     @State private var name: String = ""
     @State private var location: String = ""
@@ -35,8 +34,8 @@ struct ContractorProfileView: View {
             ZStack {
                 LinearGradient(
                     gradient: Gradient(colors: [
-                        Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0), // Deep, rich blue
-                        Color.black.opacity(0.95) // Almost pure black
+                        Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0),
+                        Color.black.opacity(0.99)
                     ]),
                     startPoint: .top,
                     endPoint: .bottom
@@ -82,7 +81,8 @@ struct ContractorProfileView: View {
                                     gradient: Gradient(colors: [Color.blue, Color.clear]),
                                     startPoint: .leading,
                                     endPoint: .trailing
-                                ))
+                                )
+                            )
                             .cornerRadius(8)
                     }
                 }
@@ -259,73 +259,135 @@ struct ContractorProfileView: View {
 
     // MARK: - Job Section
     private var jobSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Jobs")
+        VStack(alignment: .leading, spacing: 16) {
+            Text("My Jobs")
                 .font(.headline)
                 .foregroundColor(.white)
+                .padding(.bottom, 5)
+            
             ForEach(jobs) { job in
-                Text(job.title)
-                    .font(.body)
-                    .foregroundColor(.white.opacity(0.8))
-            }
-        }
-        .padding(.top, 10)
-        .padding(.horizontal)
-    }
+                NavigationLink(destination: JobDetailView(job: job)) {
+                    HStack {
+                        if let imageURL = job.imageURL, let url = URL(string: imageURL) {
+                        AsyncImage(url: url) { image in
+                            image
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 125, height: 125)
+                                .clipShape(RoundedRectangle(cornerRadius: 15))
+                                .shadow(radius: 3)
+                        } placeholder: {
+                            ProgressView()
+                                .frame(width: 125, height: 125)
+                                .background(Color.gray.opacity(0.2))
+                                .clipShape(RoundedRectangle(cornerRadius: 15))
+                        }
+                    }
 
-    // MARK: - Sign Out
-    private func signOut() {
-        do {
-            try authController.signOut()
-            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-               let window = windowScene.windows.first {
-                window.rootViewController = UIHostingController(rootView: SignInView().environmentObject(authController))
-                window.makeKeyAndVisible()
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text(job.title)
+                            .font(.title3)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                        Text("City: \(job.city)")
+                            .font(.subheadline)
+                            .foregroundColor(.white.opacity(0.8))
+                        Text("Category: \(job.category.rawValue)")
+                            .font(.subheadline)
+                            .foregroundColor(.white.opacity(0.8))
+                        Text("Description: \(job.description)")
+                            .font(.subheadline)
+                            .foregroundColor(.white.opacity(0.8))
+                            .lineLimit(2)
+                    }
+                    .padding(.leading, 10)
+                }
+                .frame(maxWidth: .infinity, minHeight: 120)
+                .padding()
+                .background(
+                    RoundedRectangle(cornerRadius: 15)
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    categoryColor(for: job.category).opacity(0.8),
+                                    categoryColor(for: job.category).opacity(0.3)
+                                ]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                )
+                .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 2)
             }
-        } catch {
-            print("Failed to sign out: \(error.localizedDescription)")
         }
     }
+    .padding(.horizontal)
+    .padding(.top, 10)
+}
+
+// MARK: - Sign Out
+private func signOut() {
+    do {
+        try authController.signOut()
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first {
+            window.rootViewController = UIHostingController(
+                rootView: SignInView()
+                    .environmentObject(HomeownerJobController())
+                    .environmentObject(AuthController())
+                    .environmentObject(JobController())
+                    .environmentObject(ContractorController())
+            )
+            window.makeKeyAndVisible()
+        }
+    } catch {
+        print("Failed to sign out: \(error.localizedDescription)")
+    }
+}
 }
 
 // MARK: - Biography View
 struct BiographyViewCO: View {
-    let bio: String
+let bio: String
 
-    var body: some View {
-        ZStack {
-            // Gradient Background
-            LinearGradient(
-                gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.black.opacity(0.9)]),
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+var body: some View {
+    ZStack {
+        // Gradient Background
+        LinearGradient(
+            gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.black.opacity(0.9)]),
+            startPoint: .top,
+            endPoint: .bottom
+        )
+        .ignoresSafeArea()
 
-            VStack {
-                Text("Biography")
-                    .font(.largeTitle)
+        VStack {
+            Text("Biography")
+                .font(.largeTitle)
+                .foregroundColor(.white)
+                .padding(.bottom, 20)
+
+            ScrollView {
+                Text(bio)
+                    .font(.body)
                     .foregroundColor(.white)
-                    .padding(.bottom, 20)
-
-                ScrollView {
-                    Text(bio)
-                        .font(.body)
-                        .foregroundColor(.white)
-                        .padding()
-                        .multilineTextAlignment(.leading)
-                }
+                    .padding()
+                    .multilineTextAlignment(.leading)
             }
-            .padding()
         }
-        .navigationTitle("Biography")
-        .navigationBarTitleDisplayMode(.inline)
+        .padding()
     }
+    .navigationTitle("Biography")
+    .navigationBarTitleDisplayMode(.inline)
+}
 }
 
 // MARK: - Preview
 struct ContractorProfileView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContractorProfileView().environmentObject(AuthController())
+static var previews: some View {
+    ContractorProfileView()
+        .environmentObject(AuthController())
+        .environmentObject(HomeownerJobController())
+        .environmentObject(JobController())
+        .environmentObject(ContractorController())
     }
 }

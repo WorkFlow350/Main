@@ -3,8 +3,8 @@ import SwiftUI
 struct SearchView: View {
     // MARK: - State Variables
     @State private var searchText: String = ""
-    @State private var isSearchingJobs: Bool = true
     @State private var selectedCategory: JobCategory? = nil
+    @State private var isSearchingJobs: Bool = true
 
     // MARK: - Environment Objects
     @EnvironmentObject var jobController: JobController
@@ -33,13 +33,24 @@ struct SearchView: View {
             ZStack {
                 // MARK: - Background
                 LinearGradient(
-                    gradient: Gradient(colors: [Color(hex: "#a3d3eb"), Color(hex: "#355c7d")]),
+                    gradient: Gradient(colors: [
+                        Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0),
+                        Color.black.opacity(0.99)
+                    ]),
                     startPoint: .top,
                     endPoint: .bottom
                 )
-                .edgesIgnoringSafeArea(.all)
+                .ignoresSafeArea()
 
-                VStack(spacing: 10) {
+                VStack(alignment: .leading, spacing: 10) {
+                    // MARK: - Title
+                    Text("Search")
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                        .padding(.horizontal)
+                        .padding(.top, 20)
+
                     // MARK: - Toggle Picker
                     Picker("Select Category", selection: $isSearchingJobs) {
                         Text("Jobs").tag(true)
@@ -48,14 +59,25 @@ struct SearchView: View {
                     .pickerStyle(SegmentedPickerStyle())
                     .padding(.horizontal)
 
-                    // MARK: - Category Filter Picker
-                    Picker("Filter by Category", selection: $selectedCategory) {
-                        Text("All").tag(nil as JobCategory?)
-                        Text("Landscaping").tag(JobCategory.landscaping)
-                        Text("Construction").tag(JobCategory.construction)
-                        Text("Cleaning").tag(JobCategory.cleaning)
+                    // MARK: - Custom Category Filter Picker
+                    HStack {
+                        ForEach([nil, JobCategory.landscaping, JobCategory.construction, JobCategory.cleaning], id: \.self) { category in
+                            Button(action: {
+                                selectedCategory = category
+                            }) {
+                                Text(category?.rawValue.capitalized ?? "All")
+                                    .font(.system(size: 12))
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(selectedCategory == category ? .black : .white)
+                                    .padding(.vertical, 8)
+                                    .padding(.horizontal, 14)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .fill(selectedCategory == category ? Color.white : Color.clear)
+                                    )
+                            }
+                        }
                     }
-                    .pickerStyle(SegmentedPickerStyle())
                     .padding(.horizontal)
 
                     // MARK: - Search Bar
@@ -102,6 +124,7 @@ struct SearchView: View {
                         Text("Enter a city to search for \(isSearchingJobs ? "jobs" : "contractors").")
                             .foregroundColor(.white)
                             .padding(.top, 20)
+                            .frame(maxWidth: .infinity, alignment: .center)
                     }
 
                     Spacer(minLength: 0)
@@ -119,7 +142,6 @@ struct SearchView: View {
                     contractorController.objectWillChange.send()
                 }
             }
-            .navigationTitle("Search")
         }
     }
 }
@@ -206,5 +228,16 @@ struct SearchCard: View {
 extension UIApplication {
     func endEditing() {
         sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+}
+
+// MARK: - Preview
+struct SearchView_Previews: PreviewProvider {
+    static var previews: some View {
+        SearchView()
+            .environmentObject(HomeownerJobController())
+            .environmentObject(AuthController())
+            .environmentObject(JobController())
+            .environmentObject(ContractorController())
     }
 }

@@ -22,7 +22,7 @@ class AuthController: ObservableObject {
     func fetchUser(uid: String) async throws -> User? {
         let maxRetries = 3
         var attempts = 0
-
+        
         while attempts < maxRetries {
             do {
                 let userDocument = try await db.collection("users").document(uid).getDocument()
@@ -35,21 +35,16 @@ class AuthController: ObservableObject {
                    let role = UserRole(rawValue: roleString),
                    let email = userData["email"] as? String {
                     return User(id: id, name: name, city: city, bio: bio, role: role, email: email)
-                }
-                else {
+                } else {
                     print("No user data found for uid")
                     return nil
                 }
-            }
-            catch {
-                print("Error fetching user (attempt \(attempts + 1)): \(error)")
+            } catch {
                 attempts += 1
-                if attempts < maxRetries {
-                    try await Task.sleep(nanoseconds: 500_000_000)
-                }
-                else {
+                if attempts >= maxRetries {
                     throw NSError(domain: "AuthController", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to fetch user after \(maxRetries) attempts"])
                 }
+                try await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
             }
         }
         return nil

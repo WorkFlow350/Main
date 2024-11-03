@@ -17,74 +17,91 @@ struct CoSearchView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                // MARK: - Background Gradient
-                LinearGradient(
-                    gradient: Gradient(colors: [Color(hex: "#a3d3eb"), Color(hex: "#355c7d")]),
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .edgesIgnoringSafeArea(.all)
+        ZStack {
+            // MARK: - Background Gradient
+            LinearGradient(
+                gradient: Gradient(colors: [
+                    Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0),
+                    Color.black.opacity(0.99)
+                ]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
 
-                // MARK: - Content Area
-                VStack(spacing: 10) {
-                    // MARK: - Category Picker
-                    Picker("Filter by Category", selection: $selectedCategory) {
-                        Text("All").tag(nil as JobCategory?)
-                        Text("Landscaping").tag(JobCategory.landscaping)
-                        Text("Construction").tag(JobCategory.construction)
-                        Text("Cleaning").tag(JobCategory.cleaning)
-                    }
-                    .pickerStyle(SegmentedPickerStyle())
+            VStack(alignment: .leading, spacing: 10) {
+                // MARK: - Title
+                Text("Search Jobs")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
                     .padding(.horizontal)
+                    .padding(.top, 20)
 
-                    // MARK: - Search Bar
-                    TextField("Search by city", text: $searchText)
-                        .padding(10)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(10)
-                        .padding(.horizontal)
-                        .onChange(of: searchText) {
-                            jobController.objectWillChange.send()
+                // MARK: - Custom Category Filter Picker
+                HStack {
+                    ForEach([nil, JobCategory.landscaping, JobCategory.construction, JobCategory.cleaning], id: \.self) { category in
+                        Button(action: {
+                            selectedCategory = category
+                        }) {
+                            Text(category?.rawValue.capitalized ?? "All")
+                                .font(.system(size: 12))
+                                .fontWeight(.semibold)
+                                .foregroundColor(selectedCategory == category ? .black : .white)
+                                .padding(.vertical, 8)
+                                .padding(.horizontal, 14)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .fill(selectedCategory == category ? Color.white : Color.clear)
+                                )
                         }
-                        .toolbar {
-                            ToolbarItemGroup(placement: .keyboard) {
-                                Spacer()
-                                Button("Done") {
-                                    UIApplication.shared.endEditing()
-                                }
+                    }
+                }
+                .padding(.horizontal)
+
+                // MARK: - Search Bar
+                TextField("Search by city", text: $searchText)
+                    .padding(10)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
+                    .padding(.horizontal)
+                    .onChange(of: searchText) {
+                        jobController.objectWillChange.send()
+                    }
+                    .toolbar {
+                        ToolbarItemGroup(placement: .keyboard) {
+                            Spacer()
+                            Button("Done") {
+                                UIApplication.shared.endEditing()
                             }
                         }
-
-                    // MARK: - Search Results
-                    if !searchText.isEmpty {
-                        List(filteredJobs) { job in
-                            NavigationLink(destination: JobDetailView(job: job)) {
-                                SearchCard(job: job)
-                            }
-                            .listRowBackground(Color.clear)
-                        }
-                        .listStyle(PlainListStyle())
-                        .scrollContentBackground(.hidden)
-                    } else {
-                        Text("Enter a city to search for jobs")
-                            .foregroundColor(.white)
-                            .padding(.top, 20)
                     }
 
-                    Spacer(minLength: 0)
+                // MARK: - Search Results
+                if !searchText.isEmpty {
+                    List(filteredJobs) { job in
+                        NavigationLink(destination: JobDetailView(job: job)) {
+                            SearchCard(job: job)
+                        }
+                        .listRowBackground(Color.clear)
+                    }
+                    .listStyle(PlainListStyle())
+                    .scrollContentBackground(.hidden)
+                } else {
+                    Text("Enter a city to search for jobs")
+                        .foregroundColor(.white)
+                        .padding(.top, 20)
+                        .frame(maxWidth: .infinity, alignment: .center)
                 }
-                .padding(.top, 8)
-                .background(Color.clear)
-                .onAppear {
-                    jobController.fetchJobs()
-                }
-                .onChange(of: jobController.jobs) {
-                    jobController.objectWillChange.send()
-                }
+
+                Spacer(minLength: 0)
             }
-            .navigationTitle("Search")
+            .onAppear {
+                jobController.fetchJobs()
+            }
+            .onChange(of: jobController.jobs) {
+                jobController.objectWillChange.send()
+            }
         }
     }
 }
@@ -92,6 +109,10 @@ struct CoSearchView: View {
 // MARK: - Preview
 struct CoSearchView_Previews: PreviewProvider {
     static var previews: some View {
-        CoSearchView().environmentObject(JobController()).environmentObject(ContractorController())
+        CoSearchView()
+            .environmentObject(HomeownerJobController())
+            .environmentObject(AuthController())
+            .environmentObject(JobController())
+            .environmentObject(ContractorController())
     }
 }

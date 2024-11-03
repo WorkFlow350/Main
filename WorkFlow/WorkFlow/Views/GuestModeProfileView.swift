@@ -3,13 +3,14 @@ import SwiftUI
 struct GuestModeProfileView: View {
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var jobController: JobController
+    @State private var showSignInView = false
 
     var body: some View {
         NavigationView {
             ZStack {
                 // Background Gradient
                 LinearGradient(
-                    gradient: Gradient(colors: [Color(hex: "#d3d3d3"), Color(hex: "#708090")]),
+                    gradient: Gradient(colors: [Color(red: 0.1, green: 0.2, blue: 0.5), Color.black]),
                     startPoint: .top,
                     endPoint: .bottom
                 )
@@ -18,13 +19,12 @@ struct GuestModeProfileView: View {
                 VStack(spacing: 20) {
                     profileHeader
                     bioSection
-                    gallerySection // Updated gallery section
+                    gallerySection
                     Spacer()
                 }
                 .padding(.top, 50)
                 .padding(.horizontal)
             }
-            .navigationTitle("Guest Profile")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -35,6 +35,18 @@ struct GuestModeProfileView: View {
                             .foregroundColor(.white)
                     }
                 }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        showSignInView = true
+                    }) {
+                        Text("Sign In")
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                    }
+                }
+            }
+            .fullScreenCover(isPresented: $showSignInView) {
+                SignInView() // Replace with your sign-in view
             }
         }
         .onAppear {
@@ -93,7 +105,6 @@ struct GuestModeProfileView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 16) {
                     ForEach(jobController.jobs) { job in
-                        // Display thumbnails without full-screen tap
                         if let imageURL = job.imageURL, let url = URL(string: imageURL) {
                             AsyncImage(url: url) { phase in
                                 switch phase {
@@ -142,6 +153,10 @@ struct GuestModeProfileView: View {
 // MARK: - Preview
 struct GuestModeProfileView_Previews: PreviewProvider {
     static var previews: some View {
-        GuestModeProfileView().environmentObject(JobController())
+        GuestModeProfileView()
+            .environmentObject(HomeownerJobController())
+            .environmentObject(AuthController())
+            .environmentObject(JobController())
+            .environmentObject(ContractorController())
     }
 }

@@ -18,7 +18,6 @@ struct HoSearchView: View {
 
     var body: some View {
         ZStack {
-            // Background Gradient
             LinearGradient(
                 gradient: Gradient(colors: [
                     Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0),
@@ -110,6 +109,8 @@ struct HoSearchView: View {
 struct HoSearchView_Previews: PreviewProvider {
     static var previews: some View {
         HoSearchView()
+            .environmentObject(HomeownerJobController())
+            .environmentObject(AuthController())
             .environmentObject(JobController())
             .environmentObject(ContractorController())
     }

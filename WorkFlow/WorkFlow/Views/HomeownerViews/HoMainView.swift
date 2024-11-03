@@ -89,19 +89,14 @@ struct HoMainView: View {
                     switch selectedTab {
                     case .home:
                         HoFeedView()
-                            .transition(.opacity)
                     case .search:
                         HoSearchView()
-                            .transition(.slide)
                     case .post:
                         HoPostView()
-                            .transition(.opacity)
                     case .chat:
                         HoChatView()
-                            .transition(.slide)
                     case .notifications:
                         HoNotificationView()
-                            .transition(.opacity)
                     }
                 }
                 .animation(.easeInOut(duration: 0.3), value: selectedTab)
@@ -170,5 +165,9 @@ struct HoMainView: View {
 struct HoMainView_Previews: PreviewProvider {
     static var previews: some View {
         HoMainView()
+            .environmentObject(HomeownerJobController())
+            .environmentObject(AuthController())
+            .environmentObject(JobController())
+            .environmentObject(ContractorController())
     }
 }

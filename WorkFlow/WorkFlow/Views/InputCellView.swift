@@ -6,15 +6,23 @@ struct InputCellView: View {
     let title: String
     let placeholder: String
     var isSecureField = false
-
+    var isRequired = false
     // MARK: - Body
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             // MARK: - Title
-            Text(title)
-                .foregroundColor(Color(.darkGray))
-                .fontWeight(.semibold)
-                .font(.footnote)
+            HStack{
+                Text(title)
+                    .foregroundColor(Color(.darkGray))
+                    .fontWeight(.semibold)
+                    .font(.footnote)
+                if isRequired{
+                    Text("*")
+                        .foregroundColor(.red)
+                        .fontWeight(.semibold)
+                        .font(.footnote)
+                }
+            }
 
             // MARK: - Input Field
             if isSecureField {

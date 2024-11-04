@@ -5,6 +5,7 @@ import FirebaseFirestore
 // MARK: - AuthController
 class AuthController: ObservableObject {
     @Published var userSession: FirebaseAuth.User?
+    @Published var userRole: UserRole? = nil
     @Published var appUser: User?
     private let db = Firestore.firestore()
     var isUserSet = false
@@ -13,8 +14,10 @@ class AuthController: ObservableObject {
     // MARK: - Initializer
     init() {
         self.userSession = Auth.auth().currentUser
-        if self.userSession != nil {
-            Task { await setUser() }
+        if self.userSession == nil {
+            self.userRole = nil
+            self.appUser = nil
+            self.isUserSet = false
         }
     }
     
@@ -64,6 +67,7 @@ class AuthController: ObservableObject {
             if let user = fetchedUser {
                 await MainActor.run {
                     self.appUser = user
+                    self.userRole = user.role
                     self.isUserSet = true
                     self.objectWillChange.send()
                     print("User role set to: \(user.role.rawValue)")
@@ -99,6 +103,7 @@ class AuthController: ObservableObject {
             let authResult = try await Auth.auth().signIn(withEmail: email, password: password)
             DispatchQueue.main.async {
                 self.userSession = authResult.user
+                self.userRole = nil
                 self.isUserSet = false
             }
             await setUser()
@@ -116,6 +121,7 @@ class AuthController: ObservableObject {
             DispatchQueue.main.async {
                 self.userSession = nil
                 self.appUser = nil
+                self.userRole = nil
                 self.isUserSet = false
                 self.objectWillChange.send()
             }

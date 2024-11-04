@@ -67,15 +67,15 @@ struct JobCellView_Previews: PreviewProvider {
             title: "Sample Job Title",
             description: "This is a sample job description.",
             city: "Sample City",
-            category: .landscaping, // Use an appropriate enum case
+            category: .landscaping,
             datePosted: Date(),
-            imageURL: "https://via.placeholder.com/150" // Sample image URL
+            imageURL: "https://via.placeholder.com/150"
         )
         
         JobCellView(job: sampleJob)
-            .environmentObject(JobController()) // Provide the environment object
+            .environmentObject(JobController())
             .previewLayout(.sizeThatFits)
             .padding()
-            .background(Color.white) // To see the preview clearly
+            .background(Color.white)
     }
 }

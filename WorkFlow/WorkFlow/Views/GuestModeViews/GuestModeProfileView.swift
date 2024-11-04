@@ -8,7 +8,6 @@ struct GuestModeProfileView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                // Background Gradient
                 LinearGradient(
                     gradient: Gradient(colors: [Color(red: 0.1, green: 0.2, blue: 0.5), Color.black]),
                     startPoint: .top,
@@ -46,7 +45,7 @@ struct GuestModeProfileView: View {
                 }
             }
             .fullScreenCover(isPresented: $showSignInView) {
-                SignInView() // Replace with your sign-in view
+                SignInView()
             }
         }
         .onAppear {

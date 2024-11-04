@@ -107,7 +107,7 @@ struct HoMainView: View {
             VStack {
                 Spacer()
                 tabBar
-                    .padding(.bottom, 20) // Adjust padding to move it up
+                    .padding(.bottom, 20)
             }
         }
         .edgesIgnoringSafeArea(.bottom)

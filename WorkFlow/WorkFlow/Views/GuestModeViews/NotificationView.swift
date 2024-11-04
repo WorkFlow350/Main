@@ -18,7 +18,7 @@ struct NotificationView: View {
                 )
                 .ignoresSafeArea()
 
-                VStack {
+                VStack(alignment: .leading)  {
                     // MARK: - Title and Clear Button
                     HStack {
                         Text("Notifications")
@@ -50,13 +50,18 @@ struct NotificationView: View {
                             .padding(.trailing)
                         }
                     }
-
+                    Spacer()
+                    // MARK: - No Notifications Message
                     if jobController.notifications.isEmpty {
-                        // MARK: - No Notifications Message
-                        Text("No new notifications")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .padding()
+                        VStack {
+                            Spacer()
+                            Text("No new notifications")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .multilineTextAlignment(.center)
+                            Spacer()
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                     } else {
                         // MARK: - Notifications List
                         List {
@@ -111,19 +116,19 @@ struct NotificationCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(notification.message)
                         .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(.white)
+                        .foregroundColor(.black)
 
                     Text("Job: \(job.title)")
                         .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.8))
+                        .foregroundColor(.black.opacity(0.8))
 
                     Text("Location: \(job.city)")
                         .font(.caption)
-                        .foregroundColor(.white.opacity(0.6))
+                        .foregroundColor(.black.opacity(0.6))
 
                     Text("Category: \(String(describing: job.category).capitalized)")
                         .font(.caption)
-                        .foregroundColor(.white.opacity(0.6))
+                        .foregroundColor(.black.opacity(0.6))
                 }
                 
                 Spacer()
@@ -160,7 +165,7 @@ struct NotificationCard: View {
                     Spacer()
                     Text(jobController.timeAgoSinceDate(job.datePosted))
                         .font(.caption)
-                        .foregroundColor(.gray)
+                        .foregroundColor(.black)
                         .padding([.bottom, .trailing], 8)
                 }
             }

@@ -26,7 +26,7 @@ struct SignInView: View {
                     .scaledToFill()
                     .frame(width: 100, height: 120)
                     .padding(.vertical, 32)
-
+                    .shadow(color: .black.opacity(10), radius: 5, x: 0, y: 5)
                 // MARK: - Input Fields
                 VStack(spacing: 24) {
                     InputCellView(

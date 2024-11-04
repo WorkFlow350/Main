@@ -16,8 +16,9 @@ struct CoNotificationView: View {
                     endPoint: .bottom
                 )
                 .ignoresSafeArea()
-
-                VStack {
+                
+                // MARK: - Title and Clear Button in HStack
+                VStack(alignment: .leading)  {
                     // MARK: - Title and Clear Button in HStack
                     HStack {
                         Text("Notifications")
@@ -49,13 +50,18 @@ struct CoNotificationView: View {
                             .padding(.trailing)
                         }
                     }
-
+                    Spacer()
+                    // MARK: - No Notifications Message
                     if jobController.notifications.isEmpty {
-                        // MARK: - No Notifications Message
-                        Text("No new notifications")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                            .padding()
+                        VStack {
+                            Spacer() // Pushes content down
+                            Text("No new notifications")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .multilineTextAlignment(.center)
+                            Spacer()
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                     } else {
                         // MARK: - Notifications List
                         List {

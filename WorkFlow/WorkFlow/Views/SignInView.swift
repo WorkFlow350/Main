@@ -6,6 +6,8 @@ struct SignInView: View {
     @State private var email = ""
     @State private var password = ""
     @State private var navigateToPersonalizedHome: Bool = false
+    @State private var signInErrorMessage: String = ""
+
     
     // MARK: - Environment Object
     @EnvironmentObject var authController: AuthController
@@ -19,7 +21,7 @@ struct SignInView: View {
         NavigationStack {
             VStack {
                 // MARK: - App Icon
-                Image("Applcon")
+                Image("WorkFlowLogo")
                     .resizable()
                     .scaledToFill()
                     .frame(width: 100, height: 120)
@@ -41,6 +43,13 @@ struct SignInView: View {
                         isSecureField: true
                     )
                     .autocapitalization(.none)
+                    if !signInErrorMessage.isEmpty {
+                        Text(signInErrorMessage)
+                            .font(.caption)
+                            .foregroundColor(.red)
+                            .multilineTextAlignment(.center)
+                            .padding(.top, 8)
+                    }
                 }
                 .padding(.horizontal)
                 .padding(.top, 12)
@@ -58,12 +67,29 @@ struct SignInView: View {
                     Task {
                         do {
                             try await authController.signIn(withEmail: email, password: password)
+                            signInErrorMessage = ""
                             print("User signed in successfully: \(email)")
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                                 navigateToPersonalizedHome = true
                             }
                         } catch {
-                            print("Error signing in: \(error.localizedDescription)")
+                            //limited error catching because email enumeration protectection is enabled by default. Increases security by reducing error hints. 
+                            if let nsError = error as NSError?{
+                                if let errorCode = AuthErrorCode(rawValue: nsError.code) {
+                                    switch errorCode {
+                                    case .wrongPassword:
+                                        signInErrorMessage = "Password cannot be empty."
+                                    case .invalidEmail:
+                                        signInErrorMessage = "Invalid email format. Please check and try again."
+                                    default:
+                                        signInErrorMessage = "An unexpected error occurred. Please try again."
+                                    }
+                                }
+                                else{
+                                    signInErrorMessage = "An unexpected error occurred. Please try again."
+                                }
+                            }
+                            
                         }
                     }
                 } label: {
@@ -101,6 +127,7 @@ struct SignInView: View {
                 password = ""
                 navigateToPersonalizedHome = false
                 authController.isUserSet = false
+                signInErrorMessage = ""
             }
         }
     }

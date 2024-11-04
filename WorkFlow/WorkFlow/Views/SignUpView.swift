@@ -10,13 +10,18 @@ struct SignUpView: View {
     @State private var city: String = ""
     @State private var navigateToPersonalizedHome: Bool = false
     @State private var isHomeowner: Bool = true
-
+    private var isPasswordValid: Bool {
+        password.count >= 6
+    }
+    private var doPasswordsMatch: Bool {
+        !passwordConfirmation.isEmpty && password == passwordConfirmation
+    }
     // MARK: - Environment Variables
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var authController: AuthController
     @EnvironmentObject var jobController: JobController
     @EnvironmentObject var contractorController: ContractorController
-
+    
     // MARK: - Body
     var body: some View {
         ZStack {
@@ -33,20 +38,50 @@ struct SignUpView: View {
                     // MARK: - Input Fields
                     VStack(alignment: .leading, spacing: 24) {
                         if isHomeowner {
-                            InputCellView(text: $email, title: "Email Address", placeholder: "name@example")
+                            InputCellView(text: $email, title: "Email Address", placeholder: "name@example",isRequired: true)
                                 .autocapitalization(.none)
                             InputCellView(text: $profileName, title: "Full Name", placeholder: "John Smith")
                                 .autocapitalization(.none)
-                            InputCellView(text: $profileBio, title: "Bio", placeholder: "Describtiobn")
+                            InputCellView(text: $profileBio, title: "Bio", placeholder: "Description")
                                 .autocapitalization(.none)
                             InputCellView(text: $city, title: "City", placeholder: "Camarillo")
                                 .autocapitalization(.none)
-                            InputCellView(text: $password, title: "Password", placeholder: "Enter your password", isSecureField: true)
-                                .autocapitalization(.none)
-                            InputCellView(text: $passwordConfirmation, title: "Confirm Password", placeholder: "Enter your password", isSecureField: true)
-                                .autocapitalization(.none)
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                HStack {
+                                    InputCellView(text: $password, title: "Password", placeholder: "Enter your password", isSecureField: true,isRequired: true)
+                                        .autocapitalization(.none)
+                                    Image(systemName: isPasswordValid ? "checkmark.circle.fill" : "xmark.circle.fill")
+                                        .foregroundColor(isPasswordValid ? .green : .red)
+                                }
+                                if !isPasswordValid {
+                                    Text("Password must be 6 characters long")
+                                        .font(.caption)
+                                        .foregroundColor(.red)
+                                        .padding(.top, 2)
+                                }
+                                
+                            }
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                HStack {
+                                    InputCellView(text: $passwordConfirmation, title: "Confirm Password", placeholder: "Confirm your password", isSecureField: true,isRequired: true)
+                                        .autocapitalization(.none)
+                                    Image(systemName: doPasswordsMatch ? "checkmark.circle.fill" : "xmark.circle.fill")
+                                        .foregroundColor(doPasswordsMatch ? .green : .red)
+                                }
+                                
+                                // "Passwords do not match" error message
+                                if !doPasswordsMatch {
+                                    Text("Passwords do not match")
+                                        .font(.caption)
+                                        .foregroundColor(.red)
+                                        .padding(.top, 2)
+                                }
+                            }
+                            //.padding(.horizontal)
                         } else {
-                            InputCellView(text: $email, title: "Email Address", placeholder: "name@example")
+                            InputCellView(text: $email, title: "Email Address", placeholder: "name@example",isRequired: true)
                                 .autocapitalization(.none)
                             InputCellView(text: $profileName, title: "Company Name", placeholder: "WorkFlow")
                                 .autocapitalization(.none)
@@ -54,10 +89,38 @@ struct SignUpView: View {
                                 .autocapitalization(.none)
                             InputCellView(text: $city, title: "City", placeholder: "Camarillo")
                                 .autocapitalization(.none)
-                            InputCellView(text: $password, title: "Password", placeholder: "Enter your password", isSecureField: true)
-                                .autocapitalization(.none)
-                            InputCellView(text: $passwordConfirmation, title: "Confirm Password", placeholder: "Enter your password", isSecureField: true)
-                                .autocapitalization(.none)
+  
+                            VStack(alignment: .leading, spacing: 4) {
+                                HStack {
+                                    InputCellView(text: $password, title: "Password", placeholder: "Enter your password", isSecureField: true,isRequired: true)
+                                        .autocapitalization(.none)
+                                    Image(systemName: isPasswordValid ? "checkmark.circle.fill" : "xmark.circle.fill")
+                                        .foregroundColor(isPasswordValid ? .green : .red)
+                                }
+                                if !isPasswordValid {
+                                    Text("Password must be 6 characters long")
+                                        .font(.caption)
+                                        .foregroundColor(.red)
+                                        .padding(.top, 2)
+                                }
+                                
+                            }
+                            VStack(alignment: .leading, spacing: 4) {
+                                HStack {
+                                    InputCellView(text: $passwordConfirmation, title: "Confirm Password", placeholder: "Confirm your password", isSecureField: true,isRequired: true)
+                                        .autocapitalization(.none)
+                                    Image(systemName: doPasswordsMatch ? "checkmark.circle.fill" : "xmark.circle.fill")
+                                        .foregroundColor(doPasswordsMatch ? .green : .red)
+                                }
+                                
+                                // "Passwords do not match" error message
+                                if !doPasswordsMatch {
+                                    Text("Passwords do not match")
+                                        .font(.caption)
+                                        .foregroundColor(.red)
+                                        .padding(.top, 2)
+                                }
+                            }
                         }
                     }
                     .padding(.horizontal)

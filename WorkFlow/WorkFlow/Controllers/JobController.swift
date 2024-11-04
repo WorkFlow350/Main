@@ -1,19 +1,17 @@
-// JobController.swift - Manages job data, image uploads, and notifications using Firestore and Firebase Storage.
 import Firebase
 import FirebaseStorage
 import Combine
 
-// ObservableObject to allow JobController to be observed by SwiftUI views.
+// MARK: - JobController
 class JobController: ObservableObject {
-    // Published properties for dynamic UI updates when data changes.
-    @Published var jobsNotification: [Job] = []  // Stores job data linked to notifications.
-    @Published var jobs: [Job] = []              // Stores all fetched job data.
-    @Published var notifications: [NotificationModel] = []  // Stores notification data.
+    @Published var jobsNotification: [Job] = []
+    @Published var jobs: [Job] = []
+    @Published var notifications: [NotificationModel] = []
 
-    private var listener: ListenerRegistration?  // Firestore listener for jobs collection.
-    private var listener2: ListenerRegistration? // Firestore listener for notifications collection.
+    private var listener: ListenerRegistration?
+    private var listener2: ListenerRegistration?
 
-    // Adds a new notification to Firestore when a job is posted.
+    // MARK: - Add Notification
     func addNotification(_ job: Job) {
         let notification = NotificationModel(id: UUID(), jobId: job.id, message: "A new \(job.category) job has been posted in \(job.city)!")
         let db = Firestore.firestore()
@@ -30,20 +28,20 @@ class JobController: ObservableObject {
             }
         }
     }
-    
-    // Initializes the controller and sets up listeners for job and notification data.
+
+    // MARK: - Initializer
     init() {
         observeJobs()
         observeNotifications()
     }
-    
-    // Deinitializes the controller and removes Firestore listeners.
+
+    // MARK: - Deinitializer
     deinit {
         listener?.remove()
         listener2?.remove()
     }
-    
-    // Observes job postings in Firestore, updating 'jobsNotification' with new jobs.
+
+    // MARK: - Observe Jobs
     func observeJobs() {
         let db = Firestore.firestore()
         listener = db.collection("jobs").addSnapshotListener { (snapshot, error) in
@@ -51,12 +49,11 @@ class JobController: ObservableObject {
                 print("Error fetching jobs: \(error?.localizedDescription ?? "Unknown error")")
                 return
             }
-            
+
             for diff in snapshot.documentChanges {
                 if diff.type == .added {
                     let data = diff.document.data()
                     
-                    // Parse job data from Firestore document.
                     guard let idString = data["id"] as? String,
                           let id = UUID(uuidString: idString) else {
                         return print("Could not get job ID")
@@ -96,14 +93,13 @@ class JobController: ObservableObject {
                                      category: category,
                                      datePosted: datePosted,
                                      imageURL: imageURL)
-                    
                     self.jobsNotification.append(newJob)
                 }
             }
         }
     }
-    
-    // Observes notifications in Firestore, updating 'notifications' with new notifications.
+
+    // MARK: - Observe Notifications
     func observeNotifications() {
         let db = Firestore.firestore()
         listener2 = db.collection("notifications").addSnapshotListener { (snapshot, error) in
@@ -111,30 +107,29 @@ class JobController: ObservableObject {
                 print("Error fetching notifications: \(error?.localizedDescription ?? "Unknown error")")
                 return
             }
-            
+
             for diff in snapshot.documentChanges {
                 if diff.type == .added {
                     let data = diff.document.data()
-                    
-                    // Parse notification data from Firestore document.
+
                     guard let idString = data["id"] as? String,
                           let id = UUID(uuidString: idString) else {
                         return print("Could not get notification ID")
                     }
-                    
+
                     guard let jobIdString = data["jobId"] as? String,
                           let jobId = UUID(uuidString: jobIdString) else {
                         return print("Could not get job ID")
                     }
-                    
+
                     guard let message = data["message"] as? String else {
                         return print("Could not get message")
                     }
-                    
+
                     let newNotification = NotificationModel(id: id,
                                                             jobId: jobId,
                                                             message: message)
-                    
+
                     self.notifications.append(newNotification)
                     NotificationCenter.default.post(name: Notification.Name("NewJobPosted"), object: nil)
                 }
@@ -142,7 +137,7 @@ class JobController: ObservableObject {
         }
     }
 
-    // Fetches jobs from Firestore, ordered by the date posted.
+    // MARK: - Fetch Jobs
     func fetchJobs() {
         let db = Firestore.firestore()
         db.collection("jobs").order(by: "datePosted", descending: true).getDocuments { snapshot, error in
@@ -150,8 +145,7 @@ class JobController: ObservableObject {
                 print("Error fetching jobs: \(error.localizedDescription)")
                 return
             }
-            
-            // Convert Firestore documents into Job models.
+
             self.jobs = snapshot?.documents.compactMap { document in
                 let data = document.data()
                 return Job(
@@ -169,13 +163,12 @@ class JobController: ObservableObject {
         }
     }
 
-    // Posts a new job to Firestore, with optional image upload to Firebase Storage.
+    // MARK: - Post Job
     func postJob(job: Job, selectedImage: UIImage?) {
         if let selectedImage = selectedImage {
-            // Upload the image first if provided.
             uploadImage(selectedImage) { [weak self] imageURL in
                 guard let self = self else { return }
-                
+
                 if let imageURL = imageURL {
                     self.saveJobToFirestore(job: job, imageURL: imageURL)
                 } else {
@@ -183,12 +176,11 @@ class JobController: ObservableObject {
                 }
             }
         } else {
-            // Save the job without an image URL.
             saveJobToFirestore(job: job, imageURL: nil)
         }
     }
 
-    // Uploads an image to Firebase Storage and returns its URL.
+    // MARK: - Upload Image
     func uploadImage(_ image: UIImage, completion: @escaping (String?) -> Void) {
         let storageRef = Storage.storage().reference().child("job_images/\(UUID().uuidString).jpg")
         guard let imageData = image.jpegData(compressionQuality: 0.8) else {
@@ -197,7 +189,6 @@ class JobController: ObservableObject {
             return
         }
 
-        // Upload image to Firebase Storage.
         storageRef.putData(imageData, metadata: nil) { (metadata, error) in
             if let error = error {
                 print("Error uploading image: \(error.localizedDescription)")
@@ -205,7 +196,6 @@ class JobController: ObservableObject {
                 return
             }
 
-            // Get the download URL for the uploaded image.
             storageRef.downloadURL { (url, error) in
                 if let error = error {
                     print("Error getting download URL: \(error.localizedDescription)")
@@ -217,7 +207,7 @@ class JobController: ObservableObject {
         }
     }
 
-    // Saves job data to Firestore, optionally with an image URL.
+    // MARK: - Save Job to Firestore
     private func saveJobToFirestore(job: Job, imageURL: String?) {
         let db = Firestore.firestore()
         var jobData: [String: Any] = [
@@ -241,17 +231,17 @@ class JobController: ObservableObject {
             }
         }
     }
-    
-    // Utility function to calculate time elapsed since a given date.
+
+    // MARK: - Time Ago Since Date
     func timeAgoSinceDate(_ date: Date) -> String {
         let formatter = DateComponentsFormatter()
         formatter.unitsStyle = .full
         formatter.allowedUnits = [.second, .minute, .hour, .day, .weekOfMonth]
         formatter.maximumUnitCount = 1
-        
+
         let now = Date()
         let timeInterval = now.timeIntervalSince(date)
-        
+
         if let formattedString = formatter.string(from: timeInterval) {
             return "\(formattedString) ago"
         } else {

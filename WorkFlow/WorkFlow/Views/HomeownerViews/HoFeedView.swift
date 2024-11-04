@@ -1,57 +1,64 @@
-//
-//  HoFeedView.swift
-//  WorkFlow
-//
-//  Created by Jason Rincon on 10/26/24.
-//
-
 import SwiftUI
 
-// FeedView displays either job listings for contractors or contractor flyers for homeowners.
+// MARK: - HoFeedView
 struct HoFeedView: View {
-    @StateObject private var jobController = JobController()  // Initialize JobController to manage job data.
-    @StateObject private var contractorController = ContractorController()  // Initialize ContractorController to manage contractor flyer data.
-    @State private var isContractor: Bool = true  // State to toggle between Job listings or Contractor Flyers.
+    @EnvironmentObject var jobController: JobController
+    @EnvironmentObject var contractorController: ContractorController
+    @State private var isContractor: Bool = true
 
     var body: some View {
         NavigationView {
             ZStack {
-                // Background gradient for the view.
+                // MARK: - Background
                 LinearGradient(
-                    gradient: Gradient(colors: [Color(hex: "#a3d3eb"), Color(hex: "#355c7d")]),
+                    gradient: Gradient(colors: [
+                        Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0),
+                        Color.black.opacity(0.99)
+                    ]),
                     startPoint: .top,
                     endPoint: .bottom
                 )
-                .edgesIgnoringSafeArea(.all)
-                
-                ScrollView {
-                    VStack {
-                        Spacer(minLength: 10)  // Space between title and the content.
+                .ignoresSafeArea()
 
-                        // Scrollable content area displaying posts based on the toggle state.
+                // MARK: - Scrollable Content
+                ScrollView {
+                    VStack(alignment: .leading) {
+                        // MARK: - Title
+                        Text("Contractors")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                            .padding(.horizontal)
+                            .padding(.top, 20)
+
+                        Spacer(minLength: 10)
+
+                        // MARK: - Contractor Flyers
                         LazyVStack(spacing: 1) {
-                                // Display contractor flyers fetched from Firebase for homeowners.
-                                ForEach(contractorController.flyers) { flyer in
-                                    NavigationLink(destination: FlyerDetailView(contractor: flyer)) {
-                                        FlyerCellView(contractor: flyer)  // Use the FlyerCellView component to display flyer details.
-                                    }
+                            ForEach(contractorController.flyers) { flyer in
+                                NavigationLink(destination: FlyerDetailView(contractor: flyer)) {
+                                    FlyerCellView(contractor: flyer)
                                 }
                             }
                         }
-                        .navigationTitle("Contractors")  // Set navigation title
-                        .background(.clear)  // Background color set to clear.
                     }
+                    .background(Color.clear)
                 }
-                .onAppear {
-                    contractorController.fetchFlyers()  // Fetch contractor flyers when the view appears.
-                }
+            }
+            .onAppear {
+                contractorController.fetchFlyers()
             }
         }
     }
+}
 
-// Preview provider for FeedView to visualize the view in Xcode's canvas.
+// MARK: - Preview
 struct HoFeedView_Previews: PreviewProvider {
     static var previews: some View {
         HoFeedView()
+            .environmentObject(HomeownerJobController())
+            .environmentObject(AuthController())
+            .environmentObject(JobController())
+            .environmentObject(ContractorController())
     }
 }

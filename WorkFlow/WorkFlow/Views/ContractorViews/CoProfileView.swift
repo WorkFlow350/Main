@@ -13,11 +13,13 @@ struct IdentifiableErrorCO: Identifiable {
 struct ContractorProfileView: View {
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var authController: AuthController
+    @EnvironmentObject var contractorJobController: ContractorController
     @State private var profileImage: Image? = Image("profilePlaceholder")
     @State private var name: String = ""
     @State private var location: String = ""
     @State private var bio: String = ""
     @State private var jobs: [Job] = []
+    @State private var flyers: [ContractorProfile] = []
     @State private var navigateToCoChat: Bool = false
     @State private var navigateToBiography: Bool = false
     @State private var isLoading: Bool = true
@@ -50,7 +52,7 @@ struct ContractorProfileView: View {
                         VStack(spacing: 20) {
                             profileHeader
                             buttonSection
-                            jobSection
+                            flyerSection
                             Spacer()
                         }
                         .padding(.top, 50)
@@ -94,7 +96,7 @@ struct ContractorProfileView: View {
                 CoChatView()
             }
             .navigationDestination(isPresented: $navigateToBiography) {
-                BiographyView(bio: bio)
+                BiographyViewCO(bio: bio)
             }
             .onAppear(perform: loadUserData)
             .sheet(isPresented: $isImagePickerPresented) {
@@ -119,6 +121,7 @@ struct ContractorProfileView: View {
             }
             if let document = document, document.exists {
                 let data = document.data() ?? [:]
+                print("User Data: \(data)") // Debugging line
                 self.name = data["name"] as? String ?? "Unknown"
                 self.location = data["city"] as? String ?? "Unknown"
                 let role = (data["role"] as? String ?? "Contractor").capitalized
@@ -126,6 +129,10 @@ struct ContractorProfileView: View {
                 self.bio = data["bio"] as? String ?? "No bio available."
                 self.profilePictureURL = data["profilePictureURL"] as? String
                 loadProfileImage()
+
+                contractorJobController.fetchFlyers()
+                print("Filtered Flyers: \(self.flyers)")
+                self.isLoading = false
             } else {
                 self.errorMessage = IdentifiableErrorCO(message: "User data not found.")
                 self.isLoading = false
@@ -218,7 +225,6 @@ struct ContractorProfileView: View {
     // MARK: - Button Section
     private var buttonSection: some View {
         HStack(spacing: 16) {
-            // Message Button
             Button(action: {
                 navigateToCoChat = true
             }) {
@@ -257,137 +263,137 @@ struct ContractorProfileView: View {
         .padding(.vertical, 10)
     }
 
-    // MARK: - Job Section
-    private var jobSection: some View {
+    // MARK: - Flyer Section
+    private var flyerSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("My Jobs")
+            Text("My Flyers")
                 .font(.headline)
                 .foregroundColor(.white)
                 .padding(.bottom, 5)
-            
-            ForEach(jobs) { job in
-                NavigationLink(destination: JobDetailView(job: job)) {
+            ForEach(flyers) { flyer in
+                NavigationLink(destination: FlyerDetailView(contractor: flyer)) {
                     HStack {
-                        if let imageURL = job.imageURL, let url = URL(string: imageURL) {
-                        AsyncImage(url: url) { image in
-                            image
+                        if let imageURL = flyer.imageURL, let url = URL(string: imageURL) {
+                            AsyncImage(url: url) { image in
+                                image
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 125, height: 125)
+                                    .clipShape(RoundedRectangle(cornerRadius: 15))
+                                    .shadow(radius: 3)
+                            } placeholder: {
+                                ProgressView()
+                                    .frame(width: 125, height: 125)
+                                    .background(Color.gray.opacity(0.2))
+                                    .clipShape(RoundedRectangle(cornerRadius: 15))
+                            }
+                        } else {
+                            Image(systemName: "photo")
                                 .resizable()
                                 .scaledToFill()
-                                .frame(width: 125, height: 125)
-                                .clipShape(RoundedRectangle(cornerRadius: 15))
-                                .shadow(radius: 3)
-                        } placeholder: {
-                            ProgressView()
                                 .frame(width: 125, height: 125)
                                 .background(Color.gray.opacity(0.2))
                                 .clipShape(RoundedRectangle(cornerRadius: 15))
                         }
-                    }
 
-                    VStack(alignment: .leading, spacing: 5) {
-                        Text(job.title)
-                            .font(.title3)
-                            .fontWeight(.bold)
-                            .foregroundColor(.white)
-                        Text("City: \(job.city)")
-                            .font(.subheadline)
-                            .foregroundColor(.white.opacity(0.8))
-                        Text("Category: \(job.category.rawValue)")
-                            .font(.subheadline)
-                            .foregroundColor(.white.opacity(0.8))
-                        Text("Description: \(job.description)")
-                            .font(.subheadline)
-                            .foregroundColor(.white.opacity(0.8))
-                            .lineLimit(2)
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text(flyer.contractorName)
+                                .font(.title3)
+                                .fontWeight(.bold)
+                                .foregroundColor(.white)
+                            Text("City: \(flyer.city)")
+                                .font(.subheadline)
+                                .foregroundColor(.white.opacity(0.8))
+                            Text("Bio: \(flyer.bio)")
+                                .font(.subheadline)
+                                .foregroundColor(.white.opacity(0.8))
+                                .lineLimit(2)
+                        }
+                        .padding(.leading, 10)
                     }
-                    .padding(.leading, 10)
-                }
-                .frame(maxWidth: .infinity, minHeight: 120)
-                .padding()
-                .background(
-                    RoundedRectangle(cornerRadius: 15)
-                        .fill(
-                            LinearGradient(
-                                gradient: Gradient(colors: [
-                                    categoryColor(for: job.category).opacity(0.8),
-                                    categoryColor(for: job.category).opacity(0.3)
-                                ]),
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
+                    .frame(maxWidth: .infinity, minHeight: 120)
+                    .padding()
+                    .background(
+                        RoundedRectangle(cornerRadius: 15)
+                            .fill(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [
+                                        Color.blue.opacity(0.8),
+                                        Color.blue.opacity(0.3)
+                                    ]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
                             )
-                        )
-                )
-                .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 2)
+                    )
+                    .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 2)
+                }
             }
         }
+        .padding(.horizontal)
+        .padding(.top, 10)
     }
-    .padding(.horizontal)
-    .padding(.top, 10)
-}
 
-// MARK: - Sign Out
-private func signOut() {
-    do {
-        try authController.signOut()
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let window = windowScene.windows.first {
-            window.rootViewController = UIHostingController(
-                rootView: SignInView()
-                    .environmentObject(HomeownerJobController())
-                    .environmentObject(AuthController())
-                    .environmentObject(JobController())
-                    .environmentObject(ContractorController())
-            )
-            window.makeKeyAndVisible()
+    // MARK: - Sign Out
+    private func signOut() {
+        do {
+            try authController.signOut()
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let window = windowScene.windows.first {
+                window.rootViewController = UIHostingController(
+                    rootView: SignInView()
+                        .environmentObject(HomeownerJobController())
+                        .environmentObject(AuthController())
+                        .environmentObject(JobController())
+                        .environmentObject(ContractorController())
+                )
+                window.makeKeyAndVisible()
+            }
+        } catch {
+            print("Failed to sign out: \(error.localizedDescription)")
         }
-    } catch {
-        print("Failed to sign out: \(error.localizedDescription)")
     }
-}
 }
 
 // MARK: - Biography View
 struct BiographyViewCO: View {
-let bio: String
+    let bio: String
 
-var body: some View {
-    ZStack {
-        // Gradient Background
-        LinearGradient(
-            gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.black.opacity(0.9)]),
-            startPoint: .top,
-            endPoint: .bottom
-        )
-        .ignoresSafeArea()
+    var body: some View {
+        ZStack {
+            LinearGradient(
+                gradient: Gradient(colors: [Color.blue.opacity(0.7), Color.black.opacity(0.9)]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
 
-        VStack {
-            Text("Biography")
-                .font(.largeTitle)
-                .foregroundColor(.white)
-                .padding(.bottom, 20)
-
-            ScrollView {
-                Text(bio)
-                    .font(.body)
+            VStack {
+                Text("Biography")
+                    .font(.largeTitle)
                     .foregroundColor(.white)
-                    .padding()
-                    .multilineTextAlignment(.leading)
+                    .padding(.bottom, 20)
+
+                ScrollView {
+                    Text(bio)
+                        .font(.body)
+                        .foregroundColor(.white)
+                        .padding()
+                        .multilineTextAlignment(.leading)
+                }
             }
+            .padding()
         }
-        .padding()
     }
-    .navigationTitle("Biography")
-    .navigationBarTitleDisplayMode(.inline)
-}
 }
 
 // MARK: - Preview
 struct ContractorProfileView_Previews: PreviewProvider {
-static var previews: some View {
-    ContractorProfileView()
-        .environmentObject(AuthController())
-        .environmentObject(HomeownerJobController())
-        .environmentObject(JobController())
-        .environmentObject(ContractorController())
+    static var previews: some View {
+        ContractorProfileView()
+            .environmentObject(AuthController())
+            .environmentObject(HomeownerJobController())
+            .environmentObject(JobController())
+            .environmentObject(ContractorController())
     }
 }

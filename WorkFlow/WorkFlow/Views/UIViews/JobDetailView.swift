@@ -47,30 +47,34 @@ struct JobDetailView: View {
 
                     // MARK: - Job Metadata
                     HStack {
-                        Text(jobController.timeAgoSinceDate(job.datePosted))
-                            .font(.caption)
-                            .foregroundColor(.white)
-                        Text("• \(job.city)")
+                        Text(job.city)
                             .font(.caption)
                             .fontWeight(.bold)
                             .foregroundColor(.white)
+                        Text("• \(job.category.rawValue)")
+                            .font(.caption)
+                            .foregroundColor(.white)
                     }
                     .padding(.leading)
-
-                    // MARK: - Job Category
-                    Text(job.category.rawValue)
+                    Text(jobController.timeAgoSinceDate(job.datePosted))
                         .font(.caption)
                         .foregroundColor(.white)
                         .padding(.leading)
                         .padding(.bottom, 5)
 
                     // MARK: - Job Description
-                    Text(job.description)
-                        .font(.body)
-                        .foregroundColor(.white)
-                        .padding(.leading)
-                        .padding(.top, 5)
-                        .padding(.bottom, 100)
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text("Description:")
+                            .font(.body)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                        Text(job.description)
+                            .font(.body)
+                            .foregroundColor(.white)
+                    }
+                    .padding(.leading)
+                    .padding(.top, 5)
+                    .padding(.bottom, 100)
                 }
                 .fullScreenCover(isPresented: $isFullScreen) {
                     FullScreenImageView(imageUrl: job.imageURL, isFullScreen: $isFullScreen)

@@ -3,8 +3,8 @@ import SwiftUI
 struct DifferentiateView: View {
     @EnvironmentObject var authController: AuthController
     @State private var isLoading = true
-    
-    // MARK: - Display Views Based on User Role
+
+    // MARK: - Set View HO or CO
     var body: some View {
         VStack {
             if isLoading {
@@ -21,13 +21,16 @@ struct DifferentiateView: View {
             }
         }
         .onAppear {
-            guard !authController.isUserSet else { return }
             Task {
-                isLoading = true
                 if authController.userSession != nil && authController.appUser == nil {
+                    isLoading = true
                     await authController.setUser()
+                    if authController.isUserSet {
+                        isLoading = false
+                    }
+                } else {
+                    isLoading = false
                 }
-                isLoading = false
             }
         }
     }

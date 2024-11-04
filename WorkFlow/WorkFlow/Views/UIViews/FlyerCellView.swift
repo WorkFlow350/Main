@@ -21,7 +21,7 @@ struct FlyerCellView: View {
                     .foregroundColor(.black)
                 
                 Text("Specialty: \(contractor.skills.joined(separator: ", "))")
-                    .font(.footnote) // Use a smaller font size
+                    .font(.footnote)
                     .foregroundColor(.black)
                     .lineLimit(1)
                     .truncationMode(.tail)

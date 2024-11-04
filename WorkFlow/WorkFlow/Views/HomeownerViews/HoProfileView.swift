@@ -232,7 +232,6 @@ struct HomeownerProfileView: View {
     // MARK: - Button Section
     private var buttonSection: some View {
         HStack(spacing: 16) {
-            // Message Button
             Button(action: {
                 navigateToHoChat = true
             }) {
@@ -250,8 +249,6 @@ struct HomeownerProfileView: View {
                     )
                     .cornerRadius(20)
             }
-            
-            // Biography Button
             Button(action: {
                 navigateToBiography = true
             }) {
@@ -406,8 +403,6 @@ struct BiographyView: View {
             }
             .padding()
         }
-        //.navigationTitle("Biography")
-        //.navigationBarTitleDisplayMode(.inline)
     }
 }
 

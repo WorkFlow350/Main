@@ -1,7 +1,9 @@
 import SwiftUI
 import PhotosUI
 import FirebaseStorage
+import FirebaseAuth
 
+// MARK: - CoPostView
 struct CoPostView: View {
     // MARK: - State Variables
     @State private var title: String = ""
@@ -16,25 +18,15 @@ struct CoPostView: View {
     @State private var isDescriptionEditorPresented: Bool = false
 
     // MARK: - Environment Objects
-    @EnvironmentObject var jobController: JobController
     @EnvironmentObject var contractorController: ContractorController
 
     var body: some View {
         ZStack {
             // MARK: - Background Gradient
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0),
-                    Color.black.opacity(0.99)
-                ]),
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            gradientBackground
 
             ScrollView {
                 VStack(spacing: 20) {
-                    // MARK: - Header
                     HStack {
                         Text("Post Flyer")
                             .font(.largeTitle)
@@ -58,7 +50,7 @@ struct CoPostView: View {
                 CustomDescriptionPopup(
                     isPresented: $isDescriptionEditorPresented,
                     description: $description,
-                    title: "Enter your bio"
+                    title: "Enter your flyer description"
                 )
             )
             .toolbar {
@@ -70,6 +62,19 @@ struct CoPostView: View {
                 }
             }
         }
+    }
+
+    // MARK: - Background Gradient
+    private var gradientBackground: some View {
+        LinearGradient(
+            gradient: Gradient(colors: [
+                Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0),
+                Color.black.opacity(0.99)
+            ]),
+            startPoint: .top,
+            endPoint: .bottom
+        )
+        .ignoresSafeArea()
     }
 
     // MARK: - Flyer Details Section
@@ -89,7 +94,7 @@ struct CoPostView: View {
     }
 
     private var titleField: some View {
-        TextField("Name", text: $title)
+        TextField("Title", text: $title)
             .padding()
             .background(Color.white)
             .cornerRadius(15)
@@ -132,7 +137,7 @@ struct CoPostView: View {
             isDescriptionEditorPresented = true
         }) {
             HStack {
-                Text(description.isEmpty ? "Bio" : description)
+                Text(description.isEmpty ? "Description" : description)
                     .foregroundColor(description.isEmpty ? .gray : .black)
                     .padding(.vertical, 12)
                     .padding(.horizontal)
@@ -153,6 +158,7 @@ struct CoPostView: View {
         }
     }
 
+    // MARK: - Category Picker
     private var categoryPickerButton: some View {
         Button(action: {
             isCategoryPickerPresented = true
@@ -245,7 +251,7 @@ struct CoPostView: View {
                             email: email,
                             imageURL: url
                         )
-                        contractorController.postFlyer(profile: newFlyer, selectedImage: selectedImage)
+                        contractorController.postFlyer(flyer: newFlyer, selectedImage: selectedImage)
                         resetFields()
                     } else {
                         print("Error uploading image for flyer.")
@@ -286,9 +292,8 @@ struct CoPostView: View {
 struct CoPostView_Previews: PreviewProvider {
     static var previews: some View {
         CoPostView()
-            .environmentObject(HomeownerJobController())
-            .environmentObject(AuthController())
-            .environmentObject(JobController())
             .environmentObject(ContractorController())
+            .environmentObject(AuthController())
+            .environmentObject(FlyerController())
     }
 }

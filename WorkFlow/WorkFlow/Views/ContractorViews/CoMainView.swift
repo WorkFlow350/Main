@@ -169,6 +169,6 @@ struct CoMainView_Previews: PreviewProvider {
             .environmentObject(AuthController())
             .environmentObject(HomeownerJobController())
             .environmentObject(JobController())
-            .environmentObject(ContractorController())
+            .environmentObject(FlyerController())
     }
 }

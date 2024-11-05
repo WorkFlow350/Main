@@ -13,7 +13,7 @@ struct SignInView: View {
     @EnvironmentObject var authController: AuthController
     @EnvironmentObject var homeownerJobController: HomeownerJobController
     @EnvironmentObject var jobController: JobController
-    @EnvironmentObject var contractorController: ContractorController
+    @EnvironmentObject var contractorController: FlyerController
 
 
     // MARK: - Body
@@ -138,5 +138,5 @@ struct SignInView: View {
         .environmentObject(HomeownerJobController())
         .environmentObject(AuthController())
         .environmentObject(JobController())
-        .environmentObject(ContractorController())
+        .environmentObject(FlyerController())
 }

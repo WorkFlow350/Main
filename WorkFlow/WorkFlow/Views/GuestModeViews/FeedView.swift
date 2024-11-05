@@ -3,7 +3,7 @@ import SwiftUI
 struct FeedView: View {
     // MARK: - State Objects
     @StateObject private var jobController = JobController()
-    @StateObject private var contractorController = ContractorController()
+    @StateObject private var contractorController = FlyerController()
     @State private var isContractor: Bool = true
 
     var body: some View {
@@ -77,6 +77,6 @@ struct FeedView_Previews: PreviewProvider {
             .environmentObject(HomeownerJobController())
             .environmentObject(AuthController())
             .environmentObject(JobController())
-            .environmentObject(ContractorController())
+            .environmentObject(FlyerController())
     }
 }

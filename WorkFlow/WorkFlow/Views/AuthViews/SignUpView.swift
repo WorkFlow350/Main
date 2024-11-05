@@ -20,7 +20,7 @@ struct SignUpView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var authController: AuthController
     @EnvironmentObject var jobController: JobController
-    @EnvironmentObject var contractorController: ContractorController
+    @EnvironmentObject var contractorController: FlyerController
     
     // MARK: - Body
     var body: some View {
@@ -207,6 +207,6 @@ struct SignUpView_Previews: PreviewProvider {
             .environmentObject(HomeownerJobController())
             .environmentObject(AuthController())
             .environmentObject(JobController())
-            .environmentObject(ContractorController())
+            .environmentObject(FlyerController())
     }
 }

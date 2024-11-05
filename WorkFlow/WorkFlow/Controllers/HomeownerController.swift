@@ -23,7 +23,7 @@ class HomeownerJobController: ObservableObject {
                 guard let snapshot = snapshot else { return }
                 self.homeownerJobs = snapshot.documents.compactMap { document in
                     let data = document.data()
-                    print("Fetched job data: \(data)") // Debug print
+                    print("Fetched job data: \(data)")
                     return Job(
                         id: UUID(uuidString: document.documentID) ?? UUID(),
                         title: data["title"] as? String ?? "",

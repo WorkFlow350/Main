@@ -3,7 +3,7 @@ import FirebaseStorage
 import Combine
 
 // MARK: - ContractorController
-class ContractorController: ObservableObject {
+class FlyerController: ObservableObject {
     @Published var flyers: [ContractorProfile] = []
 
     // MARK: - Fetch Flyers
@@ -103,3 +103,4 @@ class ContractorController: ObservableObject {
         }
     }
 }
+

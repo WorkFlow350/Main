@@ -5,7 +5,7 @@ struct CoSearchView: View {
     @State private var searchText: String = ""
     @State private var selectedCategory: JobCategory? = nil
     @EnvironmentObject var jobController: JobController
-    @EnvironmentObject var contractorController: ContractorController
+    @EnvironmentObject var contractorController: FlyerController
 
     // MARK: - Filtered Jobs
     var filteredJobs: [Job] {
@@ -113,6 +113,6 @@ struct CoSearchView_Previews: PreviewProvider {
             .environmentObject(HomeownerJobController())
             .environmentObject(AuthController())
             .environmentObject(JobController())
-            .environmentObject(ContractorController())
+            .environmentObject(FlyerController())
     }
 }

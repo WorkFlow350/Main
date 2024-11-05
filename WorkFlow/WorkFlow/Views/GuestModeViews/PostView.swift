@@ -18,7 +18,7 @@ struct PostView: View {
 
     // MARK: - Environment Objects
     @EnvironmentObject var jobController: JobController
-    @EnvironmentObject var contractorController: ContractorController
+    @EnvironmentObject var contractorController: FlyerController
 
     var body: some View {
         ZStack {
@@ -337,6 +337,6 @@ struct PostView_Previews: PreviewProvider {
             .environmentObject(HomeownerJobController())
             .environmentObject(AuthController())
             .environmentObject(JobController())
-            .environmentObject(ContractorController())
+            .environmentObject(FlyerController())
     }
 }

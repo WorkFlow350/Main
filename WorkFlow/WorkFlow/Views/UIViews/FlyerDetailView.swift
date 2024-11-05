@@ -3,7 +3,7 @@ import SwiftUI
 struct FlyerDetailView: View {
     // MARK: - Properties
     let contractor: ContractorProfile
-    @EnvironmentObject var contractorController: ContractorController
+    @EnvironmentObject var contractorController: FlyerController
     @State private var isFullScreen: Bool = false
 
     // MARK: - Body
@@ -84,7 +84,7 @@ struct FlyerDetailView_Previews: PreviewProvider {
         )
 
         FlyerDetailView(contractor: sampleContractor)
-            .environmentObject(ContractorController())
+            .environmentObject(FlyerController())
             .previewLayout(.sizeThatFits)
             .padding()
             .background(Color.black)

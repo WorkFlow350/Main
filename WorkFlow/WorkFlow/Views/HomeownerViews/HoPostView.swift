@@ -19,7 +19,7 @@ struct HoPostView: View {
 
     // MARK: - Environment Objects
     @EnvironmentObject var homeownerJobController: HomeownerJobController
-    @EnvironmentObject var contractorController: ContractorController
+    @EnvironmentObject var contractorController: FlyerController
 
     var body: some View {
         ZStack {
@@ -310,6 +310,6 @@ struct HoPostView_Previews: PreviewProvider {
             .environmentObject(HomeownerJobController())
             .environmentObject(AuthController())
             .environmentObject(JobController())
-            .environmentObject(ContractorController())
+            .environmentObject(FlyerController())
     }
 }

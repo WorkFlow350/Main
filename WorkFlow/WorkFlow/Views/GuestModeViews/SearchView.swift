@@ -8,7 +8,7 @@ struct SearchView: View {
 
     // MARK: - Environment Objects
     @EnvironmentObject var jobController: JobController
-    @EnvironmentObject var contractorController: ContractorController
+    @EnvironmentObject var contractorController: FlyerController
 
     // MARK: - Filtered Jobs
     var filteredJobs: [Job] {
@@ -238,6 +238,6 @@ struct SearchView_Previews: PreviewProvider {
             .environmentObject(HomeownerJobController())
             .environmentObject(AuthController())
             .environmentObject(JobController())
-            .environmentObject(ContractorController())
+            .environmentObject(FlyerController())
     }
 }

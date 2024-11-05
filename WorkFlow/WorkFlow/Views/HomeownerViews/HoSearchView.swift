@@ -5,7 +5,7 @@ struct HoSearchView: View {
     @State private var searchText: String = ""
     @State private var selectedCategory: JobCategory? = nil
     @EnvironmentObject var jobController: JobController
-    @EnvironmentObject var contractorController: ContractorController
+    @EnvironmentObject var contractorController: FlyerController
 
     // MARK: - Filtered Flyers
     var filteredFlyers: [ContractorProfile] {
@@ -112,6 +112,6 @@ struct HoSearchView_Previews: PreviewProvider {
             .environmentObject(HomeownerJobController())
             .environmentObject(AuthController())
             .environmentObject(JobController())
-            .environmentObject(ContractorController())
+            .environmentObject(FlyerController())
     }
 }

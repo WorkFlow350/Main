@@ -11,7 +11,7 @@ struct WorkFlowApp: App {
     @StateObject private var homeownerJobController = HomeownerJobController()
     @StateObject private var authController = AuthController()
     @StateObject private var jobController = JobController()
-    @StateObject private var contractorController = ContractorController()
+    @StateObject private var contractorController = FlyerController()
     
     var body: some Scene {
         WindowGroup {

@@ -13,7 +13,7 @@ struct IdentifiableErrorCO: Identifiable {
 struct ContractorProfileView: View {
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var authController: AuthController
-    @EnvironmentObject var contractorJobController: ContractorController
+    @EnvironmentObject var contractorJobController: FlyerController
     @State private var profileImage: Image? = Image("profilePlaceholder")
     @State private var name: String = ""
     @State private var location: String = ""
@@ -345,7 +345,7 @@ struct ContractorProfileView: View {
                         .environmentObject(HomeownerJobController())
                         .environmentObject(AuthController())
                         .environmentObject(JobController())
-                        .environmentObject(ContractorController())
+                        .environmentObject(FlyerController())
                 )
                 window.makeKeyAndVisible()
             }
@@ -394,6 +394,6 @@ struct ContractorProfileView_Previews: PreviewProvider {
             .environmentObject(AuthController())
             .environmentObject(HomeownerJobController())
             .environmentObject(JobController())
-            .environmentObject(ContractorController())
+            .environmentObject(FlyerController())
     }
 }

@@ -13,6 +13,7 @@ struct WorkFlowApp: App {
     @StateObject private var jobController = JobController()
     @StateObject private var flyerController = FlyerController()
     @StateObject private var contractorController = ContractorController()
+    @StateObject private var bidController = BidController()
 
     
     var body: some Scene {
@@ -23,6 +24,7 @@ struct WorkFlowApp: App {
                 .environmentObject(jobController)
                 .environmentObject(flyerController)
                 .environmentObject(contractorController)
+                .environmentObject(bidController)
         }
     }
 }

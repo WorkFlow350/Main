@@ -68,30 +68,25 @@ class BidController: ObservableObject {
             }
         }
     }
-    // MARK: - Bids by job
-    // use this function to show bids on My jobs view
+
+    // MARK: - Fetch Bids for a Job
     func getBidsForJob(job: Job) {
-        listener1 = db.collection("bids").whereField("jobId", isEqualTo: job.id).addSnapshotListener {(snapshot, error) in
+        listener1 = db.collection("bids").whereField("jobId", isEqualTo: job.id.uuidString).addSnapshotListener { snapshot, error in
             if let error = error {
-                print("error getting bid")
+                print("Error getting bids: \(error.localizedDescription)")
                 return
             }
             guard let snapshot = snapshot else { return }
             self.jobBids = snapshot.documents.compactMap { document in
                 let data = document.data()
                 print("Fetched bid data: \(data)")
-                
-               guard let idString = data["id"] as? String,
-                     let id = UUID(uuidString: idString) else {
-                     print("could not get bidId")
-                     return nil
-                     }
-                
+
+                let id = data["id"] as? String ?? ""
                 return Bid(
                     id: id,
                     jobId: data["jobId"] as? String ?? "",
                     contractorId: data["contractorId"] as? String ?? "",
-                    homeownerId: data["homeownerid"] as? String ?? "",
+                    homeownerId: data["homeownerId"] as? String ?? "",
                     price: data["price"] as? Double ?? 0.0,
                     description: data["description"] as? String ?? "",
                     status: Bid.bidStatus(rawValue: data["status"] as? String ?? "pending") ?? .pending,
@@ -113,13 +108,16 @@ class BidController: ObservableObject {
             self.coBids = snapshot.documents.compactMap { document in
                 let data = document.data()
                 print("Fetched bid data: \(data)")
-                
+            /*
+             !!!I had to change this portion of the code!!!
                guard let idString = data["id"] as? String,
                      let id = UUID(uuidString: idString) else {
                      print("could not get bidId")
                      return nil
                      }
-                
+                */
+                let id = data["id"] as? String ?? ""
+
                 return Bid(
                     id: id,
                     jobId: data["jobId"] as? String ?? "",

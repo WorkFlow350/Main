@@ -62,6 +62,7 @@
 		AA8715052CC874B900464D05 /* AuthController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8715042CC874B900464D05 /* AuthController.swift */; };
 		AA8715072CC8882200464D05 /* DifferentiateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8715062CC8882200464D05 /* DifferentiateView.swift */; };
 		AAB9E3562CD9A46900011ECB /* FlyerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB9E3552CD9A46800011ECB /* FlyerController.swift */; };
+		AAB9E3622CE1B82F00011ECB /* HoBidFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB9E3612CE1B82F00011ECB /* HoBidFeedView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -135,6 +136,7 @@
 		AA8715042CC874B900464D05 /* AuthController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthController.swift; sourceTree = "<group>"; };
 		AA8715062CC8882200464D05 /* DifferentiateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DifferentiateView.swift; sourceTree = "<group>"; };
 		AAB9E3552CD9A46800011ECB /* FlyerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlyerController.swift; sourceTree = "<group>"; };
+		AAB9E3612CE1B82F00011ECB /* HoBidFeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoBidFeedView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -191,6 +193,7 @@
 				291AAA642CCDF26A008757E3 /* HoChatView.swift */,
 				291AAA662CCDF335008757E3 /* HoNotificationView.swift */,
 				9EC418212CB4C51A00F21C8F /* HoProfileView.swift */,
+				AAB9E3612CE1B82F00011ECB /* HoBidFeedView.swift */,
 			);
 			path = HomeownerViews;
 			sourceTree = "<group>";
@@ -513,6 +516,7 @@
 				9EC417FF2CB4B70B00F21C8F /* PostView.swift in Sources */,
 				291AAA652CCDF26A008757E3 /* HoChatView.swift in Sources */,
 				9EC417C42CB4AF1B00F21C8F /* WorkFlowApp.swift in Sources */,
+				AAB9E3622CE1B82F00011ECB /* HoBidFeedView.swift in Sources */,
 				9EC418202CB4C50300F21C8F /* CoProfileView.swift in Sources */,
 				294CF3FA2CDDA32800AAD3E0 /* Bid.swift in Sources */,
 			);

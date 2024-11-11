@@ -78,8 +78,9 @@ class HomeownerJobController: ObservableObject {
             "imageURL": job.imageURL,
             "homeownerId": Auth.auth().currentUser?.uid ?? ""
         ]
-
-        db.collection("jobs").addDocument(data: jobData) { error in
+        //!!!I changed the bottom comment to get the right document!!!
+        //db.collection("jobs").addDocument(data: jobData) { error in
+        db.collection("jobs").document(job.id.uuidString).setData(jobData) {error in 
             if let error = error {
                 print("Error posting job: \(error.localizedDescription)")
             } else {

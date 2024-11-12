@@ -68,6 +68,37 @@ class BidController: ObservableObject {
             }
         }
     }
+    
+    // MARK: - Fetch Contractor Profile by contractorId
+    func getContractorProfile(contractorId: String, completion: @escaping (ContractorProfile?) -> Void) {
+        db.collection("contractors").document(contractorId).getDocument { document, error in
+            if let error = error {
+                print("Error fetching contractor profile: \(error.localizedDescription)")
+                completion(nil)
+                return
+            }
+            
+            guard let data = document?.data() else {
+                print("No contractor profile found")
+                completion(nil)
+                return
+            }
+
+            // Create ContractorProfile from Firestore data
+            let profile = ContractorProfile(
+                id: UUID(uuidString: document!.documentID) ?? UUID(),
+                contractorName: data["contractorName"] as? String ?? "Unknown",
+                bio: data["bio"] as? String ?? "",
+                skills: data["skills"] as? [String] ?? [],
+                rating: data["rating"] as? Double ?? 0.0,
+                jobsCompleted: data["jobsCompleted"] as? Int ?? 0,
+                city: data["city"] as? String ?? "",
+                email: data["email"] as? String ?? "",
+                imageURL: data["imageURL"] as? String
+            )
+            completion(profile)
+        }
+    }
 
     // MARK: - Fetch Bids for a Job
     func getBidsForJob(job: Job) {
@@ -95,6 +126,20 @@ class BidController: ObservableObject {
             }
         }
     }
+    // MARK: - Count Bids for a Job
+    func countBidsForJob(jobId: UUID, completion: @escaping (Int) -> Void) {
+        db.collection("bids").whereField("jobId", isEqualTo: jobId.uuidString).getDocuments { snapshot, error in
+            if let error = error {
+                print("Error counting bids for job: \(error.localizedDescription)")
+                completion(0) // Return 0 if there was an error
+                return
+            }
+            // Return the count of documents in the snapshot
+            let count = snapshot?.documents.count ?? 0
+            completion(count)
+        }
+    }
+
     // MARK: - Bids by contractor
     // use this function to show the all the bids the contractor has made
     func getBidsForContractor() {

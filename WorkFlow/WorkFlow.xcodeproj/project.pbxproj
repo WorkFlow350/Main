@@ -61,6 +61,7 @@
 		AA8715032CC858BA00464D05 /* SignUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8715022CC858BA00464D05 /* SignUpView.swift */; };
 		AA8715052CC874B900464D05 /* AuthController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8715042CC874B900464D05 /* AuthController.swift */; };
 		AA8715072CC8882200464D05 /* DifferentiateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8715062CC8882200464D05 /* DifferentiateView.swift */; };
+		AA925F792CE2C2B3009CD9B5 /* BidCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA925F782CE2C2B3009CD9B5 /* BidCellView.swift */; };
 		AAB9E3562CD9A46900011ECB /* FlyerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB9E3552CD9A46800011ECB /* FlyerController.swift */; };
 		AAB9E3622CE1B82F00011ECB /* HoBidFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAB9E3612CE1B82F00011ECB /* HoBidFeedView.swift */; };
 /* End PBXBuildFile section */
@@ -135,6 +136,7 @@
 		AA8715022CC858BA00464D05 /* SignUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignUpView.swift; sourceTree = "<group>"; };
 		AA8715042CC874B900464D05 /* AuthController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthController.swift; sourceTree = "<group>"; };
 		AA8715062CC8882200464D05 /* DifferentiateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DifferentiateView.swift; sourceTree = "<group>"; };
+		AA925F782CE2C2B3009CD9B5 /* BidCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BidCellView.swift; sourceTree = "<group>"; };
 		AAB9E3552CD9A46800011ECB /* FlyerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlyerController.swift; sourceTree = "<group>"; };
 		AAB9E3612CE1B82F00011ECB /* HoBidFeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoBidFeedView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -233,6 +235,7 @@
 				AA82E5862CBDEEF1009F916D /* JobDetailView.swift */,
 				AA82E58E2CBF39F3009F916D /* FlyerCellView.swift */,
 				AA82E5902CBF494A009F916D /* FlyerDetailView.swift */,
+				AA925F782CE2C2B3009CD9B5 /* BidCellView.swift */,
 			);
 			path = UIViews;
 			sourceTree = "<group>";
@@ -474,6 +477,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA925F792CE2C2B3009CD9B5 /* BidCellView.swift in Sources */,
 				29E2041C2CCF1B3700047F21 /* CoPostView.swift in Sources */,
 				29E204202CCF217100047F21 /* CoNotificationView.swift in Sources */,
 				AA8715012CC84F6F00464D05 /* InputCellView.swift in Sources */,

@@ -10,6 +10,23 @@ class BidController: ObservableObject {
     private var listener2: ListenerRegistration?
     private let db = Firestore.firestore()
     
+    //MARK: -Date Formatter
+    func timeAgoSincePost(_ date: Date) -> String {
+        let formatter = DateComponentsFormatter()
+        formatter.unitsStyle = .full
+        formatter.allowedUnits = [.second, .minute, .hour, .day, .weekOfMonth]
+        formatter.maximumUnitCount = 1
+
+        let now = Date()
+        let timeInterval = now.timeIntervalSince(date)
+
+        if let formattedString = formatter.string(from: timeInterval) {
+            return "\(formattedString) ago"
+        } else {
+            return "Just now"
+        }
+    }
+    
     // MARK: - Place Bids
     func placeBid(job: Job, price: Double, description: String) {
         let jobRef = db.collection("jobs").document(job.id.uuidString)
@@ -48,10 +65,29 @@ class BidController: ObservableObject {
             }
         }
     }
+    // MARK: - Decline Other Bids for a Job
+    private func declineOtherBids(exceptBidId acceptedBidId: String, forJobId jobId: String) {
+        // Fetch all bids for the specified job
+        db.collection("bids").whereField("jobId", isEqualTo: jobId).getDocuments { snapshot, error in
+            if let error = error {
+                print("Error fetching bids for job: \(error.localizedDescription)")
+                return
+            }
+            
+            // Update each bid's status to declined, except the accepted one
+            snapshot?.documents.forEach { document in
+                let bidId = document.documentID
+                if bidId != acceptedBidId {
+                    self.updateBidStatus(bidId: bidId, status: .declined)
+                }
+            }
+        }
+    }
     
     // MARK: - Accept Bids
-    func acceptBid(bidId: String) {
+    func acceptBid(bidId: String, jobId: String) {
         updateBidStatus(bidId: bidId, status: .accepted)
+        declineOtherBids(exceptBidId: bidId, forJobId: jobId)
     }
     // MARK: - Decline bids
     func declineBid(bidId: String) {
@@ -71,7 +107,7 @@ class BidController: ObservableObject {
     
     // MARK: - Fetch Contractor Profile by contractorId
     func getContractorProfile(contractorId: String, completion: @escaping (ContractorProfile?) -> Void) {
-        db.collection("contractors").document(contractorId).getDocument { document, error in
+        db.collection("users").document(contractorId).getDocument { document, error in
             if let error = error {
                 print("Error fetching contractor profile: \(error.localizedDescription)")
                 completion(nil)
@@ -87,7 +123,7 @@ class BidController: ObservableObject {
             // Create ContractorProfile from Firestore data
             let profile = ContractorProfile(
                 id: UUID(uuidString: document!.documentID) ?? UUID(),
-                contractorName: data["contractorName"] as? String ?? "Unknown",
+                contractorName: data["name"] as? String ?? "Unknown",
                 bio: data["bio"] as? String ?? "",
                 skills: data["skills"] as? [String] ?? [],
                 rating: data["rating"] as? Double ?? 0.0,

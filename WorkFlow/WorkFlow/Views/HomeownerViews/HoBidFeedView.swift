@@ -61,7 +61,7 @@ struct HoBidFeedView: View {
                                             }
                                             else{
                                                 ForEach(bidController.jobBids) { bid in
-                                                    NavigationLink(destination: DetailedBidView(bid: bid)) {
+                                                    NavigationLink(destination: DetailedBidView(bid: bid,bidController: bidController)) {
                                                         BidCellYView(bid: bid)
                                                     }
                                                 }
@@ -278,31 +278,71 @@ struct BidCellYView: View {
         }
     }
 }
-// MARK: - DetailedBidView (for detailed bid information)
+
 struct DetailedBidView: View {
     let bid: Bid
+    @ObservedObject var bidController: BidController
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
+            // Display Bid Amount
             Text("Bid Amount: \(bid.price, specifier: "%.2f")")
                 .font(.title)
                 .foregroundColor(.green)
 
+            // Description section
             Text("Description")
                 .font(.headline)
                 .padding(.top, 10)
             Text(bid.description)
                 .font(.body)
 
+            // Display Bid Status
             Text("Status: \(bid.status.rawValue.capitalized)")
                 .font(.headline)
                 .foregroundColor(bid.status == .accepted ? .green : bid.status == .declined ? .red : .orange)
 
+            // Buttons to Accept or Decline
+            HStack {
+                // Accept Button
+                Button(action: {
+                    bidController.acceptBid(bidId: bid.id, jobId: bid.jobId)
+                }) {
+                    Text("Accept")
+                        .fontWeight(.bold)
+                        .padding()
+                        .background(Color.green)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                        .shadow(radius: 5)
+                }
+                .disabled(bid.status != .pending) // Disable if status is not pending
+
+                // Decline Button
+                Button(action: {
+                    bidController.declineBid(bidId: bid.id)
+                }) {
+                    Text("Decline")
+                        .fontWeight(.bold)
+                        .padding()
+                        .background(Color.red)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                        .shadow(radius: 5)
+                }
+                .disabled(bid.status != .pending) // Disable if status is not pending
+            }
+
             Spacer()
         }
         .padding()
+        .background(Color.white)
+        .cornerRadius(12)
+        .shadow(radius: 5)
         .navigationTitle("Bid Details")
     }
 }
+
+
 
 

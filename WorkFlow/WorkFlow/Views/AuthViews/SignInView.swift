@@ -14,6 +14,8 @@ struct SignInView: View {
     @EnvironmentObject var homeownerJobController: HomeownerJobController
     @EnvironmentObject var jobController: JobController
     @EnvironmentObject var contractorController: FlyerController
+    @EnvironmentObject var bidController: BidController
+    @EnvironmentObject var contractor1Controller: ContractorController
 
 
     // MARK: - Body

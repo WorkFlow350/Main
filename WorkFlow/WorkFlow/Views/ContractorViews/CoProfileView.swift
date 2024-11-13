@@ -13,7 +13,7 @@ struct IdentifiableErrorCO: Identifiable {
 struct ContractorProfileView: View {
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var authController: AuthController
-    @EnvironmentObject var contractorController: ContractorController
+    @EnvironmentObject var contractorController1: ContractorController
     @State private var profileImage: Image? = Image("profilePlaceholder")
     @State private var name: String = ""
     @State private var location: String = ""
@@ -128,7 +128,7 @@ struct ContractorProfileView: View {
                 self.profilePictureURL = data["profilePictureURL"] as? String
                 loadProfileImage()
                 
-                contractorController.fetchFlyersForContractor(contractorId: userId)
+                contractorController1.fetchFlyersForContractor(contractorId: userId)
                 self.isLoading = false
             } else {
                 self.errorMessage = IdentifiableErrorCO(message: "User data not found.")
@@ -268,7 +268,7 @@ struct ContractorProfileView: View {
                 .foregroundColor(.white)
                 .padding(.bottom, 5)
 
-            ForEach(contractorController.contractorFlyers, id: \.id) { flyer in
+            ForEach(contractorController1.contractorFlyers, id: \.id) { flyer in
                 NavigationLink(destination: FlyerDetailView(contractor: flyer)) {
                     HStack {
                         if let imageURL = flyer.imageURL, let url = URL(string: imageURL) {

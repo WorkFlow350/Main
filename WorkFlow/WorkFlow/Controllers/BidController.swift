@@ -16,10 +16,10 @@ class BidController: ObservableObject {
         formatter.unitsStyle = .full
         formatter.allowedUnits = [.second, .minute, .hour, .day, .weekOfMonth]
         formatter.maximumUnitCount = 1
-
+        
         let now = Date()
         let timeInterval = now.timeIntervalSince(date)
-
+        
         if let formattedString = formatter.string(from: timeInterval) {
             return "\(formattedString) ago"
         } else {
@@ -104,9 +104,11 @@ class BidController: ObservableObject {
             }
         }
     }
+
     
     // MARK: - Fetch Contractor Profile by contractorId
     func getContractorProfile(contractorId: String, completion: @escaping (ContractorProfile?) -> Void) {
+        // Fetching contractor profile from Firestore
         db.collection("users").document(contractorId).getDocument { document, error in
             if let error = error {
                 print("Error fetching contractor profile: \(error.localizedDescription)")
@@ -119,7 +121,7 @@ class BidController: ObservableObject {
                 completion(nil)
                 return
             }
-
+            
             // Create ContractorProfile from Firestore data
             let profile = ContractorProfile(
                 id: UUID(uuidString: document!.documentID) ?? UUID(),
@@ -130,7 +132,7 @@ class BidController: ObservableObject {
                 jobsCompleted: data["jobsCompleted"] as? Int ?? 0,
                 city: data["city"] as? String ?? "",
                 email: data["email"] as? String ?? "",
-                imageURL: data["imageURL"] as? String
+                imageURL: data["profilePictureURL"] as? String
             )
             completion(profile)
         }

@@ -1,10 +1,12 @@
+
+
 import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
 // MARK: - HoBidFeedView
 struct HoBidFeedView: View {
-    @ObservedObject var homeownerJobController = HomeownerJobController()
-    @ObservedObject var bidController = BidController()
+    @EnvironmentObject var homeownerJobController: HomeownerJobController
+    @EnvironmentObject var bidController: BidController
     @State private var selectedJobId: UUID?
 
     var body: some View {
@@ -39,7 +41,7 @@ struct HoBidFeedView: View {
                             ForEach(homeownerJobController.homeownerJobs) { job in
                                 VStack {
                                     // Job Cell View
-                                    JobCellYView(job: job, bidController: bidController)
+                                    JobCellYView(job: job)
                                         .onTapGesture {
                                             if selectedJobId == job.id {
                                                 selectedJobId = nil // Deselect job
@@ -61,7 +63,7 @@ struct HoBidFeedView: View {
                                             }
                                             else{
                                                 ForEach(bidController.jobBids) { bid in
-                                                    NavigationLink(destination: DetailedBidView(bid: bid,bidController: bidController)) {
+                                                    NavigationLink(destination: DetailedBidView(bid: bid)) {
                                                         BidCellYView(bid: bid)
                                                     }
                                                 }
@@ -89,13 +91,14 @@ struct HoBidFeedView: View {
     }
 }
 
+
 // MARK: - JobCellView (for displaying job details)
 struct JobCellYView: View {
     let job: Job
-    @ObservedObject var bidController: BidController
-    @State private var bidCount: Int = 0
+    @EnvironmentObject var bidController: BidController
     @EnvironmentObject var jobController: JobController
-
+    @EnvironmentObject var homeownerJobController: HomeownerJobController
+    @State private var bidCount: Int = 0
     var body: some View {
         HStack {
             if let imageURL = job.imageURL, let url = URL(string: imageURL) {
@@ -112,28 +115,33 @@ struct JobCellYView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                 }
             }
-
+            
             VStack(alignment: .leading, spacing: 4) {
                 Text("\(job.city) - \(job.category.rawValue)")
                     .font(.subheadline)
                     .foregroundColor(.black)
-
+                
                 Text(job.title)
                     .font(.headline)
                     .fontWeight(.bold)
                     .foregroundColor(.black)
-
-                Text(jobController.timeAgoSinceDate(job.datePosted))
-                    .font(.caption)
-                    .foregroundColor(.gray)
+                
+                HStack(spacing: 4) {
+                    Image(systemName: "clock")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                    Text(jobController.timeAgoSinceDate(job.datePosted))
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                }
                 
                 Text("Bids: \(bidCount)")
                     .font(.caption)
                     .foregroundColor(.gray)
             }
-
+            
             Spacer()
-
+            
             Rectangle()
                 .frame(width: 4)
                 .foregroundColor(categoryColor(for: job.category))
@@ -157,11 +165,11 @@ struct JobCellYView: View {
 struct BidCellYView: View {
     let bid: Bid
     let maxDescriptionLength = 25
-    
     @State private var contractorProfile: ContractorProfile?
     @State private var isProfileLoaded = false
-    private let db = Firestore.firestore()
-    
+    @EnvironmentObject var bidController: BidController
+    @EnvironmentObject var homeownerJobController: HomeownerJobController
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             // Bid Details
@@ -179,8 +187,16 @@ struct BidCellYView: View {
             
             Text("Description: \(limitedDescription)")
                 .font(.subheadline)
-                .foregroundColor(.gray)
+                .foregroundColor(.secondary)
             
+            HStack(spacing: 4) {
+                Image(systemName: "clock")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                Text(bidController.timeAgoSincePost(bid.bidDate))
+                    .font(.footnote)
+                    .foregroundColor(.gray)
+            }
             // Contractor Profile - Display once it's loaded
             if isProfileLoaded, let profile = contractorProfile {
                 HStack {
@@ -215,12 +231,14 @@ struct BidCellYView: View {
                         Text(profile.city)
                             .font(.subheadline)
                             .foregroundColor(.gray)
+                        
                     }
                     .padding(.leading, 8)
                     
                     Spacer()
                 }
                 .padding(.top, 8)
+                
             }
         }
         .padding(12)
@@ -229,7 +247,7 @@ struct BidCellYView: View {
         .shadow(radius: 5)
         .onAppear {
             // Fetch the contractor profile for this bid when the bid cell appears
-            getContractorProfile(contractorId: bid.contractorId) { profile in
+            bidController.getContractorProfile(contractorId: bid.contractorId) { profile in
                 if let profile = profile {
                     self.contractorProfile = profile
                     self.isProfileLoaded = true
@@ -246,103 +264,190 @@ struct BidCellYView: View {
             return bid.description
         }
     }
-
-    private func getContractorProfile(contractorId: String, completion: @escaping (ContractorProfile?) -> Void) {
-        // Fetching contractor profile from Firestore
-        db.collection("users").document(contractorId).getDocument { document, error in
-            if let error = error {
-                print("Error fetching contractor profile: \(error.localizedDescription)")
-                completion(nil)
-                return
-            }
-
-            guard let data = document?.data() else {
-                print("No contractor profile found")
-                completion(nil)
-                return
-            }
-
-            // Create ContractorProfile from Firestore data
-            let profile = ContractorProfile(
-                id: UUID(uuidString: document!.documentID) ?? UUID(),
-                contractorName: data["name"] as? String ?? "Unknown",
-                bio: data["bio"] as? String ?? "",
-                skills: data["skills"] as? [String] ?? [],
-                rating: data["rating"] as? Double ?? 0.0,
-                jobsCompleted: data["jobsCompleted"] as? Int ?? 0,
-                city: data["city"] as? String ?? "",
-                email: data["email"] as? String ?? "",
-                imageURL: data["profilePictureURL"] as? String
-            )
-            completion(profile)
-        }
-    }
 }
 
+
+//MARK: Separate Page for Bid Info and Contractor Profile
 struct DetailedBidView: View {
     let bid: Bid
-    @ObservedObject var bidController: BidController
-
+    @EnvironmentObject var bidController: BidController
+    @State private var contractorProfile: ContractorProfile?
+    @EnvironmentObject var homeownerJobController: HomeownerJobController
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            // Display Bid Amount
-            Text("Bid Amount: \(bid.price, specifier: "%.2f")")
-                .font(.title)
-                .foregroundColor(.green)
-
-            // Description section
-            Text("Description")
-                .font(.headline)
-                .padding(.top, 10)
-            Text(bid.description)
-                .font(.body)
-
-            // Display Bid Status
-            Text("Status: \(bid.status.rawValue.capitalized)")
-                .font(.headline)
-                .foregroundColor(bid.status == .accepted ? .green : bid.status == .declined ? .red : .orange)
-
-            // Buttons to Accept or Decline
-            HStack {
-                // Accept Button
-                Button(action: {
-                    bidController.acceptBid(bidId: bid.id, jobId: bid.jobId)
-                }) {
-                    Text("Accept")
-                        .fontWeight(.bold)
-                        .padding()
-                        .background(Color.green)
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
-                        .shadow(radius: 5)
+        ZStack {
+            // Gradient Background
+            LinearGradient(
+                gradient: Gradient(colors: [
+                    Color(hex: "#4A90E2"),
+                    Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0),
+                ]),
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea(edges: .top)
+            
+            // Content
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    
+                    // Bid Amount
+                    VStack(alignment: .leading) {
+                        Text("Bid Amount")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        Text("\(bid.price, specifier: "%.2f") USD")
+                            .font(.title)
+                            .foregroundColor(.green)
+                    }
+                    .padding(.bottom, 8)
+                    
+                    Divider()
+                    
+                    // Description
+                    VStack(alignment: .leading) {
+                        Text("Bid Description")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        Text(bid.description)
+                            .font(.body)
+                            .foregroundColor(.primary)
+                    }
+                    .padding(.bottom, 8)
+                    
+                    Divider()
+                    
+                    // Status
+                    HStack {
+                        Text("Status:")
+                            .font(.headline)
+                            .foregroundColor(.secondary)
+                        Text(bid.status.rawValue.capitalized)
+                            .font(.subheadline)
+                            .foregroundColor(bid.status == .accepted ? .green : bid.status == .declined ? .red : .orange)
+                            .fontWeight(.semibold)
+                    }
+                    .padding(.bottom, 8)
+                    
+                    Divider()
+                    
+                    // Contractor Profile
+                    if let profile = contractorProfile {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Contractor Profile")
+                                .font(.headline)
+                                .foregroundColor(.secondary)
+                                .padding(.bottom, 4)
+                            
+                            HStack(spacing: 12) {
+                                // Profile Picture
+                                if let imageURL = profile.imageURL, let url = URL(string: imageURL) {
+                                    AsyncImage(url: url) { image in
+                                        image
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 60, height: 60)
+                                            .clipShape(Circle())
+                                            .shadow(radius: 3)
+                                    } placeholder: {
+                                        Circle()
+                                            .fill(Color.gray.opacity(0.3))
+                                            .frame(width: 60, height: 60)
+                                    }
+                                }
+                                
+                                // Contractor Details
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(profile.contractorName)
+                                        .font(.headline)
+                                        .fontWeight(.bold)
+                                        .foregroundColor(.primary)
+                                    
+                                    Text(profile.city)
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                    
+                                    HStack {
+                                        Image(systemName: "star.fill")
+                                            .foregroundColor(.yellow)
+                                        Text(String(format: "%.1f", profile.rating))
+                                            .font(.subheadline)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                            }
+                            
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text("Skills:")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.primary)
+                                
+                                Text(profile.skills.joined(separator: ", "))
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                
+                                Text("Bio:")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.primary)
+                                    .padding(.top, 4)
+                                
+                                Text(profile.bio)
+                                    .font(.body)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .padding(.top, 10)
+                    }
+                    
+                    Divider()
+                    
+                    // Show Accept/Decline buttons only if the bid is pending
+                    if bid.status == .pending {
+                        HStack {
+                            // Accept Button
+                            Button(action: {
+                                bidController.acceptBid(bidId: bid.id, jobId: bid.jobId)
+                            }) {
+                                Text("Accept")
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(Color.green)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(8)
+                                    .shadow(radius: 2)
+                            }
+                            
+                            // Decline Button
+                            Button(action: {
+                                bidController.declineBid(bidId: bid.id)
+                            }) {
+                                Text("Decline")
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(Color.red)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(8)
+                                    .shadow(radius: 2)
+                            }
+                        }
+                        .padding(.top, 10)
+                    }
                 }
-                .disabled(bid.status != .pending) // Disable if status is not pending
-
-                // Decline Button
-                Button(action: {
-                    bidController.declineBid(bidId: bid.id)
-                }) {
-                    Text("Decline")
-                        .fontWeight(.bold)
-                        .padding()
-                        .background(Color.red)
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
-                        .shadow(radius: 5)
-                }
-                .disabled(bid.status != .pending) // Disable if status is not pending
+                .padding()
+                .background(Color.white)
+                .cornerRadius(12)
+                .shadow(radius: 5)
+                .padding()
             }
-
-            Spacer()
+            .navigationTitle("Bid Details")
+            .onAppear {
+                bidController.getContractorProfile(contractorId: bid.contractorId) { profile in
+                    self.contractorProfile = profile
+                }
+            }
         }
-        .padding()
-        .background(Color.white)
-        .cornerRadius(12)
-        .shadow(radius: 5)
-        .navigationTitle("Bid Details")
     }
 }
-
-
-
 

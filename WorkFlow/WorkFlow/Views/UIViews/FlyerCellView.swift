@@ -4,7 +4,14 @@ struct FlyerCellView: View {
     // MARK: - Properties
     let contractor: ContractorProfile
     @State private var isFullScreen: Bool = false
-    @EnvironmentObject var contractorController: FlyerController
+    
+    // MARK: - Environment Objects
+    @EnvironmentObject var authController: AuthController
+    @EnvironmentObject var homeownerJobController: HomeownerJobController
+    @EnvironmentObject var jobController: JobController
+    @EnvironmentObject var flyerController: FlyerController
+    @EnvironmentObject var bidController: BidController
+    @EnvironmentObject var contractorController: ContractorController
     
     // MARK: - Body
     var body: some View {

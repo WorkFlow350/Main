@@ -95,7 +95,7 @@ struct CoMainView: View {
                     case .post:
                         CoPostView()
                     case .chat:
-                        CoChatView()
+                        CoMyJobsView()
                     case .notifications:
                         CoNotificationView()
                     }
@@ -119,15 +119,15 @@ struct CoMainView: View {
     var tabBar: some View {
         HStack {
             Spacer()
-            tabBarButton(imageName: "house.fill", text: "Home", tab: .home)
+            tabBarButton(imageName: "house", text: "Home", tab: .home)
             Spacer()
             tabBarButton(imageName: "magnifyingglass", text: "Search", tab: .search)
             Spacer()
-            tabBarButton(imageName: "plus.app.fill", text: "Post", tab: .post)
+            tabBarButton(imageName: "plus.app", text: "Post", tab: .post)
             Spacer()
-            tabBarButton(imageName: "bubble.left.fill", text: "Chat", tab: .chat)
+            tabBarButton(imageName: "briefcase", text: "Jobs", tab: .chat)
             Spacer()
-            tabBarButton(imageName: "bell.fill", text: "Notifications", tab: .notifications)
+            tabBarButton(imageName: "bell", text: "Notifications", tab: .notifications)
             Spacer()
         }
         .padding()
@@ -166,9 +166,11 @@ struct CoMainView: View {
 struct CoMainView_Previews: PreviewProvider {
     static var previews: some View {
         CoMainView()
-            .environmentObject(AuthController())
             .environmentObject(HomeownerJobController())
+            .environmentObject(AuthController())
             .environmentObject(JobController())
             .environmentObject(FlyerController())
+            .environmentObject(BidController())
+            .environmentObject(ContractorController())
     }
 }

@@ -12,8 +12,14 @@ struct IdentifiableErrorCO: Identifiable {
 // MARK: - ContractorProfileView
 struct ContractorProfileView: View {
     @Environment(\.presentationMode) var presentationMode
+    // MARK: - Environment Objects
     @EnvironmentObject var authController: AuthController
+    @EnvironmentObject var homeownerJobController: HomeownerJobController
+    @EnvironmentObject var jobController: JobController
+    @EnvironmentObject var flyerController: FlyerController
+    @EnvironmentObject var bidController: BidController
     @EnvironmentObject var contractorController: ContractorController
+    
     @State private var profileImage: Image? = Image("profilePlaceholder")
     @State private var name: String = ""
     @State private var location: String = ""
@@ -92,7 +98,7 @@ struct ContractorProfileView: View {
                 Alert(title: Text("Error"), message: Text(error.message), dismissButton: .default(Text("OK")))
             }
             .navigationDestination(isPresented: $navigateToCoChat) {
-                CoChatView()
+                CoMyJobsView()
             }
             .navigationDestination(isPresented: $navigateToBiography) {
                 BiographyViewCO(bio: bio)
@@ -225,7 +231,7 @@ struct ContractorProfileView: View {
             Button(action: {
                 navigateToCoChat = true
             }) {
-                Text("Message")
+                Text("Jobs")
                     .font(.headline)
                     .foregroundColor(.white)
                     .padding(.horizontal, 20)
@@ -242,7 +248,7 @@ struct ContractorProfileView: View {
             Button(action: {
                 navigateToBiography = true
             }) {
-                Text("Biography")
+                Text("Bio")
                     .font(.headline)
                     .foregroundColor(.white)
                     .padding(.horizontal, 20)
@@ -394,9 +400,11 @@ struct BiographyViewCO: View {
 struct ContractorProfileView_Previews: PreviewProvider {
     static var previews: some View {
         ContractorProfileView()
-            .environmentObject(AuthController())
-            .environmentObject(ContractorController())
             .environmentObject(HomeownerJobController())
+            .environmentObject(AuthController())
             .environmentObject(JobController())
+            .environmentObject(FlyerController())
+            .environmentObject(BidController())
+            .environmentObject(ContractorController())
     }
 }

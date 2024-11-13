@@ -6,7 +6,6 @@ enum JobCategory: String, CaseIterable, Codable {
     case cleaning = "Cleaning"
     case construction = "Construction"
 }
-
 // MARK: - Job Struct
 struct Job: Identifiable, Codable, Hashable {
     var id: UUID

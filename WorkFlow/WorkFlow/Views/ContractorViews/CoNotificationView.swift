@@ -1,8 +1,15 @@
 import SwiftUI
 
 struct CoNotificationView: View {
-    @EnvironmentObject var jobController: JobController
 
+    // MARK: - Environment Objects
+    @EnvironmentObject var authController: AuthController
+    @EnvironmentObject var homeownerJobController: HomeownerJobController
+    @EnvironmentObject var jobController: JobController
+    @EnvironmentObject var flyerController: FlyerController
+    @EnvironmentObject var bidController: BidController
+    @EnvironmentObject var contractorController: ContractorController
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -105,5 +112,8 @@ struct CoNotificationView_Previews: PreviewProvider {
             .environmentObject(HomeownerJobController())
             .environmentObject(AuthController())
             .environmentObject(JobController())
-            .environmentObject(FlyerController())    }
+            .environmentObject(FlyerController())
+            .environmentObject(BidController())
+            .environmentObject(ContractorController())
+    }
 }

@@ -4,12 +4,18 @@ import SwiftUI
 struct HoSearchView: View {
     @State private var searchText: String = ""
     @State private var selectedCategory: JobCategory? = nil
+    // MARK: - Environment Objects
+    @EnvironmentObject var authController: AuthController
+    @EnvironmentObject var homeownerJobController: HomeownerJobController
     @EnvironmentObject var jobController: JobController
-    @EnvironmentObject var contractorController: FlyerController
+    @EnvironmentObject var flyerController: FlyerController
+    @EnvironmentObject var bidController: BidController
+    @EnvironmentObject var contractorController: ContractorController
+    
 
     // MARK: - Filtered Flyers
     var filteredFlyers: [ContractorProfile] {
-        var flyers = contractorController.flyers.filter { $0.city.lowercased().contains(searchText.lowercased()) }
+        var flyers = flyerController.flyers.filter { $0.city.lowercased().contains(searchText.lowercased()) }
         if let category = selectedCategory {
             flyers = flyers.filter { $0.skills.contains(category.rawValue) }
         }
@@ -65,7 +71,7 @@ struct HoSearchView: View {
                     .cornerRadius(10)
                     .padding(.horizontal)
                     .onChange(of: searchText) {
-                        contractorController.objectWillChange.send()
+                        flyerController.objectWillChange.send()
                     }
                     .toolbar {
                         ToolbarItemGroup(placement: .keyboard) {
@@ -96,10 +102,10 @@ struct HoSearchView: View {
                 Spacer(minLength: 0)
             }
             .onAppear {
-                contractorController.fetchFlyers()
+                flyerController.fetchFlyers()
             }
-            .onChange(of: contractorController.flyers) {
-                contractorController.objectWillChange.send()
+            .onChange(of: flyerController.flyers) {
+                flyerController.objectWillChange.send()
             }
         }
     }
@@ -113,5 +119,7 @@ struct HoSearchView_Previews: PreviewProvider {
             .environmentObject(AuthController())
             .environmentObject(JobController())
             .environmentObject(FlyerController())
+            .environmentObject(BidController())
+            .environmentObject(ContractorController())
     }
 }

@@ -12,8 +12,15 @@ struct IdentifiableError: Identifiable {
 // MARK: - HomeownerProfileView
 struct HomeownerProfileView: View {
     @Environment(\.presentationMode) var presentationMode
+    
+    // MARK: - Environment Objects
     @EnvironmentObject var authController: AuthController
     @EnvironmentObject var homeownerJobController: HomeownerJobController
+    @EnvironmentObject var jobController: JobController
+    @EnvironmentObject var flyerController: FlyerController
+    @EnvironmentObject var bidController: BidController
+    @EnvironmentObject var contractorController: ContractorController
+    
     @State private var profileImage: Image? = Image("profilePlaceholder")
     @State private var name: String = ""
     @State private var location: String = ""

@@ -2,8 +2,14 @@ import SwiftUI
 
 // MARK: - Contractor Feed View
 struct CoFeedView: View {
+    // MARK: - Environment Objects
+    @EnvironmentObject var authController: AuthController
+    @EnvironmentObject var homeownerJobController: HomeownerJobController
     @EnvironmentObject var jobController: JobController
-    @EnvironmentObject var contractorController: FlyerController
+    @EnvironmentObject var flyerController: FlyerController
+    @EnvironmentObject var bidController: BidController
+    @EnvironmentObject var contractorController: ContractorController
+    
     @State private var isContractor: Bool = true
 
     var body: some View {
@@ -36,7 +42,7 @@ struct CoFeedView: View {
                         // MARK: - Job Listings
                         LazyVStack(spacing: 1) {
                             ForEach(jobController.jobs) { job in
-                                NavigationLink(destination: JobDetailView(job: job)) {
+                                NavigationLink(destination: CoJobCellView(job: job)) {
                                     JobCellView(job: job)
                                 }
                             }
@@ -60,5 +66,7 @@ struct CoFeedView_Previews: PreviewProvider {
             .environmentObject(AuthController())
             .environmentObject(JobController())
             .environmentObject(FlyerController())
+            .environmentObject(BidController())
+            .environmentObject(ContractorController())
     }
 }

@@ -68,7 +68,7 @@ class HomeownerJobController: ObservableObject {
     // MARK: - Post Job
     func postJob(job: Job, selectedImage: UIImage?) {
         let db = Firestore.firestore()
-        var jobData: [String: Any] = [
+        let jobData: [String: Any] = [
             "id": job.id.uuidString,
             "title": job.title,
             "description": job.description,
@@ -76,15 +76,15 @@ class HomeownerJobController: ObservableObject {
             "category": job.category.rawValue,
             "datePosted": Timestamp(date: job.datePosted),
             "imageURL": job.imageURL,
-            "homeownerId": Auth.auth().currentUser?.uid ?? ""
-        ]
+            "homeownerId": Auth.auth().currentUser?.uid ?? ""]
         //!!!I changed the bottom comment to get the right document!!!
         //db.collection("jobs").addDocument(data: jobData) { error in
-        db.collection("jobs").document(job.id.uuidString).setData(jobData) {error in 
+        // Set the document ID to match job.id.uuidString
+        db.collection("jobs").document(job.id.uuidString).setData(jobData) { error in
             if let error = error {
                 print("Error posting job: \(error.localizedDescription)")
             } else {
-                print("Job successfully posted.")
+                print("Job successfully posted with ID: \(job.id.uuidString)")
                 if let homeownerId = Auth.auth().currentUser?.uid {
                     self.fetchJobsForHomeowner(homeownerId: homeownerId)
                 }

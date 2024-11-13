@@ -15,5 +15,6 @@ struct Bid: Identifiable, Equatable {
         case pending
         case accepted
         case declined
+        case completed
     }
 }

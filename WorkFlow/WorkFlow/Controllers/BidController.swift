@@ -29,39 +29,51 @@ class BidController: ObservableObject {
     
     // MARK: - Place Bids
     func placeBid(job: Job, price: Double, description: String) {
+        print("Looking for job document with ID: \(job.id.uuidString)")
+        
+
+        guard let contractorId = Auth.auth().currentUser?.uid else {
+            print("Error: User is not authenticated")
+            return
+        }
+
         let jobRef = db.collection("jobs").document(job.id.uuidString)
+        
         jobRef.getDocument { (document, error) in
             if let error = error {
                 print("Error fetching homeowner job: \(error.localizedDescription)")
                 return
             }
-            
+
             if let document = document, document.exists {
                 if let homeownerId = document.get("homeownerId") as? String {
-                    print ("Successfully grabbed homeownerId")
-                    
-                    var bidData: [String: Any] = [
+                    print("Successfully grabbed homeownerId: \(homeownerId)")
+
+                    let bidData: [String: Any] = [
                         "id": UUID().uuidString,
                         "jobId": job.id.uuidString,
-                        "contractorId": Auth.auth().currentUser?.uid ?? "",
+                        "contractorId": contractorId,
                         "homeownerId": homeownerId,
                         "price": price,
                         "description": description,
                         "datePosted": Date(),
                         "status": Bid.bidStatus.pending.rawValue
                     ]
+                    
+                    print("Attempting to add bid data to Firestore: \(bidData)")
+                    
                     self.db.collection("bids").addDocument(data: bidData) { error in
                         if let error = error {
                             print("Error placing bid: \(error.localizedDescription)")
-                            return
                         } else {
                             print("Bid placed successfully!")
                         }
                     }
                 } else {
-                    print("error grabbing homeownerId")
-                    return
+                    print("Error: Could not retrieve homeownerId from job document")
                 }
+            } else {
+                print("Error: Job document does not exist")
             }
         }
     }
@@ -205,7 +217,7 @@ class BidController: ObservableObject {
                     id: id,
                     jobId: data["jobId"] as? String ?? "",
                     contractorId: data["contractorId"] as? String ?? "",
-                    homeownerId: data["homeownerid"] as? String ?? "",
+                    homeownerId: data["homeownerId"] as? String ?? "",
                     price: data["price"] as? Double ?? 0.0,
                     description: data["description"] as? String ?? "",
                     status: Bid.bidStatus(rawValue: data["status"] as? String ?? "pending") ?? .pending,

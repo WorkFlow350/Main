@@ -18,8 +18,13 @@ struct CoPostView: View {
     @State private var isDescriptionEditorPresented: Bool = false
 
     // MARK: - Environment Objects
+    @EnvironmentObject var authController: AuthController
+    @EnvironmentObject var homeownerJobController: HomeownerJobController
+    @EnvironmentObject var jobController: JobController
+    @EnvironmentObject var flyerController: FlyerController
+    @EnvironmentObject var bidController: BidController
     @EnvironmentObject var contractorController: ContractorController
-
+    
     var body: some View {
         ZStack {
             // MARK: - Background Gradient
@@ -160,27 +165,47 @@ struct CoPostView: View {
 
     // MARK: - Category Picker
     private var categoryPickerButton: some View {
-        Button(action: {
-            isCategoryPickerPresented = true
-        }) {
+        DisclosureGroup(isExpanded: $isCategoryPickerPresented) {
+            VStack(alignment: .leading) {
+                ForEach(JobCategory.allCases, id: \.self) { category in
+                    Button(action: {
+                        if selectedCategories.contains(category) {
+                            selectedCategories.removeAll { $0 == category }
+                        } else {
+                            selectedCategories.append(category)
+                        }
+                    }) {
+                        HStack {
+                            Text(category.rawValue)
+                                .foregroundColor(.white)
+                            Spacer()
+                            if selectedCategories.contains(category) {
+                                Image(systemName: "checkmark")
+                                    .foregroundColor(.blue)
+                            }
+                        }
+                        .padding(.vertical, 5)
+                    }
+                }
+            }
+            .padding(.horizontal)
+        } label: {
             HStack {
                 Text(selectedCategories.isEmpty ? "Select Skills" : selectedCategories.map { $0.rawValue }.joined(separator: ", "))
                     .foregroundColor(.white)
                     .font(.body)
+                    .lineLimit(1)
                 Spacer()
-                Image(systemName: "chevron.down")
-                    .foregroundColor(.white)
             }
             .padding(.horizontal, 10)
-            .padding(.vertical, 15)
-            .background(Color.white.opacity(0.2))
+            .padding(.vertical, 5)
             .cornerRadius(5)
         }
-        .sheet(isPresented: $isCategoryPickerPresented) {
-            MultiCategoryPicker(selectedCategories: $selectedCategories, isPresented: $isCategoryPickerPresented)
-        }
+        .accentColor(.white)
+        .background(Color.white.opacity(0.2))
+        .cornerRadius(8)
+        .padding()
     }
-
     // MARK: - Image Picker Section
     private var imagePickerSection: some View {
         VStack {
@@ -215,7 +240,6 @@ struct CoPostView: View {
                     .background(Color.white)
                     .clipShape(Circle())
             }
-            .padding(5)
         }
     }
 
@@ -224,13 +248,12 @@ struct CoPostView: View {
             isImagePickerPresented = true
         }) {
             Text("Select Image")
-                .underline()
                 .foregroundColor(.white)
                 .font(.body)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 5)
                 .background(Color.white.opacity(0.2))
-                .cornerRadius(5)
+                .cornerRadius(8)
         }
     }
 
@@ -274,7 +297,7 @@ struct CoPostView: View {
                 .shadow(color: .white, radius: 2, x: 0, y: 0)
         }
         .disabled(title.isEmpty || description.isEmpty || city.isEmpty || email.isEmpty || selectedImage == nil)
-        .padding(.horizontal)
+        .padding(50)
     }
 
     // MARK: - Reset Fields
@@ -292,8 +315,11 @@ struct CoPostView: View {
 struct CoPostView_Previews: PreviewProvider {
     static var previews: some View {
         CoPostView()
-            .environmentObject(ContractorController())
+            .environmentObject(HomeownerJobController())
             .environmentObject(AuthController())
+            .environmentObject(JobController())
             .environmentObject(FlyerController())
+            .environmentObject(BidController())
+            .environmentObject(ContractorController())
     }
 }

@@ -9,13 +9,13 @@ struct SignInView: View {
     @State private var signInErrorMessage: String = ""
 
     
-    // MARK: - Environment Object
+    // MARK: - Environment Objects
     @EnvironmentObject var authController: AuthController
     @EnvironmentObject var homeownerJobController: HomeownerJobController
     @EnvironmentObject var jobController: JobController
-    @EnvironmentObject var contractorController: FlyerController
+    @EnvironmentObject var flyerController: FlyerController
     @EnvironmentObject var bidController: BidController
-    @EnvironmentObject var contractor1Controller: ContractorController
+    @EnvironmentObject var contractorController: ContractorController
 
 
     // MARK: - Body
@@ -62,6 +62,8 @@ struct SignInView: View {
                         .environmentObject(authController)
                         .environmentObject(homeownerJobController)
                         .environmentObject(jobController)
+                        .environmentObject(flyerController)
+                        .environmentObject(bidController)
                         .environmentObject(contractorController)
                 }
                 // MARK: - Sign-In Button
@@ -141,4 +143,6 @@ struct SignInView: View {
         .environmentObject(AuthController())
         .environmentObject(JobController())
         .environmentObject(FlyerController())
+        .environmentObject(BidController())
+        .environmentObject(ContractorController())
 }

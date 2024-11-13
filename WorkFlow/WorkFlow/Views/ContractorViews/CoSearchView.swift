@@ -4,8 +4,13 @@ import SwiftUI
 struct CoSearchView: View {
     @State private var searchText: String = ""
     @State private var selectedCategory: JobCategory? = nil
+    // MARK: - Environment Objects
+    @EnvironmentObject var authController: AuthController
+    @EnvironmentObject var homeownerJobController: HomeownerJobController
     @EnvironmentObject var jobController: JobController
-    @EnvironmentObject var contractorController: FlyerController
+    @EnvironmentObject var flyerController: FlyerController
+    @EnvironmentObject var bidController: BidController
+    @EnvironmentObject var contractorController: ContractorController
 
     // MARK: - Filtered Jobs
     var filteredJobs: [Job] {
@@ -114,5 +119,7 @@ struct CoSearchView_Previews: PreviewProvider {
             .environmentObject(AuthController())
             .environmentObject(JobController())
             .environmentObject(FlyerController())
+            .environmentObject(BidController())
+            .environmentObject(ContractorController())
     }
 }

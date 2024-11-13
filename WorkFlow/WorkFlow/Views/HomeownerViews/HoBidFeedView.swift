@@ -27,7 +27,7 @@ struct HoBidFeedView: View {
                 ScrollView {
                     VStack(alignment: .leading) {
                         // Title
-                        Text("My Jobs")
+                        Text("My Bids")
                             .font(.largeTitle)
                             .fontWeight(.bold)
                             .foregroundColor(.white)
@@ -138,6 +138,7 @@ struct JobCellYView: View {
                 Text("Bids: \(bidCount)")
                     .font(.caption)
                     .foregroundColor(.gray)
+                    .fontWeight(.bold)
             }
             
             Spacer()
@@ -285,7 +286,8 @@ struct DetailedBidView: View {
                 startPoint: .top,
                 endPoint: .bottom
             )
-            .ignoresSafeArea(edges: .top)
+            //.ignoresSafeArea(edges: .top)
+            .ignoresSafeArea()
             
             // Content
             ScrollView {

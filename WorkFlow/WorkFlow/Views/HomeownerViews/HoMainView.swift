@@ -94,7 +94,7 @@ struct HoMainView: View {
                     case .post:
                         HoPostView()
                     case .chat:
-                        HoChatView()
+                        HoBidFeedView()
                     case .notifications:
                         HoNotificationView()
                     }

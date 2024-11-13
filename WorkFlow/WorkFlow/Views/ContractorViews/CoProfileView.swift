@@ -347,6 +347,8 @@ struct ContractorProfileView: View {
                         .environmentObject(AuthController())
                         .environmentObject(JobController())
                         .environmentObject(FlyerController())
+                        .environmentObject(BidController())
+                        .environmentObject(ContractorController())
                 )
                 window.makeKeyAndVisible()
             }

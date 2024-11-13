@@ -10,6 +10,23 @@ class BidController: ObservableObject {
     private var listener2: ListenerRegistration?
     private let db = Firestore.firestore()
     
+    //MARK: -Date Formatter
+    func timeAgoSincePost(_ date: Date) -> String {
+        let formatter = DateComponentsFormatter()
+        formatter.unitsStyle = .full
+        formatter.allowedUnits = [.second, .minute, .hour, .day, .weekOfMonth]
+        formatter.maximumUnitCount = 1
+        
+        let now = Date()
+        let timeInterval = now.timeIntervalSince(date)
+        
+        if let formattedString = formatter.string(from: timeInterval) {
+            return "\(formattedString) ago"
+        } else {
+            return "Just now"
+        }
+    }
+    
     // MARK: - Place Bids
     func placeBid(job: Job, price: Double, description: String) {
         let jobRef = db.collection("jobs").document(job.id.uuidString)
@@ -48,10 +65,29 @@ class BidController: ObservableObject {
             }
         }
     }
+    // MARK: - Decline Other Bids for a Job
+    private func declineOtherBids(exceptBidId acceptedBidId: String, forJobId jobId: String) {
+        // Fetch all bids for the specified job
+        db.collection("bids").whereField("jobId", isEqualTo: jobId).getDocuments { snapshot, error in
+            if let error = error {
+                print("Error fetching bids for job: \(error.localizedDescription)")
+                return
+            }
+            
+            // Update each bid's status to declined, except the accepted one
+            snapshot?.documents.forEach { document in
+                let bidId = document.documentID
+                if bidId != acceptedBidId {
+                    self.updateBidStatus(bidId: bidId, status: .declined)
+                }
+            }
+        }
+    }
     
     // MARK: - Accept Bids
-    func acceptBid(bidId: String) {
+    func acceptBid(bidId: String, jobId: String) {
         updateBidStatus(bidId: bidId, status: .accepted)
+        declineOtherBids(exceptBidId: bidId, forJobId: jobId)
     }
     // MARK: - Decline bids
     func declineBid(bidId: String) {
@@ -68,30 +104,58 @@ class BidController: ObservableObject {
             }
         }
     }
-    // MARK: - Bids by job
-    // use this function to show bids on My jobs view
-    func getBidsForJob(job: Job) {
-        listener1 = db.collection("bids").whereField("jobId", isEqualTo: job.id).addSnapshotListener {(snapshot, error) in
+
+    
+    // MARK: - Fetch Contractor Profile by contractorId
+    func getContractorProfile(contractorId: String, completion: @escaping (ContractorProfile?) -> Void) {
+        // Fetching contractor profile from Firestore
+        db.collection("users").document(contractorId).getDocument { document, error in
             if let error = error {
-                print("error getting bid")
+                print("Error fetching contractor profile: \(error.localizedDescription)")
+                completion(nil)
+                return
+            }
+            
+            guard let data = document?.data() else {
+                print("No contractor profile found")
+                completion(nil)
+                return
+            }
+            
+            // Create ContractorProfile from Firestore data
+            let profile = ContractorProfile(
+                id: UUID(uuidString: document!.documentID) ?? UUID(),
+                contractorName: data["name"] as? String ?? "Unknown",
+                bio: data["bio"] as? String ?? "",
+                skills: data["skills"] as? [String] ?? [],
+                rating: data["rating"] as? Double ?? 0.0,
+                jobsCompleted: data["jobsCompleted"] as? Int ?? 0,
+                city: data["city"] as? String ?? "",
+                email: data["email"] as? String ?? "",
+                imageURL: data["profilePictureURL"] as? String
+            )
+            completion(profile)
+        }
+    }
+
+    // MARK: - Fetch Bids for a Job
+    func getBidsForJob(job: Job) {
+        listener1 = db.collection("bids").whereField("jobId", isEqualTo: job.id.uuidString).addSnapshotListener { snapshot, error in
+            if let error = error {
+                print("Error getting bids: \(error.localizedDescription)")
                 return
             }
             guard let snapshot = snapshot else { return }
             self.jobBids = snapshot.documents.compactMap { document in
                 let data = document.data()
                 print("Fetched bid data: \(data)")
-                
-               guard let idString = data["id"] as? String,
-                     let id = UUID(uuidString: idString) else {
-                     print("could not get bidId")
-                     return nil
-                     }
-                
+
+                let id = data["id"] as? String ?? ""
                 return Bid(
                     id: id,
                     jobId: data["jobId"] as? String ?? "",
                     contractorId: data["contractorId"] as? String ?? "",
-                    homeownerId: data["homeownerid"] as? String ?? "",
+                    homeownerId: data["homeownerId"] as? String ?? "",
                     price: data["price"] as? Double ?? 0.0,
                     description: data["description"] as? String ?? "",
                     status: Bid.bidStatus(rawValue: data["status"] as? String ?? "pending") ?? .pending,
@@ -100,6 +164,20 @@ class BidController: ObservableObject {
             }
         }
     }
+    // MARK: - Count Bids for a Job
+    func countBidsForJob(jobId: UUID, completion: @escaping (Int) -> Void) {
+        db.collection("bids").whereField("jobId", isEqualTo: jobId.uuidString).getDocuments { snapshot, error in
+            if let error = error {
+                print("Error counting bids for job: \(error.localizedDescription)")
+                completion(0) // Return 0 if there was an error
+                return
+            }
+            // Return the count of documents in the snapshot
+            let count = snapshot?.documents.count ?? 0
+            completion(count)
+        }
+    }
+
     // MARK: - Bids by contractor
     // use this function to show the all the bids the contractor has made
     func getBidsForContractor() {
@@ -113,13 +191,16 @@ class BidController: ObservableObject {
             self.coBids = snapshot.documents.compactMap { document in
                 let data = document.data()
                 print("Fetched bid data: \(data)")
-                
+            /*
+             !!!I had to change this portion of the code!!!
                guard let idString = data["id"] as? String,
                      let id = UUID(uuidString: idString) else {
                      print("could not get bidId")
                      return nil
                      }
-                
+                */
+                let id = data["id"] as? String ?? ""
+
                 return Bid(
                     id: id,
                     jobId: data["jobId"] as? String ?? "",

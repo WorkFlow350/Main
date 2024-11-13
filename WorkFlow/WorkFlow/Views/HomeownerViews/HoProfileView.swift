@@ -366,6 +366,8 @@ struct HomeownerProfileView: View {
                         .environmentObject(AuthController())
                         .environmentObject(JobController())
                         .environmentObject(FlyerController())
+                        .environmentObject(BidController())
+                        .environmentObject(ContractorController())
                 )
                 window.makeKeyAndVisible()
             }
@@ -414,5 +416,7 @@ struct HomeownerProfileView_Previews: PreviewProvider {
             .environmentObject(AuthController())
             .environmentObject(JobController())
             .environmentObject(FlyerController())
+            .environmentObject(BidController())
+            .environmentObject(ContractorController())
     }
 }

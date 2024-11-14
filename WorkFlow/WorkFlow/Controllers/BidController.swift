@@ -48,9 +48,9 @@ class BidController: ObservableObject {
             if let document = document, document.exists {
                 if let homeownerId = document.get("homeownerId") as? String {
                     print("Successfully grabbed homeownerId: \(homeownerId)")
-
+                    let bidId = UUID().uuidString
                     let bidData: [String: Any] = [
-                        "id": UUID().uuidString,
+                        "id": bidId,//UUID().uuidString,
                         "jobId": job.id.uuidString,
                         "contractorId": contractorId,
                         "homeownerId": homeownerId,
@@ -62,7 +62,8 @@ class BidController: ObservableObject {
                     
                     print("Attempting to add bid data to Firestore: \(bidData)")
                     
-                    self.db.collection("bids").addDocument(data: bidData) { error in
+                    //self.db.collection("bids").addDocument(data: bidData) { error in
+                    self.db.collection("bids").document(bidId).setData(bidData) { error in
                         if let error = error {
                             print("Error placing bid: \(error.localizedDescription)")
                         } else {
@@ -85,13 +86,14 @@ class BidController: ObservableObject {
                 print("Error fetching bids for job: \(error.localizedDescription)")
                 return
             }
-            
+            print("Accepted Bid ID: \(acceptedBidId)")
             // Update each bid's status to declined, except the accepted one
             snapshot?.documents.forEach { document in
                 let bidId = document.documentID
                 if bidId != acceptedBidId {
                     self.updateBidStatus(bidId: bidId, status: .declined)
                 }
+
             }
         }
     }

@@ -69,7 +69,8 @@ struct JobCellView_Previews: PreviewProvider {
             city: "Sample City",
             category: .landscaping,
             datePosted: Date(),
-            imageURL: "https://via.placeholder.com/300"
+            imageURL: "https://via.placeholder.com/300",
+            isAccepted: false
         )
         
         JobCellView(job: sampleJob)

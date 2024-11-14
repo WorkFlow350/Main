@@ -31,7 +31,8 @@ class HomeownerJobController: ObservableObject {
                         city: data["city"] as? String ?? "",
                         category: JobCategory(rawValue: data["category"] as? String ?? "Landscaping") ?? .landscaping,
                         datePosted: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
-                        imageURL: data["imageURL"] as? String
+                        imageURL: data["imageURL"] as? String,
+                        isAccepted: data["isAccepted"] as? Bool ?? false
                     )
                 }
                 print("Total jobs fetched: \(self.homeownerJobs.count)") // Debug print
@@ -76,7 +77,8 @@ class HomeownerJobController: ObservableObject {
             "category": job.category.rawValue,
             "datePosted": Timestamp(date: job.datePosted),
             "imageURL": job.imageURL,
-            "homeownerId": Auth.auth().currentUser?.uid ?? ""]
+            "homeownerId": Auth.auth().currentUser?.uid ?? "",
+            "isAccepted": job.isAccepted]
         //!!!I changed the bottom comment to get the right document!!!
         //db.collection("jobs").addDocument(data: jobData) { error in
         // Set the document ID to match job.id.uuidString

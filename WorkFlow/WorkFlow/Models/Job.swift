@@ -15,6 +15,7 @@ struct Job: Identifiable, Codable, Hashable {
     var category: JobCategory
     var datePosted: Date
     var imageURL: String?
+    var isAccepted: Bool //delete me
 }
 
 // MARK: - NotificationModel Struct

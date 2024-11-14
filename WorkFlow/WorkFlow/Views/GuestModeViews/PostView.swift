@@ -11,6 +11,7 @@ struct PostView: View {
     @State private var selectedCategories: [JobCategory] = []
     @State private var selectedImage: UIImage? = nil
     @State private var imageURL: String = ""
+    @State private var isAccepted: Bool = false
     @State private var isImagePickerPresented: Bool = false
     @State private var isHomeowner: Bool = true
     @State private var isCategoryPickerPresented: Bool = false
@@ -249,7 +250,8 @@ struct PostView: View {
                                             city: city,
                                             category: selectedCategories.first ?? .landscaping,
                                             datePosted: Date(),
-                                            imageURL: url
+                                            imageURL: url,
+                                            isAccepted: isAccepted
                                         )
                                         jobController.postJob(job: newJob, selectedImage: selectedImage)
                                         jobController.addNotification(newJob)
@@ -271,6 +273,7 @@ struct PostView: View {
                                             city: city,
                                             email: email,
                                             imageURL: url
+                                            
                                         )
                                         flyerController.postFlyer(profile: newFlyer, selectedImage: selectedImage)
                                         resetFields()

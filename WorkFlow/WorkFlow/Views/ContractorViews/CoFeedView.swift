@@ -51,7 +51,7 @@ struct CoFeedView: View {
                     .background(Color.clear)
                 }
                 .onAppear {
-                    jobController.fetchJobs()
+                    jobController.fetchJobsIfAvail()
                 }
             }
         }

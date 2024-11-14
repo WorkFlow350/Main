@@ -267,7 +267,8 @@ struct HoPostView: View {
                             city: city,
                             category: selectedCategories.first ?? .landscaping,
                             datePosted: Date(),
-                            imageURL: url
+                            imageURL: url,
+                            isAccepted: false
                         )
                         homeownerJobController.postJob(job: newJob, selectedImage: selectedImage)
                         resetFields()

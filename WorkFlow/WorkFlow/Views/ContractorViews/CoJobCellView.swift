@@ -139,8 +139,7 @@ struct CoJobCellView_Previews: PreviewProvider {
             city: "Sample City",
             category: .landscaping,
             datePosted: Date(),
-            imageURL: "https://via.placeholder.com/300",
-            isAccepted: false
+            imageURL: "https://via.placeholder.com/300"
         )
 
         CoJobCellView(job: sampleJob)

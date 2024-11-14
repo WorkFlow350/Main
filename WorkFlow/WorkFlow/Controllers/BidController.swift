@@ -97,23 +97,11 @@ class BidController: ObservableObject {
             }
         }
     }
-    // MARK: - Update Job when Bid is Accepted
-    func updateJobStatusForAcceptedBid(jobId: String) {
-        let jobRef = db.collection("jobs").document(jobId)
-        jobRef.updateData(["isAccepted": true]) { error in
-            if let error = error {
-                print("Error updating job status: \(error.localizedDescription)")
-            } else {
-                print("Job status updated to isAccepted: true")
-            }
-        }
-    }
     
     // MARK: - Accept Bids
     func acceptBid(bidId: String, jobId: String) {
         updateBidStatus(bidId: bidId, status: .accepted)
         declineOtherBids(exceptBidId: bidId, forJobId: jobId)
-        updateJobStatusForAcceptedBid(jobId: jobId)
     }
     // MARK: - Decline bids
     func declineBid(bidId: String) {

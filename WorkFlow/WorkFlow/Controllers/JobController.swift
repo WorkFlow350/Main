@@ -85,9 +85,6 @@ class JobController: ObservableObject {
                     guard let imageURL = data["imageURL"] as? String else {
                         return print("Could not get job data")
                     }
-                    guard let isAccepted = data["isAccepted"] as? Bool else {
-                        return print("Could not get job data")
-                    }
                     
                     let newJob = Job(id: id,
                                      title: title,
@@ -95,9 +92,7 @@ class JobController: ObservableObject {
                                      city: city,
                                      category: category,
                                      datePosted: datePosted,
-                                     imageURL: imageURL,
-                                     isAccepted: isAccepted
-                    )
+                                     imageURL: imageURL)
                     self.jobsNotification.append(newJob)
                 }
             }
@@ -160,37 +155,9 @@ class JobController: ObservableObject {
                     city: data["city"] as? String ?? "",
                     category: JobCategory(rawValue: data["category"] as? String ?? "Landscaping") ?? .landscaping,
                     datePosted: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
-                    imageURL: data["imageURL"] as? String,
-                    isAccepted: data["isAccepted"] as? Bool ?? false
+                    imageURL: data["imageURL"] as? String
                 )
             } ?? []
-
-            print("Total jobs fetched: \(self.jobs.count)")
-        }
-    }
-    
-    //MARK: Add Filter of isAccepted == False
-    func fetchJobsIfAvail() {
-        let db = Firestore.firestore()
-        db.collection("jobs").order(by: "datePosted", descending: true).getDocuments { snapshot, error in
-            if let error = error {
-                print("Error fetching jobs: \(error.localizedDescription)")
-                return
-            }
-
-            self.jobs = snapshot?.documents.compactMap { document in
-                let data = document.data()
-                return Job(
-                    id: UUID(uuidString: document.documentID) ?? UUID(),
-                    title: data["title"] as? String ?? "",
-                    description: data["description"] as? String ?? "",
-                    city: data["city"] as? String ?? "",
-                    category: JobCategory(rawValue: data["category"] as? String ?? "Landscaping") ?? .landscaping,
-                    datePosted: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
-                    imageURL: data["imageURL"] as? String,
-                    isAccepted: data["isAccepted"] as? Bool ?? false
-                )
-            }.filter { $0.isAccepted == false } ?? []
 
             print("Total jobs fetched: \(self.jobs.count)")
         }

@@ -5,16 +5,28 @@ struct AlertMessage: Identifiable {
     var message: String
 }
 
+extension NumberFormatter {
+    static var currency: NumberFormatter {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.maximumFractionDigits = 0
+        formatter.currencySymbol = "$"
+        formatter.locale = Locale(identifier: "en_US")
+        return formatter
+    }
+}
+
 struct CoJobCellView: View {
     // MARK: - Properties
     let job: Job
 
     // MARK: - Environment Objects
     @EnvironmentObject var bidController: BidController
+    @EnvironmentObject var authController: AuthController
 
     @State private var isFullScreen: Bool = false
     @State private var showBidSheet: Bool = false
-    @State private var bidPrice: String = ""
+    @State private var bidPriceText: String = "$0"
     @State private var bidDescription: String = ""
     @State private var bidPlaced: Bool = false
     @State private var confirmationMessage: AlertMessage?
@@ -45,18 +57,37 @@ struct CoJobCellView: View {
                         }
                     }
                     
-                    Text(job.title).font(.largeTitle).fontWeight(.bold).foregroundColor(.white).padding(.leading)
+                    Text(job.title)
+                        .font(.largeTitle)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                        .padding(.leading)
+                    
                     HStack {
-                        Text(job.city).font(.caption).fontWeight(.bold).foregroundColor(.white)
-                        Text("• \(job.category.rawValue)").font(.caption).foregroundColor(.white)
+                        Text(job.city)
+                            .font(.caption)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                        Text("• \(job.category.rawValue)")
+                            .font(.caption)
+                            .foregroundColor(.white)
                     }
                     .padding(.leading)
+                    
                     Text("Posted \(DateFormatter.localizedString(from: job.datePosted, dateStyle: .short, timeStyle: .short))")
-                        .font(.caption).foregroundColor(.white).padding(.leading).padding(.bottom, 5)
+                        .font(.caption)
+                        .foregroundColor(.white)
+                        .padding(.leading)
+                        .padding(.bottom, 5)
 
                     VStack(alignment: .leading, spacing: 5) {
-                        Text("Description:").font(.body).fontWeight(.bold).foregroundColor(.white)
-                        Text(job.description).font(.body).foregroundColor(.white)
+                        Text("Description:")
+                            .font(.body)
+                            .fontWeight(.bold)
+                            .foregroundColor(.white)
+                        Text(job.description)
+                            .font(.body)
+                            .foregroundColor(.white)
                     }
                     .padding(.leading)
                     .padding(.top, 5)
@@ -78,7 +109,10 @@ struct CoJobCellView: View {
                     .padding(.horizontal)
                     .padding(.bottom, 20)
                     .disabled(bidPlaced)
-                    .sheet(isPresented: $showBidSheet) { bidEntrySheet }
+                    .sheet(isPresented: $showBidSheet) {
+                        bidEntrySheet
+                            .presentationDetents([.fraction(0.3)])
+                    }
                     .alert(item: $confirmationMessage) { alertMessage in
                         Alert(title: Text("Bid Status"), message: Text(alertMessage.message), dismissButton: .default(Text("OK")))
                     }
@@ -88,34 +122,60 @@ struct CoJobCellView: View {
                 }
             }
         }
+        .onAppear {
+            checkExistingBid()
+        }
     }
 
     private var bidEntrySheet: some View {
         VStack(spacing: 20) {
-            Text("Place a Bid").font(.headline).padding(.top)
-            TextField("Bid Amount", text: $bidPrice)
-                .keyboardType(.decimalPad)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding(.horizontal)
-            TextField("Description", text: $bidDescription)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding(.horizontal)
-            Button(action: { placeBid() }) {
-                Text("Submit Bid")
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.black)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
+            HStack {
+                Button("Cancel") {
+                    showBidSheet = false
+                }
+                .foregroundColor(.red)
+                Spacer()
+                Text("PLACE A BID")
+                    .font(.headline)
+                    .fontWeight(.bold)
+                Spacer()
+                Button(action: placeBid) {
+                    Image(systemName: "checkmark")
+                        .foregroundColor(.green)
+                }
             }
-            .padding(.horizontal)
+            .padding()
+
+            Divider()
+
+            // Editable Bid Amount with formatting
+            TextField("$0", text: $bidPriceText)
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .multilineTextAlignment(.center)
+                .keyboardType(.numberPad)
+                .onChange(of: bidPriceText) { newValue in
+                    bidPriceText = formatCurrencyInput(newValue)
+                }
+            TextField("Say why you want this job", text: $bidDescription)
+                .padding()
+                .background(Color(.systemGray6))
+                .cornerRadius(10)
+                .padding(.horizontal)
+
+            Spacer()
         }
         .padding()
+        .background(Color.white)
+        .cornerRadius(20)
+        .padding(.horizontal, 20)
+        
     }
 
     private func placeBid() {
-        guard let price = Double(bidPrice), !bidDescription.isEmpty else {
-            confirmationMessage = AlertMessage(message: "Invalid bid amount or description.")
+        let cleanedValue = bidPriceText.replacingOccurrences(of: "$", with: "").replacingOccurrences(of: ",", with: "")
+        guard let price = Double(cleanedValue), price > 0 else {
+            confirmationMessage = AlertMessage(message: "Please enter a valid bid amount.")
             return
         }
         
@@ -123,28 +183,48 @@ struct CoJobCellView: View {
         
         bidPlaced = true
         showBidSheet = false
-        bidPrice = ""
+        bidPriceText = "$0"
         bidDescription = ""
         confirmationMessage = AlertMessage(message: "Your bid was successfully placed!")
     }
+    
+    private func checkExistingBid() {
+        guard let contractorId = authController.userSession?.uid else { return }
+        
+        bidController.getBidsForJob(job: job)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            if let existingBid = bidController.jobBids.first(where: { $0.contractorId == contractorId && $0.status != .declined }) {
+                bidPlaced = true
+            } else {
+                bidPlaced = false
+            }
+        }
+    }
+
+    private func formatCurrencyInput(_ input: String) -> String {
+        let cleanedInput = input.replacingOccurrences(of: "[^0-9]", with: "", options: .regularExpression) // Remove all non-numeric characters
+        if let value = Int(cleanedInput) {
+            return NumberFormatter.currency.string(from: NSNumber(value: value)) ?? "$0"
+        }
+        return "$0"
+    }
 }
 
-// MARK: - Preview
 struct CoJobCellView_Previews: PreviewProvider {
     static var previews: some View {
         let sampleJob = Job(
             id: UUID(),
-            title: "Sample Job Title",
-            description: "This is a sample job description that provides details about the job.",
+            title: "Sample Landscaping Job",
+            description: "This is a detailed description of the landscaping job, including requirements and expectations.",
             city: "Sample City",
             category: .landscaping,
             datePosted: Date(),
             imageURL: "https://via.placeholder.com/300"
         )
-
+        
         CoJobCellView(job: sampleJob)
             .environmentObject(BidController())
-            .environmentObject(JobController())
+            .environmentObject(AuthController())
             .previewLayout(.sizeThatFits)
             .padding()
             .background(Color.white)

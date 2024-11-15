@@ -1,19 +1,11 @@
 import SwiftUI
 
 struct CoNotificationView: View {
-
-    // MARK: - Environment Objects
-    @EnvironmentObject var authController: AuthController
-    @EnvironmentObject var homeownerJobController: HomeownerJobController
-    @EnvironmentObject var jobController: JobController
-    @EnvironmentObject var flyerController: FlyerController
     @EnvironmentObject var bidController: BidController
-    @EnvironmentObject var contractorController: ContractorController
     
     var body: some View {
         NavigationStack {
             ZStack {
-                // MARK: - Background Gradient
                 LinearGradient(
                     gradient: Gradient(colors: [
                         Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0),
@@ -24,9 +16,7 @@ struct CoNotificationView: View {
                 )
                 .ignoresSafeArea()
                 
-                // MARK: - Title and Clear Button in HStack
-                VStack(alignment: .leading)  {
-                    // MARK: - Title and Clear Button in HStack
+                VStack(alignment: .leading) {
                     HStack {
                         Text("Notifications")
                             .font(.largeTitle)
@@ -37,7 +27,7 @@ struct CoNotificationView: View {
                         
                         Spacer()
 
-                        if !jobController.notifications.isEmpty {
+                        if !bidController.bidNotifications.isEmpty {
                             Button(action: clearAllNotifications) {
                                 Text("Clear")
                                     .font(.system(size: 14, weight: .semibold))
@@ -46,7 +36,7 @@ struct CoNotificationView: View {
                                     .padding(.vertical, 6)
                                     .background(
                                         LinearGradient(
-                                            gradient: Gradient(colors: [Color(hex: "#4A90E2"), Color(hex: "#1E3A8A")]),
+                                            gradient: Gradient(colors: [Color.blue, Color.blue.opacity(0.8)]),
                                             startPoint: .leading,
                                             endPoint: .trailing
                                         )
@@ -57,51 +47,67 @@ struct CoNotificationView: View {
                             .padding(.trailing)
                         }
                     }
-                    Spacer()
-                    // MARK: - No Notifications Message
-                    if jobController.notifications.isEmpty {
-                        VStack {
-                            Spacer() // Pushes content down
-                            Text("No new notifications")
-                                .font(.headline)
-                                .foregroundColor(.white)
-                                .multilineTextAlignment(.center)
-                            Spacer()
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    
+                    if bidController.bidNotifications.isEmpty {
+                        noNotificationsView
                     } else {
-                        // MARK: - Notifications List
-                        List {
-                            ForEach(jobController.notifications.sorted(by: { notification1, notification2 in
-                                let job1 = jobController.jobsNotification.first { $0.id == notification1.jobId }
-                                let job2 = jobController.jobsNotification.first { $0.id == notification2.jobId }
-                                return (job1?.datePosted ?? Date()) > (job2?.datePosted ?? Date())
-                            }), id: \.self) { notification in
-                                if let job = jobController.jobsNotification.first(where: { $0.id == notification.jobId }) {
-                                    NavigationLink(destination: JobDetailView(job: job)) {
-                                        NotificationCard(notification: notification, job: job, jobController: jobController)
-                                    }
-                                    .listRowBackground(Color.clear)
-                                }
-                            }
-                            .onDelete(perform: deleteNotification)
-                        }
-                        .listStyle(PlainListStyle())
-                        .scrollContentBackground(.hidden)
+                        notificationsListView
                     }
                 }
             }
         }
     }
 
-    // MARK: - Delete Notification
-    private func deleteNotification(at offsets: IndexSet) {
-        jobController.notifications.remove(atOffsets: offsets)
+    private var noNotificationsView: some View {
+        VStack {
+            Spacer()
+            Text("No new notifications")
+                .font(.headline)
+                .foregroundColor(.white)
+                .multilineTextAlignment(.center)
+                .padding()
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.clear)
     }
 
-    // MARK: - Clear All Notifications
+    private var notificationsListView: some View {
+        List {
+            ForEach(bidController.bidNotifications.sorted(by: { $0.date > $1.date })) { notification in
+                VStack(alignment: .leading) {
+                    Text(notification.message)
+                        .font(.headline)
+                        .foregroundColor(
+                            notification.status == .accepted ? .green :
+                            notification.status == .declined ? .red : .gray
+                        )
+                    Text(notification.date, style: .time)
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                }
+                .padding(.vertical, 8)
+                .listRowBackground(Color.clear)
+            }
+            .onDelete(perform: deleteNotification)
+        }
+        .listStyle(PlainListStyle())
+        .scrollContentBackground(.hidden)
+    }
+
+    private func deleteNotification(at offsets: IndexSet) {
+        for index in offsets {
+            let notification = bidController.bidNotifications[index]
+            bidController.markNotificationAsRead(notification)
+        }
+        bidController.bidNotifications.remove(atOffsets: offsets)
+    }
+
     private func clearAllNotifications() {
-        jobController.notifications.removeAll()
+        for notification in bidController.bidNotifications {
+            bidController.markNotificationAsRead(notification)
+        }
+        bidController.bidNotifications.removeAll()
     }
 }
 
@@ -109,11 +115,6 @@ struct CoNotificationView: View {
 struct CoNotificationView_Previews: PreviewProvider {
     static var previews: some View {
         CoNotificationView()
-            .environmentObject(HomeownerJobController())
-            .environmentObject(AuthController())
-            .environmentObject(JobController())
-            .environmentObject(FlyerController())
             .environmentObject(BidController())
-            .environmentObject(ContractorController())
     }
 }

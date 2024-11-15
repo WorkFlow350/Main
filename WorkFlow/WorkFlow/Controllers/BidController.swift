@@ -10,6 +10,8 @@ class BidController: ObservableObject {
     @Published var pendingBids: [Bid] = []
     @Published var approvedBids: [Bid] = []
     @Published var completedBids: [Bid] = []
+    @Published var declinedBids: [Bid] = []
+
     private var listener: ListenerRegistration?
 
     private var listener1: ListenerRegistration?
@@ -187,6 +189,24 @@ class BidController: ObservableObject {
                 imageURL: data["profilePictureURL"] as? String
             )
             completion(profile)
+        }
+    }
+    // MARK: - Fetch Job Description by jobId
+    func getJobDescription(jobId: String, completion: @escaping (String?) -> Void) {
+        db.collection("jobs").document(jobId).getDocument { document, error in
+            if let error = error {
+                print("Error fetching job description: \(error.localizedDescription)")
+                completion(nil)
+                return
+            }
+            
+            guard let data = document?.data(), let description = data["description"] as? String else {
+                print("No job description found for jobId: \(jobId)")
+                completion(nil)
+                return
+            }
+            
+            completion(description)
         }
     }
 
@@ -371,7 +391,8 @@ class BidController: ObservableObject {
             self.pendingBids = []
             self.approvedBids = []
             self.completedBids = []
-
+            self.declinedBids = []
+            
             for document in snapshot.documents {
                 let data = document.data()
                 let bid = self.parseBidData(data)
@@ -384,8 +405,8 @@ class BidController: ObservableObject {
                     self.approvedBids.append(bid)
                 case .completed:
                     self.completedBids.append(bid)
-                default:
-                    break
+                case .declined:
+                    self.declinedBids.append(bid)
                 }
             }
         }
@@ -404,6 +425,23 @@ class BidController: ObservableObject {
             bidDate: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date()
         )
     }
+
+    func fetchBid(by bidId: String, completion: @escaping (Bid?) -> Void) {
+        db.collection("bids").document(bidId).getDocument { document, error in
+            if let data = document?.data() {
+                let bid = self.parseBidData(data)
+                completion(bid)
+            } else {
+                print("Error fetching bid: \(error?.localizedDescription ?? "Unknown error")")
+                completion(nil)
+            }
+        }
+    }
+
+    func getBid(by bidId: String) -> Bid? {
+        return coBids.first(where: { $0.id == bidId })
+    }
+    
     deinit {
         listener1?.remove()
         listener2?.remove()

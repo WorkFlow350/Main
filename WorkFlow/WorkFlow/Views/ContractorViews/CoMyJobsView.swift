@@ -1,4 +1,6 @@
 import SwiftUI
+import FirebaseAuth
+import Combine
 
 // MARK: - CoMyJobsView
 struct CoMyJobsView: View {
@@ -8,8 +10,9 @@ struct CoMyJobsView: View {
     @State private var selectedJob: Job?
 
     enum JobTab: String, CaseIterable {
+        case all = "All"
         case pending = "Pending"
-        case approved = "Approved"
+        case accepted = "Accepted"
         case completed = "Completed"
     }
 
@@ -52,35 +55,49 @@ struct CoMyJobsView: View {
     }
 
     private var jobStatusPicker: some View {
-        Picker("Job Status", selection: $selectedTab) {
+        HStack {
+            Spacer()
             ForEach(JobTab.allCases, id: \.self) { tab in
-                Text(tab.rawValue).tag(tab)
+                Button(action: {
+                    selectedTab = tab
+                }) {
+                    Text(tab.rawValue)
+                        .font(.system(size: 12))
+                        .fontWeight(.semibold)
+                        .foregroundColor(selectedTab == tab ? .black : .white)
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(selectedTab == tab ? Color.white : Color.clear)
+                        )
+                }
             }
+            Spacer()
         }
-        .pickerStyle(SegmentedPickerStyle())
-        .padding()
-        .background(Color.white.opacity(0.2))
-        .cornerRadius(10)
         .padding(.horizontal)
     }
 
     private var jobListView: some View {
         List(currentBids()) { bid in
             NavigationLink(destination: DetailedCoJobView(bid: bid)) {
-                BidCellYView(bid: bid)
+                BidCellCoView(bid: bid)
                     .padding(.vertical, 8)
             }
             .listRowBackground(Color.clear)
         }
         .listStyle(PlainListStyle())
         .background(Color.clear)
+        .padding(.bottom, 43)
     }
 
     private func currentBids() -> [Bid] {
         switch selectedTab {
+        case .all:
+            return bidController.pendingBids + bidController.approvedBids + bidController.completedBids + bidController.declinedBids
         case .pending:
             return bidController.pendingBids
-        case .approved:
+        case .accepted:
             return bidController.approvedBids
         case .completed:
             return bidController.completedBids
@@ -91,12 +108,74 @@ struct CoMyJobsView: View {
         bidController.updateBidStatus(bidId: bid.id, status: .completed)
     }
 }
+// MARK: - BidCellCoView
+struct BidCellCoView: View {
+    let bid: Bid
+    let maxDescriptionLength = 25
+    @EnvironmentObject var bidController: BidController
+    @EnvironmentObject var homeownerJobController: HomeownerJobController
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            if bid.status == .completed {
+                Text("JOB CLOSED")
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+                    .padding(.vertical, 4)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.red)
+                    .cornerRadius(8)
+                    .padding(.bottom, 5)
+            }
+            HStack {
+                Text("Amount: \(bid.price, specifier: "%.2f")")
+                    .font(.headline)
+                    .foregroundColor(.green)
+
+                Spacer()
+                
+                Text("Status: \(bid.status.rawValue.capitalized)")
+                    .font(.footnote)
+                    .foregroundColor(colorForStatus(bid.status))
+            }
+            
+            Text("Description: \(limitedDescription)")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+            
+            HStack(spacing: 4) {
+                Image(systemName: "clock")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                Text(bidController.timeAgoSincePost(bid.bidDate))
+                    .font(.footnote)
+                    .foregroundColor(.gray)
+            }
+        }
+        .padding(12)
+        .background(Color.white)
+        .cornerRadius(12)
+        .shadow(radius: 5)
+    }
+    private var limitedDescription: String {
+        if bid.description.count > maxDescriptionLength {
+            let prefixText = bid.description.prefix(maxDescriptionLength)
+            return "\(prefixText)..."
+        } else {
+            return bid.description
+        }
+    }
+}
 
 // MARK: - DetailedCoJobView
 struct DetailedCoJobView: View {
     let bid: Bid
     @EnvironmentObject var bidController: BidController
+    @EnvironmentObject var homeownerJobController: HomeownerJobController
     @State private var homeownerProfile: HomeownerProfile?
+    @State private var jobDescription: String = "Loading..."
+    @State private var cancellables = Set<AnyCancellable>()
 
     var body: some View {
         ZStack {
@@ -105,7 +184,7 @@ struct DetailedCoJobView: View {
                 VStack(alignment: .leading, spacing: 16) {
                     bidAmountSection
                     Divider()
-                    bidDescriptionSection
+                    jobDescriptionSection
                     Divider()
                     bidStatusSection
                     Divider()
@@ -115,8 +194,31 @@ struct DetailedCoJobView: View {
                         Divider()
                     }
                     
-                    if bid.status == .pending {
+                    if bid.status == .accepted {
                         actionButtons
+                    } else if bid.status == .pending {
+                        Text("Needs to be accepted to complete")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.gray.opacity(0.2))
+                            .foregroundColor(.gray)
+                            .cornerRadius(8)
+                    } else if bid.status == .completed {
+                        Text("Job completed")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.green.opacity(0.2))
+                            .foregroundColor(.green)
+                            .cornerRadius(8)
+                    } else if bid.status == .declined {
+                        Text("Bid declined")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.red.opacity(0.2))
+                            .foregroundColor(.red)
+                            .cornerRadius(8)
+                    } else {
+                        EmptyView()
                     }
                 }
                 .padding()
@@ -128,10 +230,34 @@ struct DetailedCoJobView: View {
             .navigationTitle("Bid Details")
             .onAppear {
                 loadHomeownerProfile()
+                fetchJobDescription()
             }
         }
     }
-
+    // MARK: - Fetch Job Description
+    private func fetchJobDescription() {
+        print("Fetching job description for job ID: \(bid.jobId)")
+        
+        // First, check if the job is already available in homeownerJobController
+        if let job = homeownerJobController.homeownerJobs.first(where: { $0.id.uuidString == bid.jobId }) {
+            jobDescription = job.description
+            print("Job description found in existing data: \(jobDescription)")
+        } else {
+            // If job is not available, use BidController to fetch only the description
+            bidController.getJobDescription(jobId: bid.jobId) { description in
+                DispatchQueue.main.async {
+                    if let description = description {
+                        self.jobDescription = description
+                        print("Job description fetched from database: \(self.jobDescription)")
+                    } else {
+                        self.jobDescription = "Description not available"
+                        print("No job description found for job ID: \(bid.jobId)")
+                    }
+                }
+            }
+        }
+    }
+    
     // MARK: - Background Gradient
     private var backgroundGradient: some View {
         LinearGradient(
@@ -158,15 +284,17 @@ struct DetailedCoJobView: View {
         .padding(.bottom, 8)
     }
 
-    // MARK: - Bid Description Section
-    private var bidDescriptionSection: some View {
+
+    // MARK: - Job Description Section
+    private var jobDescriptionSection: some View {
         VStack(alignment: .leading) {
-            Text("Bid Description")
+            Text("Job Description")
                 .font(.headline)
                 .foregroundColor(.secondary)
-            Text(bid.description)
+            Text(jobDescription)
                 .font(.body)
                 .foregroundColor(.primary)
+                .multilineTextAlignment(.leading)
         }
         .padding(.bottom, 8)
     }
@@ -179,16 +307,17 @@ struct DetailedCoJobView: View {
                 .foregroundColor(.secondary)
             Text(bid.status.rawValue.capitalized)
                 .font(.subheadline)
-                .foregroundColor(bid.status == .accepted ? .green : bid.status == .declined ? .red : .orange)
+                .foregroundColor(colorForStatus(bid.status))
+
                 .fontWeight(.semibold)
         }
         .padding(.bottom, 8)
     }
 
-    // MARK: - Homeowner Profile Section
+    // MARK: - Homeowner Section
     private func homeownerProfileSection(profile: HomeownerProfile) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Homeowner Profile")
+            Text("Homeowner")
                 .font(.headline)
                 .foregroundColor(.secondary)
                 .padding(.bottom, 4)
@@ -222,15 +351,32 @@ struct DetailedCoJobView: View {
             }
             
             VStack(alignment: .leading, spacing: 6) {
-                Text("Bio:")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.primary)
-                    .padding(.top, 4)
-                
-                Text(profile.bio)
-                    .font(.body)
-                    .foregroundColor(.secondary)
+                if bid.status == .accepted || bid.status == .completed{
+                    Text("Bio:")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
+                        .padding(.top, 4)
+                    Text(profile.bio)
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                    Text("Contact Information:")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
+                    Text(profile.email ?? "Not available")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                } else {
+                    Text("Bio:")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
+                        .padding(.top, 4)
+                    Text(profile.bio)
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                }
             }
         }
         .padding(.top, 10)
@@ -262,6 +408,20 @@ struct DetailedCoJobView: View {
         bidController.getHomeownerProfile(homeownerId: bid.homeownerId) { profile in
             self.homeownerProfile = profile
         }
+    }
+}
+
+// MARK: - Color Status
+private func colorForStatus(_ status: Bid.bidStatus) -> Color {
+    switch status {
+    case .pending:
+        return .orange
+    case .accepted:
+        return .green
+    case .declined:
+        return .red
+    case .completed:
+        return .blue
     }
 }
 

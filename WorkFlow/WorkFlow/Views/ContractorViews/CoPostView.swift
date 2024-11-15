@@ -204,7 +204,6 @@ struct CoPostView: View {
         .accentColor(.white)
         .background(Color.white.opacity(0.2))
         .cornerRadius(8)
-        .padding()
     }
     // MARK: - Image Picker Section
     private var imagePickerSection: some View {
@@ -297,7 +296,7 @@ struct CoPostView: View {
                 .shadow(color: .white, radius: 2, x: 0, y: 0)
         }
         .disabled(title.isEmpty || description.isEmpty || city.isEmpty || email.isEmpty || selectedImage == nil)
-        .padding(50)
+        .padding(.bottom, 50)
     }
 
     // MARK: - Reset Fields

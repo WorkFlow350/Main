@@ -1,8 +1,21 @@
 import SwiftUI
 import FirebaseAuth
 
+enum JobFilter: String, CaseIterable {
+    case all = "All Jobs"
+    case landscaping = "Landscaping"
+    case cleaning = "Cleaning"
+    case construction = "Construction"
+}
+
+
 // MARK: - Contractor Feed View
 struct CoFeedView: View {
+    
+    @State private var selectedFilter: JobFilter = .all
+    @State private var isFilterMenuVisible: Bool = false
+    @State private var selectedCategories: [JobCategory] = []
+    
     // MARK: - Environment Objects
     @EnvironmentObject var authController: AuthController
     @EnvironmentObject var jobController: JobController
@@ -33,8 +46,10 @@ struct CoFeedView: View {
                             .padding(.horizontal)
                             .padding(.top, 20)
 
-                        Spacer(minLength: 10)
+                        Spacer()
 
+                        //filterDropdown
+                        
                         // MARK: - Job Listings
                         LazyVStack(spacing: 1) {
                             ForEach(jobController.jobs.filter { job in
@@ -48,6 +63,7 @@ struct CoFeedView: View {
                     }
                     .background(Color.clear)
                 }
+                .padding(.bottom, 43)
                 .onAppear {
                     jobController.fetchJobs()
                     bidController.getBidsForContractor()
@@ -56,14 +72,62 @@ struct CoFeedView: View {
         }
     }
     
+    // MARK: - Filter Jobs
+//    private var filterDropdown: some View {
+//        DisclosureGroup("Filter Jobs", isExpanded: $isFilterMenuVisible) {
+//            VStack(alignment: .leading, spacing: 2) {
+//                ForEach(JobFilter.allCases, id: \.self) { filter in
+//                    Button(action: {
+//                        toggleCategorySelection(filter)
+//                    }) {
+//                        HStack {
+//                            Text(filter.rawValue)
+//                                .foregroundColor(.white)
+//                            Spacer()
+//                            if selectedCategories.contains(where: { $0.rawValue == filter.rawValue }) {
+//                                Image(systemName: "checkmark")
+//                                    .foregroundColor(.blue)
+//                            }
+//                        }
+//                        .padding(.vertical, 3)
+//                    }
+//                }
+//            }
+//            .padding(.horizontal, 8)
+//            .padding(.vertical, 5)
+//        }
+//        .padding(.horizontal, 5)
+//        .frame(maxWidth: 152)
+//        .background(Color.white.opacity(0.2))
+//        .cornerRadius(8)
+//    }
+    private func toggleCategorySelection(_ filter: JobFilter) {
+        if filter == .all {
+            selectedCategories.removeAll()
+        } else {
+            if let category = JobCategory(rawValue: filter.rawValue) {
+                if selectedCategories.contains(category) {
+                    selectedCategories.removeAll { $0 == category }
+                } else {
+                    selectedCategories.append(category)
+                }
+            }
+        }
+    }
+
     // MARK: - Jobs To Display
     private func shouldDisplayJob(_ job: Job) -> Bool {
         if let contractorId = authController.userSession?.uid {
             if let existingBid = bidController.coBids.first(where: { $0.jobId == job.id.uuidString && $0.contractorId == contractorId }) {
-                return existingBid.status != .accepted && existingBid.status != .completed
+                if existingBid.status == .accepted || existingBid.status == .completed {
+                    return false
+                }
             }
         }
-        return true
+        if selectedCategories.isEmpty {
+            return true
+        }
+        return selectedCategories.contains(job.category)
     }
 }
 

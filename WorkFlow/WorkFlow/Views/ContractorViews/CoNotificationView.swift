@@ -1,5 +1,6 @@
 import SwiftUI
 
+// MARK: - Contractor View
 struct CoNotificationView: View {
     @EnvironmentObject var bidController: BidController
     
@@ -58,6 +59,7 @@ struct CoNotificationView: View {
         }
     }
 
+    // MARK: - No Notifications
     private var noNotificationsView: some View {
         VStack {
             Spacer()
@@ -72,29 +74,51 @@ struct CoNotificationView: View {
         .background(Color.clear)
     }
 
+    // MARK: - Notification List
     private var notificationsListView: some View {
         List {
             ForEach(bidController.bidNotifications.sorted(by: { $0.date > $1.date })) { notification in
-                VStack(alignment: .leading) {
-                    Text(notification.message)
-                        .font(.headline)
-                        .foregroundColor(
-                            notification.status == .accepted ? .green :
-                            notification.status == .declined ? .red : .gray
-                        )
-                    Text(notification.date, style: .time)
-                        .font(.caption)
-                        .foregroundColor(.gray)
+                NavigationLink(
+                    destination: destinationView(for: notification)
+                ) {
+                    ZStack {
+                        BlurView(style: .systemMaterial)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+                        
+                        VStack(alignment: .leading) {
+                            Text(notification.message)
+                                .font(.headline)
+                                .foregroundColor(ColorForStatus(notification.status))
+                            Text(notification.date, style: .time)
+                                .font(.caption)
+                                .foregroundColor(.black)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .padding()
+                    }
+                    .padding(.vertical, 8)
                 }
-                .padding(.vertical, 8)
+                .background(Color.clear)
                 .listRowBackground(Color.clear)
             }
             .onDelete(perform: deleteNotification)
         }
         .listStyle(PlainListStyle())
+        .background(Color.clear)
         .scrollContentBackground(.hidden)
     }
 
+    // MARK: - Navigation Destination
+    private func destinationView(for notification: BidNotification) -> some View {
+        if let bid = bidController.getBid(by: notification.bidId) {
+            return AnyView(DetailedCoJobView(bid: bid))
+        } else {
+            return AnyView(Text("Loading..."))
+        }
+    }
+    
+    // MARK: - Delete
     private func deleteNotification(at offsets: IndexSet) {
         for index in offsets {
             let notification = bidController.bidNotifications[index]
@@ -103,11 +127,72 @@ struct CoNotificationView: View {
         bidController.bidNotifications.remove(atOffsets: offsets)
     }
 
+    //MARK: - Clear
     private func clearAllNotifications() {
         for notification in bidController.bidNotifications {
             bidController.markNotificationAsRead(notification)
         }
         bidController.bidNotifications.removeAll()
+    }
+}
+
+// MARK: - BidDetailView
+struct BidDetailView: View {
+    let notification: BidNotification
+    @EnvironmentObject var bidController: BidController
+    @State private var bid: Bid?
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Bid Details")
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .padding()
+            
+            if let bid = bid {
+                Text("Amount: \(bid.price, specifier: "%.2f") USD")
+                    .font(.headline)
+                Text("Description: \(bid.description)")
+                    .font(.body)
+                Text("Status: \(bid.status.rawValue.capitalized)")
+                    .font(.headline)
+                    .foregroundColor(ColorForStatus(bid.status))
+                
+                Text("Posted: \(bid.bidDate, style: .date)")
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
+            } else {
+                Text("Loading bid details...")
+                    .onAppear {
+                        loadBid()
+                    }
+            }
+            
+            Spacer()
+        }
+        .padding()
+        .navigationTitle("Bid Details")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+    
+    private func loadBid() {
+        bidController.fetchBid(by: notification.bidId) { fetchedBid in
+            self.bid = fetchedBid
+        }
+    }
+}
+
+// MARK: - Color for Status
+func ColorForStatus(_ status: Bid.bidStatus) -> Color {
+    switch status {
+    case .pending:
+        return .orange
+    case .accepted:
+        return .green
+    case .declined:
+        return .red
+    case .completed:
+        return .blue
     }
 }
 

@@ -1,9 +1,15 @@
 import SwiftUI
 
 struct FeedView: View {
-    // MARK: - State Objects
-    @StateObject private var jobController = JobController()
-    @StateObject private var contractorController = FlyerController()
+    
+    // MARK: - Environment Objects
+    @EnvironmentObject var authController: AuthController
+    @EnvironmentObject var homeownerJobController: HomeownerJobController
+    @EnvironmentObject var jobController: JobController
+    @EnvironmentObject var flyerController: FlyerController
+    @EnvironmentObject var bidController: BidController
+    @EnvironmentObject var contractorController: ContractorController
+    
     @State private var isContractor: Bool = true
 
     var body: some View {
@@ -50,7 +56,7 @@ struct FeedView: View {
                                     }
                                 }
                             } else {
-                                ForEach(contractorController.flyers) { flyer in
+                                ForEach(flyerController.flyers) { flyer in
                                     NavigationLink(destination: FlyerDetailView(contractor: flyer)) {
                                         FlyerCellView(contractor: flyer)
                                     }
@@ -64,7 +70,7 @@ struct FeedView: View {
             }
             .onAppear {
                 jobController.fetchJobs()
-                contractorController.fetchFlyers()
+                flyerController.fetchFlyers()
             }
         }
     }
@@ -78,5 +84,7 @@ struct FeedView_Previews: PreviewProvider {
             .environmentObject(AuthController())
             .environmentObject(JobController())
             .environmentObject(FlyerController())
+            .environmentObject(BidController())
+            .environmentObject(ContractorController())
     }
 }

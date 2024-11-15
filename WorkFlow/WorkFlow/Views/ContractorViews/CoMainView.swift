@@ -5,12 +5,13 @@ import Firebase
 struct CoMainView: View {
     // MARK: - Tab Enumeration
     enum Tab {
-        case home, search, post, chat, notifications
+        case home, search, post, jobs, notifications
     }
 
     @State private var selectedTab: Tab = .home
     @State private var showProfileView = false
     @State private var profilePictureURL: String? = nil
+    @EnvironmentObject var bidController: BidController // Accessing the bidController
 
     var body: some View {
         ZStack {
@@ -94,8 +95,8 @@ struct CoMainView: View {
                         CoSearchView()
                     case .post:
                         CoPostView()
-                    case .chat:
-                        CoChatView()
+                    case .jobs:
+                        CoMyJobsView()
                     case .notifications:
                         CoNotificationView()
                     }
@@ -119,15 +120,15 @@ struct CoMainView: View {
     var tabBar: some View {
         HStack {
             Spacer()
-            tabBarButton(imageName: "house.fill", text: "Home", tab: .home)
+            tabBarButton(imageName: "house", text: "Home", tab: .home)
             Spacer()
             tabBarButton(imageName: "magnifyingglass", text: "Search", tab: .search)
             Spacer()
-            tabBarButton(imageName: "plus.app.fill", text: "Post", tab: .post)
+            tabBarButton(imageName: "plus.app", text: "Post", tab: .post)
             Spacer()
-            tabBarButton(imageName: "bubble.left.fill", text: "Chat", tab: .chat)
+            tabBarButton(imageName: "briefcase", text: "Jobs", tab: .jobs)
             Spacer()
-            tabBarButton(imageName: "bell.fill", text: "Notifications", tab: .notifications)
+            tabBarButton(imageName: "bell", text: "Notifications", tab: .notifications)
             Spacer()
         }
         .padding()
@@ -147,10 +148,25 @@ struct CoMainView: View {
             selectedTab = tab
         } label: {
             VStack {
-                Image(systemName: imageName)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 22)
+                ZStack {
+                    Image(systemName: imageName)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 22)
+                    
+                    // Badge for Notifications Tab
+                    if tab == .notifications && !bidController.bidNotifications.isEmpty {
+                        Circle()
+                            .fill(Color.red)
+                            .frame(width: 14, height: 14)
+                            .overlay(
+                                Text("\(bidController.bidNotifications.count)")
+                                    .font(.caption2)
+                                    .foregroundColor(.white)
+                            )
+                            .offset(x: 10, y: -10)
+                    }
+                }
                 if selectedTab == tab {
                     Text(text)
                         .font(.system(size: 11))
@@ -166,9 +182,11 @@ struct CoMainView: View {
 struct CoMainView_Previews: PreviewProvider {
     static var previews: some View {
         CoMainView()
-            .environmentObject(AuthController())
             .environmentObject(HomeownerJobController())
+            .environmentObject(AuthController())
             .environmentObject(JobController())
             .environmentObject(FlyerController())
+            .environmentObject(BidController())
+            .environmentObject(ContractorController())
     }
 }

@@ -2,8 +2,14 @@ import SwiftUI
 
 // MARK: - HoFeedView
 struct HoFeedView: View {
+    // MARK: - Environment Objects
+    @EnvironmentObject var authController: AuthController
+    @EnvironmentObject var homeownerJobController: HomeownerJobController
     @EnvironmentObject var jobController: JobController
-    @EnvironmentObject var contractorController: FlyerController
+    @EnvironmentObject var flyerController: FlyerController
+    @EnvironmentObject var bidController: BidController
+    @EnvironmentObject var contractorController: ContractorController
+    
     @State private var isContractor: Bool = true
 
     var body: some View {
@@ -35,9 +41,9 @@ struct HoFeedView: View {
 
                         // MARK: - Contractor Flyers
                         LazyVStack(spacing: 1) {
-                            ForEach(contractorController.flyers) { flyer in
+                            ForEach(flyerController.flyers) { flyer in
                                 NavigationLink(destination: FlyerDetailView(contractor: flyer)) {
-                                    FlyerCellView(contractor: flyer)
+                                        FlyerCellView(contractor: flyer)
                                 }
                             }
                         }
@@ -46,7 +52,7 @@ struct HoFeedView: View {
                 }
             }
             .onAppear {
-                contractorController.fetchFlyers()
+                flyerController.fetchFlyers()
             }
         }
     }
@@ -61,5 +67,7 @@ struct HoFeedView_Previews: PreviewProvider {
             .environmentObject(AuthController())
             .environmentObject(JobController())
             .environmentObject(FlyerController())
+            .environmentObject(BidController())
+            .environmentObject(ContractorController())
     }
 }

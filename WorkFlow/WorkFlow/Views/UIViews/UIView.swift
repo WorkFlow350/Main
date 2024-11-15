@@ -133,7 +133,8 @@ struct MultiCategoryPicker: View {
                     }
                 }
             }
-            .navigationBarTitle("Select Skills", displayMode: .inline)
+            .accentColor(.black)
+            .navigationBarTitle("Select", displayMode: .inline)
             .navigationBarItems(trailing: Button("Done") {
                 isPresented = false
             })

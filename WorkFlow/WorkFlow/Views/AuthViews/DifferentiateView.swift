@@ -1,7 +1,14 @@
 import SwiftUI
 
 struct DifferentiateView: View {
+    // MARK: - Environment Objects
     @EnvironmentObject var authController: AuthController
+    @EnvironmentObject var homeownerJobController: HomeownerJobController
+    @EnvironmentObject var jobController: JobController
+    @EnvironmentObject var flyerController: FlyerController
+    @EnvironmentObject var bidController: BidController
+    @EnvironmentObject var contractorController: ContractorController
+    
     @State private var isLoading = true
 
     // MARK: - Set View HO or CO

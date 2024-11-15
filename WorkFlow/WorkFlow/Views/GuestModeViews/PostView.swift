@@ -17,8 +17,12 @@ struct PostView: View {
     @State private var isDescriptionEditorPresented: Bool = false
 
     // MARK: - Environment Objects
+    @EnvironmentObject var authController: AuthController
+    @EnvironmentObject var homeownerJobController: HomeownerJobController
     @EnvironmentObject var jobController: JobController
-    @EnvironmentObject var contractorController: FlyerController
+    @EnvironmentObject var flyerController: FlyerController
+    @EnvironmentObject var bidController: BidController
+    @EnvironmentObject var contractorController: ContractorController
 
     var body: some View {
         ZStack {
@@ -255,7 +259,7 @@ struct PostView: View {
                                     }
                                 }
                             } else {
-                                contractorController.uploadImage(selectedImage) { url in
+                                flyerController.uploadImage(selectedImage) { url in
                                     if let url = url {
                                         let newFlyer = ContractorProfile(
                                             id: UUID(),
@@ -268,7 +272,7 @@ struct PostView: View {
                                             email: email,
                                             imageURL: url
                                         )
-                                        contractorController.postFlyer(profile: newFlyer, selectedImage: selectedImage)
+                                        flyerController.postFlyer(profile: newFlyer, selectedImage: selectedImage)
                                         resetFields()
                                     } else {
                                         print("Error uploading image for flyer.")
@@ -338,5 +342,7 @@ struct PostView_Previews: PreviewProvider {
             .environmentObject(AuthController())
             .environmentObject(JobController())
             .environmentObject(FlyerController())
+            .environmentObject(BidController())
+            .environmentObject(ContractorController())
     }
 }

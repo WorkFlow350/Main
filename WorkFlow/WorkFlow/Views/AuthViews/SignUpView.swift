@@ -19,8 +19,11 @@ struct SignUpView: View {
     // MARK: - Environment Variables
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject var authController: AuthController
+    @EnvironmentObject var homeownerJobController: HomeownerJobController
     @EnvironmentObject var jobController: JobController
-    @EnvironmentObject var contractorController: FlyerController
+    @EnvironmentObject var flyerController: FlyerController
+    @EnvironmentObject var bidController: BidController
+    @EnvironmentObject var contractorController: ContractorController
     
     // MARK: - Body
     var body: some View {
@@ -208,5 +211,7 @@ struct SignUpView_Previews: PreviewProvider {
             .environmentObject(AuthController())
             .environmentObject(JobController())
             .environmentObject(FlyerController())
+            .environmentObject(BidController())
+            .environmentObject(ContractorController())
     }
 }

@@ -49,5 +49,7 @@ struct ChatView_Previews: PreviewProvider {
             .environmentObject(AuthController())
             .environmentObject(JobController())
             .environmentObject(FlyerController())
+            .environmentObject(BidController())
+            .environmentObject(ContractorController())
     }
 }

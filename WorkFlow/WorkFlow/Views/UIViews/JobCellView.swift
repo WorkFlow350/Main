@@ -69,11 +69,16 @@ struct JobCellView_Previews: PreviewProvider {
             city: "Sample City",
             category: .landscaping,
             datePosted: Date(),
-            imageURL: "https://via.placeholder.com/150"
+            imageURL: "https://via.placeholder.com/300"
         )
         
         JobCellView(job: sampleJob)
+            .environmentObject(HomeownerJobController())
+            .environmentObject(AuthController())
             .environmentObject(JobController())
+            .environmentObject(FlyerController())
+            .environmentObject(BidController())
+            .environmentObject(ContractorController())
             .previewLayout(.sizeThatFits)
             .padding()
             .background(Color.white)

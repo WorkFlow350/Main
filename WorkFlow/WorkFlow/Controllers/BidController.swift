@@ -5,6 +5,7 @@ import Combine
 
 class BidController: ObservableObject {
     @Published var jobBids: [Bid] = []
+    @Published var jobBids2: [String: [Bid]] = [:]
     @Published var coBids: [Bid] = []
     
     @Published var pendingBids: [Bid] = []
@@ -16,6 +17,7 @@ class BidController: ObservableObject {
 
     private var listener1: ListenerRegistration?
     private var listener2: ListenerRegistration?
+    private var listener3: ListenerRegistration?
     private let db = Firestore.firestore()
 
     // MARK: - NOTIFICATION STUFF
@@ -231,8 +233,52 @@ class BidController: ObservableObject {
                     price: data["price"] as? Double ?? 0.0,
                     description: data["description"] as? String ?? "",
                     status: Bid.bidStatus(rawValue: data["status"] as? String ?? "pending") ?? .pending,
-                    bidDate: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date()
+                    bidDate: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
+                    review: data["review"] as? String ?? ""
                 )
+            }
+        }
+    }
+    
+    //MARK: - fetch bids for job but in dictionary
+    func getBidsForJob2(job: Job) {
+        listener3 = db.collection("bids").whereField("jobId", isEqualTo: job.id.uuidString).addSnapshotListener { snapshot, error in
+            if let error = error {
+                print("Error getting bids: \(error.localizedDescription)")
+                return
+            }
+            guard let snapshot = snapshot else { return }
+            let bids = snapshot.documents.compactMap { document in
+                let data = document.data()
+                print("Fetched bid data: \(data)")
+
+                let id = data["id"] as? String ?? ""
+                return Bid(
+                    id: id,
+                    jobId: data["jobId"] as? String ?? "",
+                    contractorId: data["contractorId"] as? String ?? "",
+                    homeownerId: data["homeownerId"] as? String ?? "",
+                    price: data["price"] as? Double ?? 0.0,
+                    description: data["description"] as? String ?? "",
+                    status: Bid.bidStatus(rawValue: data["status"] as? String ?? "pending") ?? .pending,
+                    bidDate: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
+                    review: data["review"] as? String ?? ""
+                )
+            }
+            DispatchQueue.main.async {
+                self.jobBids2[job.id.uuidString] = bids
+            }
+        }
+    }
+    
+    //MARK: - leave a review
+    func leaveReview(bidId: String, review: String) {
+        db.collection("bids").document(bidId).updateData(["review": review]) { error in
+            if let error = error {
+                print("error updating review")
+                return
+            } else {
+                print("Successfully updated review")
             }
         }
     }
@@ -280,7 +326,8 @@ class BidController: ObservableObject {
                     price: data["price"] as? Double ?? 0.0,
                     description: data["description"] as? String ?? "",
                     status: Bid.bidStatus(rawValue: data["status"] as? String ?? "pending") ?? .pending,
-                    bidDate: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date()
+                    bidDate: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
+                    review: data["review"] as? String ?? ""
                 )
             }
         }
@@ -422,7 +469,8 @@ class BidController: ObservableObject {
             price: data["price"] as? Double ?? 0.0,
             description: data["description"] as? String ?? "",
             status: Bid.bidStatus(rawValue: data["status"] as? String ?? "pending") ?? .pending,
-            bidDate: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date()
+            bidDate: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
+            review: data["review"] as? String ?? ""
         )
     }
 

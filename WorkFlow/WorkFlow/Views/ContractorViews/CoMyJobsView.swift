@@ -193,6 +193,7 @@ struct DetailedCoJobView: View {
                         homeownerProfileSection(profile: profile)
                         Divider()
                     }
+                    reviewSection(bid: bid)
                     
                     if bid.status == .accepted {
                         actionButtons
@@ -423,6 +424,20 @@ private func colorForStatus(_ status: Bid.bidStatus) -> Color {
     case .completed:
         return .blue
     }
+}
+
+//MARK: - review section
+private func reviewSection(bid: Bid) -> some View {
+    VStack(alignment: .leading) {
+        Text("review")
+            .font(.headline)
+            .foregroundColor(.secondary)
+        Text(bid.review)
+            .font(.subheadline)
+            .fontWeight(.semibold)
+            .foregroundColor(.primary)
+    }
+    .padding(.bottom, 8)
 }
 
 // MARK: - Preview

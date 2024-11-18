@@ -19,8 +19,10 @@ class HomeownerJobController: ObservableObject {
                     print("Error fetching homeowner jobs: \(error.localizedDescription)")
                     return
                 }
-
-                guard let snapshot = snapshot else { return }
+                guard let snapshot = snapshot else {
+                    print("No snapshot received from Firestore.")
+                    return
+                }
                 self.homeownerJobs = snapshot.documents.compactMap { document in
                     let data = document.data()
                     print("Fetched job data: \(data)")
@@ -34,7 +36,7 @@ class HomeownerJobController: ObservableObject {
                         imageURL: data["imageURL"] as? String
                     )
                 }
-                print("Total jobs fetched: \(self.homeownerJobs.count)") // Debug print
+                print("Total jobs fetched: \(self.homeownerJobs.count)")
             }
     }
 

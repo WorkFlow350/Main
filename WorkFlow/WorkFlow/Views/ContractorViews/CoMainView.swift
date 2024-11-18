@@ -5,12 +5,13 @@ import Firebase
 struct CoMainView: View {
     // MARK: - Tab Enumeration
     enum Tab {
-        case home, search, post, chat, notifications
+        case home, search, post, jobs, notifications
     }
 
     @State private var selectedTab: Tab = .home
     @State private var showProfileView = false
     @State private var profilePictureURL: String? = nil
+    @EnvironmentObject var bidController: BidController // Accessing the bidController
 
     var body: some View {
         ZStack {
@@ -94,7 +95,7 @@ struct CoMainView: View {
                         CoSearchView()
                     case .post:
                         CoPostView()
-                    case .chat:
+                    case .jobs:
                         CoMyJobsView()
                     case .notifications:
                         CoNotificationView()
@@ -125,7 +126,7 @@ struct CoMainView: View {
             Spacer()
             tabBarButton(imageName: "plus.app", text: "Post", tab: .post)
             Spacer()
-            tabBarButton(imageName: "briefcase", text: "Jobs", tab: .chat)
+            tabBarButton(imageName: "briefcase", text: "Jobs", tab: .jobs)
             Spacer()
             tabBarButton(imageName: "bell", text: "Notifications", tab: .notifications)
             Spacer()
@@ -147,10 +148,25 @@ struct CoMainView: View {
             selectedTab = tab
         } label: {
             VStack {
-                Image(systemName: imageName)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 22)
+                ZStack {
+                    Image(systemName: imageName)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 22)
+                    
+                    // Badge for Notifications Tab
+                    if tab == .notifications && !bidController.bidNotifications.isEmpty {
+                        Circle()
+                            .fill(Color.red)
+                            .frame(width: 14, height: 14)
+                            .overlay(
+                                Text("\(bidController.bidNotifications.count)")
+                                    .font(.caption2)
+                                    .foregroundColor(.white)
+                            )
+                            .offset(x: 10, y: -10)
+                    }
+                }
                 if selectedTab == tab {
                     Text(text)
                         .font(.system(size: 11))

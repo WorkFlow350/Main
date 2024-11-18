@@ -101,7 +101,7 @@ struct CoMainView: View {
                         CoNotificationView()
                     }
                 }
-                .animation(.easeInOut(duration: 0.3), value: selectedTab)
+                .animation(.smooth(duration: 0.1), value: selectedTab)
                 Spacer()
             }
 
@@ -133,9 +133,8 @@ struct CoMainView: View {
         }
         .padding()
         .background(
-            RoundedRectangle(cornerRadius: 30)
-                .fill(Color.white)
-                .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 4)
+            BlurView(style: .systemThickMaterialLight)
+                .clipShape(RoundedRectangle(cornerRadius: 30))
         )
         .padding(.horizontal, 20)
         .frame(maxWidth: 350)
@@ -173,7 +172,7 @@ struct CoMainView: View {
                 }
             }
             .foregroundColor(selectedTab == tab ? .black : .gray)
-            .animation(.easeInOut(duration: 0.25), value: selectedTab)
+            .animation(.smooth(duration: 0.1), value: selectedTab)
         }
     }
 }

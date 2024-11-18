@@ -10,6 +10,7 @@ enum JobCategory: String, CaseIterable, Codable {
 struct Job: Identifiable, Codable, Hashable {
     var id: UUID
     var title: String
+    var number: String
     var description: String
     var city: String
     var category: JobCategory

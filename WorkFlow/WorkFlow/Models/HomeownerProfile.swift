@@ -7,5 +7,6 @@ struct HomeownerProfile: Identifiable {
     var bio: String
     var city: String
     var email: String
+    var number: String
     var imageURL: String?
 }

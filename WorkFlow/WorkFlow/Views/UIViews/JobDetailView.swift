@@ -98,6 +98,7 @@ struct JobDetailView_Previews: PreviewProvider {
         let sampleJob = Job(
             id: UUID(),
             title: "Sample Job Title",
+            number: "805-123-4567",
             description: "This is a sample job description that provides details about the job.",
             city: "Sample City",
             category: .landscaping,

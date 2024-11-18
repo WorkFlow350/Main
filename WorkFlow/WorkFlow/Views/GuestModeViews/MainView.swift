@@ -114,7 +114,7 @@ struct MainTabView: View {
                         NotificationView()
                     }
                 }
-                .animation(.easeInOut(duration: 0.3), value: selectedTab)
+                .animation(.smooth(duration: 0.1), value: selectedTab)
                 Spacer()
             }
 
@@ -139,17 +139,18 @@ struct MainTabView: View {
             Spacer()
             tabBarButton(imageName: "plus.app.fill", text: "Post", tab: .post)
             Spacer()
-            tabBarButton(imageName: "bubble.left.fill", text: "Chat", tab: .chat)
+            tabBarButton(imageName: "note", text: "Bids", tab: .chat)
             Spacer()
             tabBarButton(imageName: "bell.fill", text: "Notifications", tab: .notifications)
             Spacer()
         }
         .padding()
         .background(
-            RoundedRectangle(cornerRadius: 30)
-                .fill(Color.white)
-                .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 4)
+            ZStack {
+                BlurView(style: .systemThickMaterialLight)
+            }
         )
+        .cornerRadius(30)
         .padding(.horizontal, 20)
         .frame(maxWidth: 350)
     }
@@ -171,7 +172,7 @@ struct MainTabView: View {
                 }
             }
             .foregroundColor(selectedTab == tab ? .black : .gray)
-            .animation(.easeInOut(duration: 0.25), value: selectedTab)
+            .animation(.bouncy(duration: 0.1), value: selectedTab)
         }
     }
 }

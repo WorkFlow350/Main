@@ -425,9 +425,6 @@ private func reviewButton(isReviewEditorPresented: Binding<Bool>, review: Bindin
                 .lineLimit(1)
                 .truncationMode(.tail)
             Spacer()
-            Image(systemName: "arrow.up.backward.and.arrow.down.forward.rectangle")
-                .foregroundColor(.gray)
-                .padding(.trailing, 10)
         }
         .frame(height: 50)
         .background(Color.white)
@@ -463,7 +460,6 @@ private struct ReviewSection: View {
                 )
                 .cornerRadius(20)
                 .foregroundColor(.white)
-                .shadow(color: .white, radius: 2, x: 0, y: 0)
         }
         .disabled(review.isEmpty)
         .padding(.horizontal)

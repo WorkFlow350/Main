@@ -14,7 +14,6 @@ class BidController: ObservableObject {
     @Published var declinedBids: [Bid] = []
 
     private var listener: ListenerRegistration?
-
     private var listener1: ListenerRegistration?
     private var listener2: ListenerRegistration?
     private var listener3: ListenerRegistration?
@@ -27,6 +26,7 @@ class BidController: ObservableObject {
     init() {
         observeBidNotifications()
         observeBidStatusChanges()
+        getBidsForContractor()
     }
     
     //MARK: - Date Formatter
@@ -49,7 +49,6 @@ class BidController: ObservableObject {
     // MARK: - Place Bids
     func placeBid(job: Job, price: Double, description: String) {
         print("Looking for job document with ID: \(job.id.uuidString)")
-        
 
         guard let contractorId = Auth.auth().currentUser?.uid else {
             print("Error: User is not authenticated")
@@ -57,46 +56,61 @@ class BidController: ObservableObject {
         }
 
         let jobRef = db.collection("jobs").document(job.id.uuidString)
-        
+
         jobRef.getDocument { (document, error) in
             if let error = error {
-                print("Error fetching homeowner job: \(error.localizedDescription)")
+                print("Error fetching job: \(error.localizedDescription)")
                 return
             }
 
-            if let document = document, document.exists {
-                if let homeownerId = document.get("homeownerId") as? String {
-                    print("Successfully grabbed homeownerId: \(homeownerId)")
-                    let bidId = UUID().uuidString
-                    let bidData: [String: Any] = [
-                        "id": bidId,//UUID().uuidString,
-                        "jobId": job.id.uuidString,
-                        "contractorId": contractorId,
-                        "homeownerId": homeownerId,
-                        "price": price,
-                        "description": description,
-                        "datePosted": Date(),
-                        "status": Bid.bidStatus.pending.rawValue
-                    ]
-                    
-                    print("Attempting to add bid data to Firestore: \(bidData)")
-                    
-                    //self.db.collection("bids").addDocument(data: bidData) { error in
-                    self.db.collection("bids").document(bidId).setData(bidData) { error in
-                        if let error = error {
-                            print("Error placing bid: \(error.localizedDescription)")
-                        } else {
-                            print("Bid placed successfully!")
-                        }
-                    }
-                } else {
-                    print("Error: Could not retrieve homeownerId from job document")
+            guard let document = document, document.exists,
+                  let homeownerId = document.get("homeownerId") as? String else {
+                print("Job document does not exist or homeownerId not found.")
+                return
+            }
+
+            // Check current lowest bid
+            self.getLowestBid(forJobId: job.id.uuidString) { lowestBid in
+                if let lowestBid = lowestBid, price >= lowestBid.price {
+                    print("Error: New bid must be lower than the current lowest bid (\(lowestBid.price))")
+                    return
                 }
-            } else {
-                print("Error: Job document does not exist")
+
+                let bidId = UUID().uuidString
+                let bidData: [String: Any] = [
+                    "id": bidId,
+                    "jobId": job.id.uuidString,
+                    "contractorId": contractorId,
+                    "homeownerId": homeownerId,
+                    "price": price,
+                    "description": description,
+                    "number": job.number,
+                    "datePosted": Date(),
+                    "status": Bid.bidStatus.pending.rawValue
+                ]
+
+                self.db.collection("bids").document(bidId).setData(bidData) { error in
+                    if let error = error {
+                        print("Error placing bid: \(error.localizedDescription)")
+                    } else {
+                        print("Bid placed successfully!")
+                    }
+                }
             }
         }
     }
+    
+    // MARK: - Fetch Lowest Bid
+    func fetchCurrentLowestBid(forJob job: Job, completion: @escaping (Double?) -> Void) {
+        getLowestBid(forJobId: job.id.uuidString) { lowestBid in
+            if let bid = lowestBid {
+                completion(bid.price)
+            } else {
+                completion(nil) // No bids yet
+            }
+        }
+    }
+    
     // MARK: - Decline Other Bids for a Job
     private func declineOtherBids(exceptBidId acceptedBidId: String, forJobId jobId: String) {
         db.collection("bids").whereField("jobId", isEqualTo: jobId).getDocuments { snapshot, error in
@@ -188,6 +202,7 @@ class BidController: ObservableObject {
                 bio: data["bio"] as? String ?? "",
                 city: data["city"] as? String ?? "",
                 email: data["email"] as? String ?? "",
+                number: data["number"] as? String ?? "",
                 imageURL: data["profilePictureURL"] as? String
             )
             completion(profile)
@@ -207,7 +222,6 @@ class BidController: ObservableObject {
                 completion(nil)
                 return
             }
-            
             completion(description)
         }
     }
@@ -234,7 +248,8 @@ class BidController: ObservableObject {
                     description: data["description"] as? String ?? "",
                     status: Bid.bidStatus(rawValue: data["status"] as? String ?? "pending") ?? .pending,
                     bidDate: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
-                    review: data["review"] as? String ?? ""
+                    review: data["review"] as? String ?? "",
+                    number: data["number"] as? String ?? "Not available"
                 )
             }
         }
@@ -262,7 +277,8 @@ class BidController: ObservableObject {
                     description: data["description"] as? String ?? "",
                     status: Bid.bidStatus(rawValue: data["status"] as? String ?? "pending") ?? .pending,
                     bidDate: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
-                    review: data["review"] as? String ?? ""
+                    review: data["review"] as? String ?? "",
+                    number: data["number"] as? String ?? "Not available"
                 )
             }
             DispatchQueue.main.async {
@@ -327,7 +343,8 @@ class BidController: ObservableObject {
                     description: data["description"] as? String ?? "",
                     status: Bid.bidStatus(rawValue: data["status"] as? String ?? "pending") ?? .pending,
                     bidDate: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
-                    review: data["review"] as? String ?? ""
+                    review: data["review"] as? String ?? "",
+                    number: data["number"] as? String ?? "Not available"
                 )
             }
         }
@@ -422,6 +439,7 @@ class BidController: ObservableObject {
         }
     }
     
+    // MARK: Fetch Contractors Bid Status
     func fetchContractorBidsByStatus() {
         guard let contractorId = Auth.auth().currentUser?.uid else {
             print("Error: Contractor ID not available.")
@@ -458,7 +476,6 @@ class BidController: ObservableObject {
             }
         }
     }
-    // Helper function to parse bid data
     private func parseBidData(_ data: [String: Any]) -> Bid {
         let id = data["id"] as? String ?? ""
         return Bid(
@@ -470,10 +487,10 @@ class BidController: ObservableObject {
             description: data["description"] as? String ?? "",
             status: Bid.bidStatus(rawValue: data["status"] as? String ?? "pending") ?? .pending,
             bidDate: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
-            review: data["review"] as? String ?? ""
+            review: data["review"] as? String ?? "",
+            number: data["number"] as? String ?? "Not available"
         )
     }
-
     func fetchBid(by bidId: String, completion: @escaping (Bid?) -> Void) {
         db.collection("bids").document(bidId).getDocument { document, error in
             if let data = document?.data() {
@@ -485,9 +502,109 @@ class BidController: ObservableObject {
             }
         }
     }
-
     func getBid(by bidId: String) -> Bid? {
         return coBids.first(where: { $0.id == bidId })
+    }
+    
+    // MARK: - Get Lowest Bid
+    func getLowestBid(forJobId jobId: String, completion: @escaping (Bid?) -> Void) {
+        db.collection("bids")
+            .whereField("jobId", isEqualTo: jobId)
+            .whereField("status", isEqualTo: Bid.bidStatus.pending.rawValue)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error fetching lowest bid: \(error.localizedDescription)")
+                    completion(nil)
+                    return
+                }
+                guard let documents = snapshot?.documents else {
+                    completion(nil)
+                    return
+                }
+
+                let bids = documents.compactMap { self.parseBidData($0.data()) }
+                let lowestBid = bids.min(by: { $0.price < $1.price })
+                completion(lowestBid)
+            }
+    }
+
+    // MARK: - Fetch Available Jobs
+    func fetchAvailableJobs(completion: @escaping ([Job]) -> Void) {
+        db.collection("jobs").getDocuments { snapshot, error in
+            if let error = error {
+                print("Error fetching jobs: \(error.localizedDescription)")
+                completion([])
+                return
+            }
+
+            guard let documents = snapshot?.documents else {
+                completion([])
+                return
+            }
+
+            var jobs: [Job] = []
+            let group = DispatchGroup()
+
+            for document in documents {
+                let data = document.data()
+                guard let jobId = data["id"] as? String else { continue }
+                group.enter()
+
+                self.db.collection("bids")
+                    .whereField("jobId", isEqualTo: jobId)
+                    .whereField("status", isEqualTo: Bid.bidStatus.accepted.rawValue)
+                    .getDocuments { bidSnapshot, bidError in
+                        if let bidError = bidError {
+                            print("Error checking bids for job \(jobId): \(bidError.localizedDescription)")
+                            group.leave()
+                            return
+                        }
+
+                        if bidSnapshot?.documents.isEmpty == true {
+                            // No accepted bid, include this job
+                            jobs.append(Job(
+                                id: UUID(uuidString: jobId) ?? UUID(),
+                                title: data["title"] as? String ?? "Untitled",
+                                number: data["number"] as? String ?? "",
+                                description: data["description"] as? String ?? "",
+                                city: data["city"] as? String ?? "",
+                                category: JobCategory(rawValue: data["category"] as? String ?? "") ?? .cleaning,
+                                datePosted: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
+                                imageURL: data["imageURL"] as? String
+                            ))
+                        }
+                        group.leave()
+                    }
+            }
+
+            group.notify(queue: .main) {
+                completion(jobs)
+            }
+        }
+    }
+    
+    @Published var excludedJobIds: Set<String> = []
+    // MARK: - Fetch Exclided Jobs
+    func fetchExcludedJobs() {
+        db.collection("bids")
+            .whereField("status", in: [Bid.bidStatus.accepted.rawValue, Bid.bidStatus.completed.rawValue])
+            .addSnapshotListener { snapshot, error in
+                if let error = error {
+                    print("Error fetching excluded jobs: \(error.localizedDescription)")
+                    return
+                }
+                guard let snapshot = snapshot else {
+                    print("No snapshot returned for excluded jobs.")
+                    return
+                }
+                let jobIds = snapshot.documents.compactMap { document in
+                    document.data()["jobId"] as? String
+                }
+                DispatchQueue.main.async {
+                    self.excludedJobIds = Set(jobIds)
+                    print("Excluded job IDs updated: \(self.excludedJobIds)")
+                }
+            }
     }
     
     deinit {

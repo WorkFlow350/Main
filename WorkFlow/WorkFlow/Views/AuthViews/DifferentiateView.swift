@@ -8,35 +8,51 @@ struct DifferentiateView: View {
     @EnvironmentObject var flyerController: FlyerController
     @EnvironmentObject var bidController: BidController
     @EnvironmentObject var contractorController: ContractorController
-    
+    @State private var showSplashScreen = true
     @State private var isLoading = true
-
+    
     // MARK: - Set View HO or CO
     var body: some View {
-        VStack {
-            if isLoading {
-                ProgressView("Loading user data...").padding()
-            } else if let appUser = authController.appUser {
-                switch appUser.role {
-                case .homeowner:
-                    HoMainView()
-                case .contractor:
-                    CoMainView()
-                }
-            } else {
-                Text("Session ID: \(authController.userSession?.uid ?? "No session")")
-            }
-        }
-        .onAppear {
-            Task {
-                if authController.userSession != nil && authController.appUser == nil {
-                    isLoading = true
-                    await authController.setUser()
-                    if authController.isUserSet {
-                        isLoading = false
+        Group {
+            if showSplashScreen {
+                SplashScreenView()
+                    .navigationBarBackButtonHidden(true)
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.5) {
+                            withAnimation {
+                                showSplashScreen = false
+                            }
+                        }
                     }
-                } else {
-                    isLoading = false
+            } else {
+                VStack {
+                    if isLoading {
+                        ProgressView("Loading user data...").padding()
+                    } else if let appUser = authController.appUser {
+                        switch appUser.role {
+                        case .homeowner:
+                            HoMainView()
+                                .transition(.opacity)
+                        case .contractor:
+                            CoMainView()
+                                .transition(.opacity)
+                        }
+                    } else {
+                        Text("Session ID: \(authController.userSession?.uid ?? "No session")")
+                    }
+                }
+                .onAppear {
+                    Task {
+                        if authController.userSession != nil && authController.appUser == nil {
+                            isLoading = true
+                            await authController.setUser()
+                            if authController.isUserSet {
+                                isLoading = false
+                            }
+                        } else {
+                            isLoading = false
+                        }
+                    }
                 }
             }
         }

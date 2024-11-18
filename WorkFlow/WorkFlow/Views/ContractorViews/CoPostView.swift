@@ -144,14 +144,8 @@ struct CoPostView: View {
             HStack {
                 Text(description.isEmpty ? "Description" : description)
                     .foregroundColor(description.isEmpty ? .gray : .black)
-                    .padding(.vertical, 12)
-                    .padding(.horizontal)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
+                    .padding()
                 Spacer()
-                Image(systemName: "arrow.up.backward.and.arrow.down.forward.rectangle")
-                    .foregroundColor(.gray)
-                    .padding(.trailing, 10)
             }
             .frame(height: 50)
             .background(Color.white)
@@ -293,7 +287,6 @@ struct CoPostView: View {
                 )
                 .cornerRadius(20)
                 .foregroundColor(.white)
-                .shadow(color: .white, radius: 2, x: 0, y: 0)
         }
         .disabled(title.isEmpty || description.isEmpty || city.isEmpty || email.isEmpty || selectedImage == nil)
         .padding(.bottom, 50)

@@ -150,7 +150,10 @@ struct JobCellYView: View {
                 .padding(.vertical, 8)
         }
         .padding(8)
-        .background(Color.white)
+        .background(
+            BlurView(style: .systemThickMaterialLight)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+        )
         .cornerRadius(12)
         .shadow(radius: 2)
         .onAppear {
@@ -183,21 +186,18 @@ struct BidCellYView: View {
                 
                 Text("Status: \(bid.status.rawValue.capitalized)")
                     .font(.footnote)
-                    .foregroundColor(bid.status == .accepted ? .green : bid.status == .declined ? .red : .orange)
+                    .foregroundColor(
+                        bid.status == .accepted ? .green :
+                        bid.status == .declined ? .red :
+                        bid.status == .completed ? .blue :
+                        .orange
+                    )
             }
             
             Text("Description: \(limitedDescription)")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
             
-            HStack(spacing: 4) {
-                Image(systemName: "clock")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-                Text(bidController.timeAgoSincePost(bid.bidDate))
-                    .font(.footnote)
-                    .foregroundColor(.gray)
-            }
             // Contractor Profile - Display once it's loaded
             if isProfileLoaded, let profile = contractorProfile {
                 HStack {
@@ -239,11 +239,21 @@ struct BidCellYView: View {
                     Spacer()
                 }
                 .padding(.top, 8)
-                
+                HStack(spacing: 4) {
+                    Image(systemName: "clock")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                    Text(bidController.timeAgoSincePost(bid.bidDate))
+                        .font(.footnote)
+                        .foregroundColor(.gray)
+                }
             }
         }
         .padding(12)
-        .background(Color.white)
+        .background(
+            BlurView(style: .systemThickMaterialLight)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+        )
         .cornerRadius(12)
         .shadow(radius: 5)
         .onAppear {
@@ -295,10 +305,10 @@ struct DetailedBidView: View {
                     
                     // Bid Amount
                     VStack(alignment: .leading) {
-                        Text("Bid Amount")
+                        Text("Bid Amount:")
                             .font(.headline)
-                            .foregroundColor(.secondary)
-                        Text("\(bid.price, specifier: "%.2f") USD")
+                            .foregroundColor(.primary)
+                        Text("$\(bid.price, specifier: "%.2f") USD")
                             .font(.title)
                             .foregroundColor(.green)
                     }
@@ -308,25 +318,30 @@ struct DetailedBidView: View {
                     
                     // Description
                     VStack(alignment: .leading) {
-                        Text("Bid Description")
+                        Text("Bid Description:")
                             .font(.headline)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.primary)
                         Text(bid.description)
                             .font(.body)
-                            .foregroundColor(.primary)
+                            .foregroundColor(.secondary)
                     }
                     .padding(.bottom, 8)
                     
                     Divider()
                     
                     // Status
-                    HStack {
+                    VStack(alignment: .leading) {
                         Text("Status:")
                             .font(.headline)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(.primary)
                         Text(bid.status.rawValue.capitalized)
                             .font(.subheadline)
-                            .foregroundColor(bid.status == .accepted ? .green : bid.status == .declined ? .red : .orange)
+                            .foregroundColor(
+                                bid.status == .accepted ? .green :
+                                bid.status == .declined ? .red :
+                                bid.status == .completed ? .blue :
+                                .orange
+                            )
                             .fontWeight(.semibold)
                     }
                     .padding(.bottom, 8)
@@ -336,9 +351,9 @@ struct DetailedBidView: View {
                     // Contractor Profile
                     if let profile = contractorProfile {
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("Contractor Profile")
+                            Text("Contractor Profile:")
                                 .font(.headline)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.primary)
                                 .padding(.bottom, 4)
                             
                             HStack(spacing: 12) {
@@ -360,12 +375,12 @@ struct DetailedBidView: View {
                                 
                                 // Contractor Details
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text(profile.contractorName)
+                                    Text("Name: \(profile.contractorName)")
                                         .font(.headline)
                                         .fontWeight(.bold)
-                                        .foregroundColor(.primary)
+                                        .foregroundColor(.secondary)
                                     
-                                    Text(profile.city)
+                                    Text("City: \(profile.city)")
                                         .font(.subheadline)
                                         .foregroundColor(.secondary)
                                     
@@ -381,18 +396,18 @@ struct DetailedBidView: View {
                             
                             VStack(alignment: .leading, spacing: 6) {
                                 Text("Skills:")
-                                    .font(.subheadline)
+                                    .font(.headline)
                                     .fontWeight(.semibold)
-                                    .foregroundColor(.primary)
+                                    .foregroundColor(.secondary)
                                 
                                 Text(profile.skills.joined(separator: ", "))
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
                                 
                                 Text("Bio:")
-                                    .font(.subheadline)
+                                    .font(.headline)
                                     .fontWeight(.semibold)
-                                    .foregroundColor(.primary)
+                                    .foregroundColor(.secondary)
                                     .padding(.top, 4)
                                 
                                 Text(profile.bio)
@@ -438,7 +453,10 @@ struct DetailedBidView: View {
                     }
                 }
                 .padding()
-                .background(Color.white)
+                .background(
+                    BlurView(style: .systemThickMaterialLight)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                )
                 .cornerRadius(12)
                 .shadow(radius: 5)
                 .padding()

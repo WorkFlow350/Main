@@ -25,7 +25,7 @@ struct ChatView: View {
                         .frame(width: 40, height: 40)
                         .foregroundColor(.blue)
 
-                    Text("Sign Up to Access Chat Features")
+                    Text("Sign Up to Access Bids Features")
                         .font(.title2)
                         .fontWeight(.medium)
                         .foregroundColor(.white)

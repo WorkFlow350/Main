@@ -47,7 +47,7 @@ class AuthController: ObservableObject {
                 if attempts >= maxRetries {
                     throw NSError(domain: "AuthController", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to fetch user after \(maxRetries) attempts"])
                 }
-                try await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+                try await Task.sleep(nanoseconds: 500_000_000)
             }
         }
         return nil

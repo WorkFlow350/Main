@@ -4,7 +4,7 @@ import Combine
 
 // MARK: - CoMyJobsView
 struct CoMyJobsView: View {
-    @State private var selectedTab: JobTab = .pending
+    @State private var selectedTab: JobTab = .all
     @EnvironmentObject var bidController: BidController
     @EnvironmentObject var homeownerJobController: HomeownerJobController
     @State private var selectedJob: Job?
@@ -82,7 +82,6 @@ struct CoMyJobsView: View {
         List(currentBids()) { bid in
             NavigationLink(destination: DetailedCoJobView(bid: bid)) {
                 BidCellCoView(bid: bid)
-                    .padding(.vertical, 8)
             }
             .listRowBackground(Color.clear)
         }
@@ -154,9 +153,11 @@ struct BidCellCoView: View {
             }
         }
         .padding(12)
-        .background(Color.white)
+        .background(
+            BlurView(style: .systemThickMaterialLight)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+        )
         .cornerRadius(12)
-        .shadow(radius: 5)
     }
     private var limitedDescription: String {
         if bid.description.count > maxDescriptionLength {
@@ -223,7 +224,10 @@ struct DetailedCoJobView: View {
                     }
                 }
                 .padding()
-                .background(Color.white)
+                .background(
+                    BlurView(style: .systemThickMaterialLight)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                )
                 .cornerRadius(12)
                 .shadow(radius: 5)
                 .padding()
@@ -238,13 +242,10 @@ struct DetailedCoJobView: View {
     // MARK: - Fetch Job Description
     private func fetchJobDescription() {
         print("Fetching job description for job ID: \(bid.jobId)")
-        
-        // First, check if the job is already available in homeownerJobController
         if let job = homeownerJobController.homeownerJobs.first(where: { $0.id.uuidString == bid.jobId }) {
             jobDescription = job.description
             print("Job description found in existing data: \(jobDescription)")
         } else {
-            // If job is not available, use BidController to fetch only the description
             bidController.getJobDescription(jobId: bid.jobId) { description in
                 DispatchQueue.main.async {
                     if let description = description {
@@ -275,10 +276,10 @@ struct DetailedCoJobView: View {
     // MARK: - Bid Amount Section
     private var bidAmountSection: some View {
         VStack(alignment: .leading) {
-            Text("Bid Amount")
+            Text("Bid Amount:")
                 .font(.headline)
-                .foregroundColor(.secondary)
-            Text("\(bid.price, specifier: "%.2f") USD")
+                .foregroundColor(.primary)
+            Text("$\(bid.price, specifier: "%.2f") USD")
                 .font(.title)
                 .foregroundColor(.green)
         }
@@ -289,12 +290,12 @@ struct DetailedCoJobView: View {
     // MARK: - Job Description Section
     private var jobDescriptionSection: some View {
         VStack(alignment: .leading) {
-            Text("Job Description")
+            Text("Job Description:")
                 .font(.headline)
-                .foregroundColor(.secondary)
+                .foregroundColor(.primary)
             Text(jobDescription)
                 .font(.body)
-                .foregroundColor(.primary)
+                .foregroundColor(.secondary)
                 .multilineTextAlignment(.leading)
         }
         .padding(.bottom, 8)
@@ -302,10 +303,10 @@ struct DetailedCoJobView: View {
 
     // MARK: - Bid Status Section
     private var bidStatusSection: some View {
-        HStack {
+        VStack(alignment: .leading) {
             Text("Status:")
                 .font(.headline)
-                .foregroundColor(.secondary)
+                .foregroundColor(.primary)
             Text(bid.status.rawValue.capitalized)
                 .font(.subheadline)
                 .foregroundColor(colorForStatus(bid.status))
@@ -318,9 +319,9 @@ struct DetailedCoJobView: View {
     // MARK: - Homeowner Section
     private func homeownerProfileSection(profile: HomeownerProfile) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Homeowner")
+            Text("Homeowner:")
                 .font(.headline)
-                .foregroundColor(.secondary)
+                .foregroundColor(.primary)
                 .padding(.bottom, 4)
             
             HStack(spacing: 12) {
@@ -340,19 +341,18 @@ struct DetailedCoJobView: View {
                 }
                 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(profile.homeownerName)
+                    Text("Name: \(profile.homeownerName)")
                         .font(.headline)
-                        .fontWeight(.bold)
-                        .foregroundColor(.primary)
+                        .foregroundColor(.secondary)
                     
-                    Text(profile.city)
+                    Text("City: \(profile.city)")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                 }
             }
             
             VStack(alignment: .leading, spacing: 6) {
-                if bid.status == .accepted || bid.status == .completed{
+                if bid.status == .accepted || bid.status == .completed {
                     Text("Bio:")
                         .font(.subheadline)
                         .fontWeight(.semibold)
@@ -366,6 +366,9 @@ struct DetailedCoJobView: View {
                         .fontWeight(.semibold)
                         .foregroundColor(.primary)
                     Text(profile.email ?? "Not available")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                    Text(formatPhoneNumber(bid.number ?? "Not available"))
                         .font(.body)
                         .foregroundColor(.secondary)
                 } else {
@@ -382,23 +385,48 @@ struct DetailedCoJobView: View {
         }
         .padding(.top, 10)
     }
-
+    func formatPhoneNumber(_ number: String) -> String {
+        let digits = number.filter { $0.isNumber }
+        guard digits.count == 10 else {
+            return number
+        }
+        
+        let formattedNumber = "(\(digits.prefix(3)))\(digits.dropFirst(3).prefix(4))-\(digits.suffix(3))"
+        return formattedNumber
+    }
+    @State private var isCompleted = false
     // MARK: - Action Buttons
     private var actionButtons: some View {
         HStack {
-            Button(action: {
-                markBidAsCompleted()
-            }) {
-                Text("Mark as Completed")
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
-                    .shadow(radius: 2)
+            if !isCompleted {
+                Button(action: {
+                    markAsCompletedWithAnimation()
+                }) {
+                    Text("Mark as Completed")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.black)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                        .shadow(radius: 2)
+                }
+                .transition(.opacity.combined(with: .scale))
+            } else {
+                Text("Job Completed! 🎉")
+                    .font(.headline)
+                    .foregroundColor(.green)
+                    .transition(.scale)
             }
         }
         .padding(.top, 10)
+    }
+    private func markAsCompletedWithAnimation() {
+        withAnimation {
+            isCompleted = true // Trigger the fade-out of the button
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            markBidAsCompleted() // Call the existing function after animation
+        }
     }
     private func markBidAsCompleted() {
         bidController.updateBidStatus(bidId: bid.id, status: .completed)
@@ -429,13 +457,12 @@ private func colorForStatus(_ status: Bid.bidStatus) -> Color {
 //MARK: - review section
 private func reviewSection(bid: Bid) -> some View {
     VStack(alignment: .leading) {
-        Text("review")
+        Text("Review:")
             .font(.headline)
-            .foregroundColor(.secondary)
+            .foregroundColor(.primary)
         Text(bid.review)
             .font(.subheadline)
-            .fontWeight(.semibold)
-            .foregroundColor(.primary)
+            .foregroundColor(.secondary)
     }
     .padding(.bottom, 8)
 }

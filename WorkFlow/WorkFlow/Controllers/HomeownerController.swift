@@ -29,6 +29,7 @@ class HomeownerJobController: ObservableObject {
                     return Job(
                         id: UUID(uuidString: document.documentID) ?? UUID(),
                         title: data["title"] as? String ?? "",
+                        number: data["number"] as? String ?? "Not provided",
                         description: data["description"] as? String ?? "",
                         city: data["city"] as? String ?? "",
                         category: JobCategory(rawValue: data["category"] as? String ?? "Landscaping") ?? .landscaping,
@@ -75,6 +76,7 @@ class HomeownerJobController: ObservableObject {
             "title": job.title,
             "description": job.description,
             "city": job.city,
+            "number": job.number,
             "category": job.category.rawValue,
             "datePosted": Timestamp(date: job.datePosted),
             "imageURL": job.imageURL,

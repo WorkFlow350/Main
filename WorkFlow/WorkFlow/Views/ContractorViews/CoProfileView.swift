@@ -12,13 +12,18 @@ struct IdentifiableErrorCO: Identifiable {
 // MARK: - ContractorProfileView
 struct ContractorProfileView: View {
     @Environment(\.presentationMode) var presentationMode
+    // MARK: - Environment Objects
     @EnvironmentObject var authController: AuthController
-    @EnvironmentObject var contractorJobController: ContractorController
+    @EnvironmentObject var homeownerJobController: HomeownerJobController
+    @EnvironmentObject var jobController: JobController
+    @EnvironmentObject var flyerController: FlyerController
+    @EnvironmentObject var bidController: BidController
+    @EnvironmentObject var contractorController: ContractorController
+    
     @State private var profileImage: Image? = Image("profilePlaceholder")
     @State private var name: String = ""
     @State private var location: String = ""
     @State private var bio: String = ""
-    @State private var jobs: [Job] = []
     @State private var flyers: [ContractorProfile] = []
     @State private var navigateToCoChat: Bool = false
     @State private var navigateToBiography: Bool = false
@@ -93,7 +98,7 @@ struct ContractorProfileView: View {
                 Alert(title: Text("Error"), message: Text(error.message), dismissButton: .default(Text("OK")))
             }
             .navigationDestination(isPresented: $navigateToCoChat) {
-                CoChatView()
+                CoMyJobsView()
             }
             .navigationDestination(isPresented: $navigateToBiography) {
                 BiographyViewCO(bio: bio)
@@ -121,7 +126,6 @@ struct ContractorProfileView: View {
             }
             if let document = document, document.exists {
                 let data = document.data() ?? [:]
-                print("User Data: \(data)") // Debugging line
                 self.name = data["name"] as? String ?? "Unknown"
                 self.location = data["city"] as? String ?? "Unknown"
                 let role = (data["role"] as? String ?? "Contractor").capitalized
@@ -129,9 +133,8 @@ struct ContractorProfileView: View {
                 self.bio = data["bio"] as? String ?? "No bio available."
                 self.profilePictureURL = data["profilePictureURL"] as? String
                 loadProfileImage()
-
-                contractorJobController.fetchFlyers()
-                print("Filtered Flyers: \(self.flyers)")
+                
+                contractorController.fetchFlyersForContractor(contractorId: userId)
                 self.isLoading = false
             } else {
                 self.errorMessage = IdentifiableErrorCO(message: "User data not found.")
@@ -228,7 +231,7 @@ struct ContractorProfileView: View {
             Button(action: {
                 navigateToCoChat = true
             }) {
-                Text("Message")
+                Text("Jobs")
                     .font(.headline)
                     .foregroundColor(.white)
                     .padding(.horizontal, 20)
@@ -245,7 +248,7 @@ struct ContractorProfileView: View {
             Button(action: {
                 navigateToBiography = true
             }) {
-                Text("Biography")
+                Text("Bio")
                     .font(.headline)
                     .foregroundColor(.white)
                     .padding(.horizontal, 20)
@@ -270,7 +273,8 @@ struct ContractorProfileView: View {
                 .font(.headline)
                 .foregroundColor(.white)
                 .padding(.bottom, 5)
-            ForEach(flyers) { flyer in
+
+            ForEach(contractorController.contractorFlyers, id: \.id) { flyer in
                 NavigationLink(destination: FlyerDetailView(contractor: flyer)) {
                     HStack {
                         if let imageURL = flyer.imageURL, let url = URL(string: imageURL) {
@@ -295,7 +299,6 @@ struct ContractorProfileView: View {
                                 .background(Color.gray.opacity(0.2))
                                 .clipShape(RoundedRectangle(cornerRadius: 15))
                         }
-
                         VStack(alignment: .leading, spacing: 5) {
                             Text(flyer.contractorName)
                                 .font(.title3)
@@ -304,7 +307,11 @@ struct ContractorProfileView: View {
                             Text("City: \(flyer.city)")
                                 .font(.subheadline)
                                 .foregroundColor(.white.opacity(0.8))
-                            Text("Bio: \(flyer.bio)")
+                            Text("Email: \(flyer.email)")
+                                .font(.subheadline)
+                                .foregroundColor(.white.opacity(0.8))
+                                .lineLimit(2)
+                            Text("Skills: \(flyer.skills.joined(separator: ", "))")
                                 .font(.subheadline)
                                 .foregroundColor(.white.opacity(0.8))
                                 .lineLimit(2)
@@ -345,6 +352,8 @@ struct ContractorProfileView: View {
                         .environmentObject(HomeownerJobController())
                         .environmentObject(AuthController())
                         .environmentObject(JobController())
+                        .environmentObject(FlyerController())
+                        .environmentObject(BidController())
                         .environmentObject(ContractorController())
                 )
                 window.makeKeyAndVisible()
@@ -391,9 +400,11 @@ struct BiographyViewCO: View {
 struct ContractorProfileView_Previews: PreviewProvider {
     static var previews: some View {
         ContractorProfileView()
-            .environmentObject(AuthController())
             .environmentObject(HomeownerJobController())
+            .environmentObject(AuthController())
             .environmentObject(JobController())
+            .environmentObject(FlyerController())
+            .environmentObject(BidController())
             .environmentObject(ContractorController())
     }
 }

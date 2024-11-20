@@ -39,6 +39,12 @@ struct JobCellView: View {
                 Text(jobController.timeAgoSinceDate(job.datePosted))
                     .font(.caption)
                     .foregroundColor(.gray)
+                
+                Text("Log in to see if this job is available to bid.")
+                    .font(.caption)
+                    .foregroundColor(.red)
+                    .lineLimit(2)
+                    .padding(.top, 4)
             }
 
             Spacer()
@@ -52,7 +58,7 @@ struct JobCellView: View {
         }
         .padding(8)
         .background(
-            BlurView(style: .systemMaterial)
+            BlurView(style: .systemThickMaterialLight)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
         )
         .cornerRadius(12)
@@ -65,15 +71,21 @@ struct JobCellView_Previews: PreviewProvider {
         let sampleJob = Job(
             id: UUID(),
             title: "Sample Job Title",
+            number: "805-123-4567",
             description: "This is a sample job description.",
             city: "Sample City",
             category: .landscaping,
             datePosted: Date(),
-            imageURL: "https://via.placeholder.com/150"
+            imageURL: "https://via.placeholder.com/300"
         )
         
         JobCellView(job: sampleJob)
+            .environmentObject(HomeownerJobController())
+            .environmentObject(AuthController())
             .environmentObject(JobController())
+            .environmentObject(FlyerController())
+            .environmentObject(BidController())
+            .environmentObject(ContractorController())
             .previewLayout(.sizeThatFits)
             .padding()
             .background(Color.white)

@@ -4,6 +4,13 @@ struct FlyerCellView: View {
     // MARK: - Properties
     let contractor: ContractorProfile
     @State private var isFullScreen: Bool = false
+    
+    // MARK: - Environment Objects
+    @EnvironmentObject var authController: AuthController
+    @EnvironmentObject var homeownerJobController: HomeownerJobController
+    @EnvironmentObject var jobController: JobController
+    @EnvironmentObject var flyerController: FlyerController
+    @EnvironmentObject var bidController: BidController
     @EnvironmentObject var contractorController: ContractorController
     
     // MARK: - Body
@@ -15,6 +22,9 @@ struct FlyerCellView: View {
                     .font(.headline)
                     .fontWeight(.bold)
                     .foregroundColor(.black)
+                    .lineLimit(2)
+                    .truncationMode(.tail)
+                    .minimumScaleFactor(0.8)
                 
                 Text("Service Area: \(contractor.city)")
                     .font(.subheadline)
@@ -59,7 +69,7 @@ struct FlyerCellView: View {
         }
         .padding(8)
         .background(
-            BlurView(style: .systemMaterial)
+            BlurView(style: .systemThickMaterialLight)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
         )
         .cornerRadius(12)

@@ -3,7 +3,15 @@ import SwiftUI
 struct JobDetailView: View {
     // MARK: - Properties
     let job: Job
+    
+    // MARK: - Environment Objects
+    @EnvironmentObject var authController: AuthController
+    @EnvironmentObject var homeownerJobController: HomeownerJobController
     @EnvironmentObject var jobController: JobController
+    @EnvironmentObject var flyerController: FlyerController
+    @EnvironmentObject var bidController: BidController
+    @EnvironmentObject var contractorController: ContractorController
+    
     @State private var isFullScreen: Bool = false
 
     // MARK: - Body
@@ -90,6 +98,7 @@ struct JobDetailView_Previews: PreviewProvider {
         let sampleJob = Job(
             id: UUID(),
             title: "Sample Job Title",
+            number: "805-123-4567",
             description: "This is a sample job description that provides details about the job.",
             city: "Sample City",
             category: .landscaping,
@@ -98,7 +107,12 @@ struct JobDetailView_Previews: PreviewProvider {
         )
 
         JobDetailView(job: sampleJob)
+            .environmentObject(HomeownerJobController())
+            .environmentObject(AuthController())
             .environmentObject(JobController())
+            .environmentObject(FlyerController())
+            .environmentObject(BidController())
+            .environmentObject(ContractorController())
             .previewLayout(.sizeThatFits)
             .padding()
             .background(Color.white)

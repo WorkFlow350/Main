@@ -1,11 +1,9 @@
-import Foundation
 import SwiftUI
 
-// MARK: - Homeowner Notification View
-struct HoNotificationView: View {
+// MARK: - FAQ Page
+struct FAQPageViewHO: View {
     var body: some View {
         ZStack {
-            // MARK: - Background Gradient
             LinearGradient(
                 gradient: Gradient(colors: [
                     Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0),
@@ -15,19 +13,21 @@ struct HoNotificationView: View {
                 endPoint: .bottom
             )
             .ignoresSafeArea()
-            Text("Reserved view for chat notifications and bids")
-                .foregroundColor(.white)
+            
+            VStack {
+                Spacer()
+                TextShimmer(text: "FAQ COMING SOON", fontSize: 35, multiColors: .constant(true))
+                Spacer()
+            }
         }
+        .navigationTitle("FAQ")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
 // MARK: - Preview
-struct HoNotificationView_Previews: PreviewProvider {
+struct FAQPageView_PreviewsHO: PreviewProvider {
     static var previews: some View {
-        HoNotificationView()
-            .environmentObject(HomeownerJobController())
-            .environmentObject(AuthController())
-            .environmentObject(JobController())
-            .environmentObject(ContractorController())
+        FAQPageViewHO()
     }
 }

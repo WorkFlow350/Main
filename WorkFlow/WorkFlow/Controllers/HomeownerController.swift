@@ -19,14 +19,17 @@ class HomeownerJobController: ObservableObject {
                     print("Error fetching homeowner jobs: \(error.localizedDescription)")
                     return
                 }
-
-                guard let snapshot = snapshot else { return }
+                guard let snapshot = snapshot else {
+                    print("No snapshot received from Firestore.")
+                    return
+                }
                 self.homeownerJobs = snapshot.documents.compactMap { document in
                     let data = document.data()
-                    print("Fetched job data: \(data)") // Debug print
+                    print("Fetched job data: \(data)")
                     return Job(
                         id: UUID(uuidString: document.documentID) ?? UUID(),
                         title: data["title"] as? String ?? "",
+                        number: data["number"] as? String ?? "Not provided",
                         description: data["description"] as? String ?? "",
                         city: data["city"] as? String ?? "",
                         category: JobCategory(rawValue: data["category"] as? String ?? "Landscaping") ?? .landscaping,
@@ -34,7 +37,7 @@ class HomeownerJobController: ObservableObject {
                         imageURL: data["imageURL"] as? String
                     )
                 }
-                print("Total jobs fetched: \(self.homeownerJobs.count)") // Debug print
+                print("Total jobs fetched: \(self.homeownerJobs.count)")
             }
     }
 
@@ -68,22 +71,24 @@ class HomeownerJobController: ObservableObject {
     // MARK: - Post Job
     func postJob(job: Job, selectedImage: UIImage?) {
         let db = Firestore.firestore()
-        var jobData: [String: Any] = [
+        let jobData: [String: Any] = [
             "id": job.id.uuidString,
             "title": job.title,
             "description": job.description,
             "city": job.city,
+            "number": job.number,
             "category": job.category.rawValue,
             "datePosted": Timestamp(date: job.datePosted),
             "imageURL": job.imageURL,
-            "homeownerId": Auth.auth().currentUser?.uid ?? ""
-        ]
-
-        db.collection("jobs").addDocument(data: jobData) { error in
+            "homeownerId": Auth.auth().currentUser?.uid ?? ""]
+        //!!!I changed the bottom comment to get the right document!!!
+        //db.collection("jobs").addDocument(data: jobData) { error in
+        // Set the document ID to match job.id.uuidString
+        db.collection("jobs").document(job.id.uuidString).setData(jobData) { error in
             if let error = error {
                 print("Error posting job: \(error.localizedDescription)")
             } else {
-                print("Job successfully posted.")
+                print("Job successfully posted with ID: \(job.id.uuidString)")
                 if let homeownerId = Auth.auth().currentUser?.uid {
                     self.fetchJobsForHomeowner(homeownerId: homeownerId)
                 }

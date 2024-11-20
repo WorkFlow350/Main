@@ -1,7 +1,9 @@
 import SwiftUI
 import PhotosUI
 import FirebaseStorage
+import FirebaseAuth
 
+// MARK: - CoPostView
 struct CoPostView: View {
     // MARK: - State Variables
     @State private var title: String = ""
@@ -16,25 +18,20 @@ struct CoPostView: View {
     @State private var isDescriptionEditorPresented: Bool = false
 
     // MARK: - Environment Objects
+    @EnvironmentObject var authController: AuthController
+    @EnvironmentObject var homeownerJobController: HomeownerJobController
     @EnvironmentObject var jobController: JobController
+    @EnvironmentObject var flyerController: FlyerController
+    @EnvironmentObject var bidController: BidController
     @EnvironmentObject var contractorController: ContractorController
-
+    
     var body: some View {
         ZStack {
             // MARK: - Background Gradient
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0),
-                    Color.black.opacity(0.99)
-                ]),
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            gradientBackground
 
             ScrollView {
                 VStack(spacing: 20) {
-                    // MARK: - Header
                     HStack {
                         Text("Post Flyer")
                             .font(.largeTitle)
@@ -58,7 +55,7 @@ struct CoPostView: View {
                 CustomDescriptionPopup(
                     isPresented: $isDescriptionEditorPresented,
                     description: $description,
-                    title: "Enter your bio"
+                    title: "Enter your flyer description"
                 )
             )
             .toolbar {
@@ -70,6 +67,19 @@ struct CoPostView: View {
                 }
             }
         }
+    }
+
+    // MARK: - Background Gradient
+    private var gradientBackground: some View {
+        LinearGradient(
+            gradient: Gradient(colors: [
+                Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0),
+                Color.black.opacity(0.99)
+            ]),
+            startPoint: .top,
+            endPoint: .bottom
+        )
+        .ignoresSafeArea()
     }
 
     // MARK: - Flyer Details Section
@@ -89,14 +99,14 @@ struct CoPostView: View {
     }
 
     private var titleField: some View {
-        TextField("Name", text: $title)
+        TextField("Title", text: $title)
             .padding()
             .background(Color.white)
             .cornerRadius(15)
             .overlay(RoundedRectangle(cornerRadius: 15).stroke(Color.gray.opacity(0.5), lineWidth: 1))
             .onChange(of: title) {
-                if title.count > 20 {
-                    title = String(title.prefix(20))
+                if title.count > 40 {
+                    title = String(title.prefix(40))
                 }
             }
     }
@@ -132,16 +142,10 @@ struct CoPostView: View {
             isDescriptionEditorPresented = true
         }) {
             HStack {
-                Text(description.isEmpty ? "Bio" : description)
+                Text(description.isEmpty ? "Description" : description)
                     .foregroundColor(description.isEmpty ? .gray : .black)
-                    .padding(.vertical, 12)
-                    .padding(.horizontal)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
+                    .padding()
                 Spacer()
-                Image(systemName: "arrow.up.backward.and.arrow.down.forward.rectangle")
-                    .foregroundColor(.gray)
-                    .padding(.trailing, 10)
             }
             .frame(height: 50)
             .background(Color.white)
@@ -153,28 +157,48 @@ struct CoPostView: View {
         }
     }
 
+    // MARK: - Category Picker
     private var categoryPickerButton: some View {
-        Button(action: {
-            isCategoryPickerPresented = true
-        }) {
+        DisclosureGroup(isExpanded: $isCategoryPickerPresented) {
+            VStack(alignment: .leading) {
+                ForEach(JobCategory.allCases, id: \.self) { category in
+                    Button(action: {
+                        if selectedCategories.contains(category) {
+                            selectedCategories.removeAll { $0 == category }
+                        } else {
+                            selectedCategories.append(category)
+                        }
+                    }) {
+                        HStack {
+                            Text(category.rawValue)
+                                .foregroundColor(.white)
+                            Spacer()
+                            if selectedCategories.contains(category) {
+                                Image(systemName: "checkmark")
+                                    .foregroundColor(.blue)
+                            }
+                        }
+                        .padding(.vertical, 5)
+                    }
+                }
+            }
+            .padding(.horizontal)
+        } label: {
             HStack {
                 Text(selectedCategories.isEmpty ? "Select Skills" : selectedCategories.map { $0.rawValue }.joined(separator: ", "))
                     .foregroundColor(.white)
                     .font(.body)
+                    .lineLimit(1)
                 Spacer()
-                Image(systemName: "chevron.down")
-                    .foregroundColor(.white)
             }
             .padding(.horizontal, 10)
-            .padding(.vertical, 15)
-            .background(Color.white.opacity(0.2))
+            .padding(.vertical, 5)
             .cornerRadius(5)
         }
-        .sheet(isPresented: $isCategoryPickerPresented) {
-            MultiCategoryPicker(selectedCategories: $selectedCategories, isPresented: $isCategoryPickerPresented)
-        }
+        .accentColor(.white)
+        .background(Color.white.opacity(0.2))
+        .cornerRadius(8)
     }
-
     // MARK: - Image Picker Section
     private var imagePickerSection: some View {
         VStack {
@@ -209,7 +233,6 @@ struct CoPostView: View {
                     .background(Color.white)
                     .clipShape(Circle())
             }
-            .padding(5)
         }
     }
 
@@ -218,13 +241,12 @@ struct CoPostView: View {
             isImagePickerPresented = true
         }) {
             Text("Select Image")
-                .underline()
                 .foregroundColor(.white)
                 .font(.body)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 5)
                 .background(Color.white.opacity(0.2))
-                .cornerRadius(5)
+                .cornerRadius(8)
         }
     }
 
@@ -245,7 +267,7 @@ struct CoPostView: View {
                             email: email,
                             imageURL: url
                         )
-                        contractorController.postFlyer(profile: newFlyer, selectedImage: selectedImage)
+                        contractorController.postFlyer(flyer: newFlyer, selectedImage: selectedImage)
                         resetFields()
                     } else {
                         print("Error uploading image for flyer.")
@@ -265,10 +287,9 @@ struct CoPostView: View {
                 )
                 .cornerRadius(20)
                 .foregroundColor(.white)
-                .shadow(color: .white, radius: 2, x: 0, y: 0)
         }
         .disabled(title.isEmpty || description.isEmpty || city.isEmpty || email.isEmpty || selectedImage == nil)
-        .padding(.horizontal)
+        .padding(.bottom, 50)
     }
 
     // MARK: - Reset Fields
@@ -289,6 +310,8 @@ struct CoPostView_Previews: PreviewProvider {
             .environmentObject(HomeownerJobController())
             .environmentObject(AuthController())
             .environmentObject(JobController())
+            .environmentObject(FlyerController())
+            .environmentObject(BidController())
             .environmentObject(ContractorController())
     }
 }

@@ -12,8 +12,15 @@ struct IdentifiableError: Identifiable {
 // MARK: - HomeownerProfileView
 struct HomeownerProfileView: View {
     @Environment(\.presentationMode) var presentationMode
+    
+    // MARK: - Environment Objects
     @EnvironmentObject var authController: AuthController
     @EnvironmentObject var homeownerJobController: HomeownerJobController
+    @EnvironmentObject var jobController: JobController
+    @EnvironmentObject var flyerController: FlyerController
+    @EnvironmentObject var bidController: BidController
+    @EnvironmentObject var contractorController: ContractorController
+    
     @State private var profileImage: Image? = Image("profilePlaceholder")
     @State private var name: String = ""
     @State private var location: String = ""
@@ -26,6 +33,8 @@ struct HomeownerProfileView: View {
     @State private var profilePictureURL: String? = nil
     @State private var isImagePickerPresented = false
     @State private var selectedImage: UIImage?
+    @State private var isReviewEditorPresented: Bool = false
+    @State private var review: String = ""
     
     private let db = Firestore.firestore()
     private let storage = Storage.storage()
@@ -104,7 +113,7 @@ struct HomeownerProfileView: View {
                 Alert(title: Text("Error"), message: Text(error.message), dismissButton: .default(Text("OK")))
             }
             .navigationDestination(isPresented: $navigateToHoChat) {
-                HoChatView()
+                HoBidFeedView()
             }
             .navigationDestination(isPresented: $navigateToBiography) {
                 BiographyView(bio: bio)
@@ -235,7 +244,7 @@ struct HomeownerProfileView: View {
             Button(action: {
                 navigateToHoChat = true
             }) {
-                Text("Message")
+                Text("Bids")
                     .font(.headline)
                     .foregroundColor(.white)
                     .padding(.horizontal, 20)
@@ -295,6 +304,7 @@ struct HomeownerProfileView: View {
                 .padding(.bottom, 5)
             
             ForEach(homeownerJobController.homeownerJobs) { job in
+                Group {
                 NavigationLink(destination: JobDetailView(job: job)) {
                     HStack {
                         if let imageURL = job.imageURL, let url = URL(string: imageURL) {
@@ -312,24 +322,7 @@ struct HomeownerProfileView: View {
                                     .clipShape(RoundedRectangle(cornerRadius: 15))
                             }
                         }
-                        
-                        VStack(alignment: .leading, spacing: 5) {
-                            Text(job.title)
-                                .font(.title3)
-                                .fontWeight(.bold)
-                                .foregroundColor(.white)
-                            Text("City: \(job.city)")
-                                .font(.subheadline)
-                                .foregroundColor(.white.opacity(0.8))
-                            Text("Category: \(job.category.rawValue)")
-                                .font(.subheadline)
-                                .foregroundColor(.white.opacity(0.8))
-                            Text("Describtion: \(job.description)")
-                                .font(.subheadline)
-                                .foregroundColor(.white.opacity(0.8))
-                                .lineLimit(2)
-                        }
-                        .padding(.leading, 10)
+                        jobCard(job: job, isReviewEditorPresented: $isReviewEditorPresented, review: $review)
                     }
                     .frame(maxWidth: .infinity, minHeight: 120)
                     .padding()
@@ -347,9 +340,20 @@ struct HomeownerProfileView: View {
                             )
                     )
                     .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 2)
+                    }
+                }
+                .onAppear {
+                    bidController.getBidsForJob2(job: job)
                 }
             }
         }
+        .overlay(
+            CustomDescriptionPopup(
+                isPresented: $isReviewEditorPresented,
+                description: $review,
+                title: "Leave your review"
+            )
+        )
         .padding(.horizontal)
         .padding(.top, 10)
     }
@@ -365,6 +369,8 @@ struct HomeownerProfileView: View {
                         .environmentObject(HomeownerJobController())
                         .environmentObject(AuthController())
                         .environmentObject(JobController())
+                        .environmentObject(FlyerController())
+                        .environmentObject(BidController())
                         .environmentObject(ContractorController())
                 )
                 window.makeKeyAndVisible()
@@ -406,6 +412,101 @@ struct BiographyView: View {
     }
 }
 
+// MARK: - review Box
+private func reviewButton(isReviewEditorPresented: Binding<Bool>, review: Binding<String>) -> some View {
+    Button(action: {
+        isReviewEditorPresented.wrappedValue = true
+    }) {
+        HStack {
+            Text(review.wrappedValue.isEmpty ? "review" : review.wrappedValue)
+                .foregroundColor(review.wrappedValue.isEmpty ? .gray : .black)
+                .padding(.vertical, 12)
+                .padding(.horizontal)
+                .lineLimit(1)
+                .truncationMode(.tail)
+            Spacer()
+        }
+        .frame(height: 50)
+        .background(Color.white)
+        .cornerRadius(15)
+        .overlay(
+            RoundedRectangle(cornerRadius: 15)
+                .stroke(Color.gray.opacity(0.5), lineWidth: 1)
+        )
+    }
+}
+//MARK: - review section
+private struct ReviewSection: View {
+    let completedBid: Bid
+    @EnvironmentObject var bidController: BidController
+    @Binding var review: String
+    @Binding var isReviewEditorPresented: Bool
+
+    var body: some View {
+        reviewButton(isReviewEditorPresented: $isReviewEditorPresented, review: $review)
+        Button(action: {
+            bidController.leaveReview(bidId: completedBid.id, review: review)
+            review = ""
+        }) {
+            Text("Post")
+                .frame(minWidth: 100, maxWidth: 200)
+                .padding()
+                .background(
+                    LinearGradient(
+                        gradient: Gradient(colors: [Color(hex: "#1E3A8A"), Color(hex: "#2563EB")]),
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .cornerRadius(20)
+                .foregroundColor(.white)
+        }
+        .disabled(review.isEmpty)
+        .padding(.horizontal)
+        .padding(.vertical, 0)
+    }
+}
+
+//MARK: - Job card
+private struct jobCard: View {
+    let job: Job
+    @EnvironmentObject var bidController: BidController
+    @Binding var isReviewEditorPresented: Bool
+    @Binding var review: String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text(job.title)
+                .font(.title3)
+                .fontWeight(.bold)
+                .foregroundColor(.white)
+            Text("City: \(job.city)")
+                .font(.subheadline)
+                .foregroundColor(.white.opacity(0.8))
+            Text("Category: \(job.category.rawValue)")
+                .font(.subheadline)
+                .foregroundColor(.white.opacity(0.8))
+            Text("Describtion: \(job.description)")
+                .font(.subheadline)
+                .foregroundColor(.white.opacity(0.8))
+                .lineLimit(2)
+            if let bids = bidController.jobBids2[job.id.uuidString],
+                bids.contains(where: {$0.status == .completed}) {
+                Text("Completed")
+                    .font(.subheadline)
+                    .foregroundColor(.white.opacity(0.8))
+                let completedBid = bids.first(where: {$0.status == .completed})!
+                ReviewSection(completedBid: completedBid, review: $review, isReviewEditorPresented: $isReviewEditorPresented)
+            } else {
+                Text("Not Yet Completed")
+                    .font(.subheadline)
+                    .foregroundColor(.white.opacity(0.8))
+            }
+        }
+        .padding(.leading, 10)
+    }
+}
+
 // MARK: - Preview
 struct HomeownerProfileView_Previews: PreviewProvider {
     static var previews: some View {
@@ -413,6 +514,8 @@ struct HomeownerProfileView_Previews: PreviewProvider {
             .environmentObject(HomeownerJobController())
             .environmentObject(AuthController())
             .environmentObject(JobController())
+            .environmentObject(FlyerController())
+            .environmentObject(BidController())
             .environmentObject(ContractorController())
     }
 }

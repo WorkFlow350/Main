@@ -2,7 +2,14 @@ import SwiftUI
 
 struct GuestModeProfileView: View {
     @Environment(\.presentationMode) var presentationMode
+    // MARK: - Environment Objects
+    @EnvironmentObject var authController: AuthController
+    @EnvironmentObject var homeownerJobController: HomeownerJobController
     @EnvironmentObject var jobController: JobController
+    @EnvironmentObject var flyerController: FlyerController
+    @EnvironmentObject var bidController: BidController
+    @EnvironmentObject var contractorController: ContractorController
+    
     @State private var showSignInView = false
 
     var body: some View {
@@ -83,7 +90,7 @@ struct GuestModeProfileView: View {
                 .font(.headline)
                 .foregroundColor(.white)
 
-            Text("You are currently in guest mode. Create a profile.")
+            Text("You are currently in guest mode. Create an account.")
                 .font(.body)
                 .foregroundColor(.white.opacity(0.8))
                 .multilineTextAlignment(.leading)
@@ -156,6 +163,8 @@ struct GuestModeProfileView_Previews: PreviewProvider {
             .environmentObject(HomeownerJobController())
             .environmentObject(AuthController())
             .environmentObject(JobController())
+            .environmentObject(FlyerController())
+            .environmentObject(BidController())
             .environmentObject(ContractorController())
     }
 }

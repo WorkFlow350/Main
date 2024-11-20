@@ -63,6 +63,11 @@ class JobController: ObservableObject {
                         return print("Could not get title")
                     }
                     
+                    
+                    guard let number = data["number"] as? String else {
+                        return print("Could not get number") // Add this line
+                    }
+                    
                     guard let description = data["description"] as? String else {
                         return print("Could not get description")
                     }
@@ -88,6 +93,7 @@ class JobController: ObservableObject {
                     
                     let newJob = Job(id: id,
                                      title: title,
+                                     number: number,
                                      description: description,
                                      city: city,
                                      category: category,
@@ -151,6 +157,7 @@ class JobController: ObservableObject {
                 return Job(
                     id: UUID(uuidString: document.documentID) ?? UUID(),
                     title: data["title"] as? String ?? "",
+                    number: data["number"] as? String ?? "",
                     description: data["description"] as? String ?? "",
                     city: data["city"] as? String ?? "",
                     category: JobCategory(rawValue: data["category"] as? String ?? "Landscaping") ?? .landscaping,

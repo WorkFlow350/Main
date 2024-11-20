@@ -7,7 +7,11 @@ struct SearchView: View {
     @State private var isSearchingJobs: Bool = true
 
     // MARK: - Environment Objects
+    @EnvironmentObject var authController: AuthController
+    @EnvironmentObject var homeownerJobController: HomeownerJobController
     @EnvironmentObject var jobController: JobController
+    @EnvironmentObject var flyerController: FlyerController
+    @EnvironmentObject var bidController: BidController
     @EnvironmentObject var contractorController: ContractorController
 
     // MARK: - Filtered Jobs
@@ -21,7 +25,7 @@ struct SearchView: View {
 
     // MARK: - Filtered Flyers
     var filteredFlyers: [ContractorProfile] {
-        var flyers = contractorController.flyers.filter { $0.city.lowercased().contains(searchText.lowercased()) }
+        var flyers = flyerController.flyers.filter { $0.city.lowercased().contains(searchText.lowercased()) }
         if let category = selectedCategory {
             flyers = flyers.filter { $0.skills.contains(category.rawValue) }
         }
@@ -88,7 +92,7 @@ struct SearchView: View {
                         .padding(.horizontal)
                         .onChange(of: searchText) {
                             jobController.objectWillChange.send()
-                            contractorController.objectWillChange.send()
+                            flyerController.objectWillChange.send()
                         }
                         .toolbar {
                             ToolbarItemGroup(placement: .keyboard) {
@@ -133,13 +137,13 @@ struct SearchView: View {
                 .background(Color.clear)
                 .onAppear {
                     jobController.fetchJobs()
-                    contractorController.fetchFlyers()
+                    flyerController.fetchFlyers()
                 }
                 .onChange(of: jobController.jobs) {
                     jobController.objectWillChange.send()
                 }
-                .onChange(of: contractorController.flyers) {
-                    contractorController.objectWillChange.send()
+                .onChange(of: flyerController.flyers) {
+                    flyerController.objectWillChange.send()
                 }
             }
         }
@@ -238,6 +242,8 @@ struct SearchView_Previews: PreviewProvider {
             .environmentObject(HomeownerJobController())
             .environmentObject(AuthController())
             .environmentObject(JobController())
+            .environmentObject(FlyerController())
+            .environmentObject(BidController())
             .environmentObject(ContractorController())
     }
 }

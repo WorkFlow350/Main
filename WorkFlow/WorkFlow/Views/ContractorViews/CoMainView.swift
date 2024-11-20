@@ -5,12 +5,13 @@ import Firebase
 struct CoMainView: View {
     // MARK: - Tab Enumeration
     enum Tab {
-        case home, search, post, chat, notifications
+        case home, search, post, jobs, notifications
     }
 
     @State private var selectedTab: Tab = .home
     @State private var showProfileView = false
     @State private var profilePictureURL: String? = nil
+    @EnvironmentObject var bidController: BidController
 
     var body: some View {
         ZStack {
@@ -94,13 +95,13 @@ struct CoMainView: View {
                         CoSearchView()
                     case .post:
                         CoPostView()
-                    case .chat:
-                        CoChatView()
+                    case .jobs:
+                        CoMyJobsView()
                     case .notifications:
-                        CoNotificationView()
+                        FAQPageViewCO()
                     }
                 }
-                .animation(.easeInOut(duration: 0.3), value: selectedTab)
+                .animation(.smooth(duration: 0.1), value: selectedTab)
                 Spacer()
             }
 
@@ -119,22 +120,21 @@ struct CoMainView: View {
     var tabBar: some View {
         HStack {
             Spacer()
-            tabBarButton(imageName: "house.fill", text: "Home", tab: .home)
+            tabBarButton(imageName: "house", text: "Home", tab: .home)
             Spacer()
             tabBarButton(imageName: "magnifyingglass", text: "Search", tab: .search)
             Spacer()
-            tabBarButton(imageName: "plus.app.fill", text: "Post", tab: .post)
+            tabBarButton(imageName: "plus.app", text: "Post", tab: .post)
             Spacer()
-            tabBarButton(imageName: "bubble.left.fill", text: "Chat", tab: .chat)
+            tabBarButton(imageName: "note", text: "Jobs", tab: .jobs)
             Spacer()
-            tabBarButton(imageName: "bell.fill", text: "Notifications", tab: .notifications)
+            tabBarButton(imageName: "questionmark.circle", text: "FAQ", tab: .notifications)
             Spacer()
         }
         .padding()
         .background(
-            RoundedRectangle(cornerRadius: 30)
-                .fill(Color.white)
-                .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 4)
+            BlurView(style: .systemThickMaterialLight)
+                .clipShape(RoundedRectangle(cornerRadius: 30))
         )
         .padding(.horizontal, 20)
         .frame(maxWidth: 350)
@@ -147,17 +147,19 @@ struct CoMainView: View {
             selectedTab = tab
         } label: {
             VStack {
-                Image(systemName: imageName)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 22)
+                ZStack {
+                    Image(systemName: imageName)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 22)
+                }
                 if selectedTab == tab {
                     Text(text)
                         .font(.system(size: 11))
                 }
             }
             .foregroundColor(selectedTab == tab ? .black : .gray)
-            .animation(.easeInOut(duration: 0.25), value: selectedTab)
+            .animation(.smooth(duration: 0.1), value: selectedTab)
         }
     }
 }
@@ -166,9 +168,11 @@ struct CoMainView: View {
 struct CoMainView_Previews: PreviewProvider {
     static var previews: some View {
         CoMainView()
-            .environmentObject(AuthController())
             .environmentObject(HomeownerJobController())
+            .environmentObject(AuthController())
             .environmentObject(JobController())
+            .environmentObject(FlyerController())
+            .environmentObject(BidController())
             .environmentObject(ContractorController())
     }
 }

@@ -6,7 +6,7 @@ struct HoMainView: View {
 
     // MARK: - Tab Enum
     enum Tab {
-        case home, search, post, chat, notifications
+        case home, search, post, bids, notifications
     }
 
     @State private var selectedTab: Tab = .home
@@ -93,13 +93,13 @@ struct HoMainView: View {
                         HoSearchView()
                     case .post:
                         HoPostView()
-                    case .chat:
-                        HoChatView()
+                    case .bids:
+                        HoBidFeedView()
                     case .notifications:
-                        HoNotificationView()
+                        FAQPageViewHO()
                     }
                 }
-                .animation(.easeInOut(duration: 0.3), value: selectedTab)
+                .animation(.smooth(duration: 0.1), value: selectedTab)
                 Spacer()
             }
 
@@ -118,23 +118,24 @@ struct HoMainView: View {
     var tabBar: some View {
         HStack {
             Spacer()
-            tabBarButton(imageName: "house.fill", text: "Home", tab: .home)
+            tabBarButton(imageName: "house", text: "Home", tab: .home)
             Spacer()
             tabBarButton(imageName: "magnifyingglass", text: "Search", tab: .search)
             Spacer()
-            tabBarButton(imageName: "plus.app.fill", text: "Post", tab: .post)
+            tabBarButton(imageName: "plus.app", text: "Post", tab: .post)
             Spacer()
-            tabBarButton(imageName: "bubble.left.fill", text: "Chat", tab: .chat)
+            tabBarButton(imageName: "note", text: "Bids", tab: .bids)
             Spacer()
-            tabBarButton(imageName: "bell.fill", text: "Notifications", tab: .notifications)
+            tabBarButton(imageName: "questionmark.circle", text: "FAQ", tab: .notifications)
             Spacer()
         }
         .padding()
         .background(
-            RoundedRectangle(cornerRadius: 30)
-                .fill(Color.white)
-                .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 4)
+            ZStack {
+                BlurView(style: .systemThickMaterialLight)
+            }
         )
+        .cornerRadius(30)
         .padding(.horizontal, 20)
         .frame(maxWidth: 350)
     }
@@ -156,7 +157,7 @@ struct HoMainView: View {
                 }
             }
             .foregroundColor(selectedTab == tab ? .black : .gray)
-            .animation(.easeInOut(duration: 0.25), value: selectedTab)
+            .animation(.smooth(duration: 0.1), value: selectedTab)
         }
     }
 }
@@ -168,6 +169,9 @@ struct HoMainView_Previews: PreviewProvider {
             .environmentObject(HomeownerJobController())
             .environmentObject(AuthController())
             .environmentObject(JobController())
+            .environmentObject(FlyerController())
+            .environmentObject(BidController())
             .environmentObject(ContractorController())
+
     }
 }

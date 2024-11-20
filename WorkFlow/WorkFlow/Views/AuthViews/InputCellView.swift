@@ -41,4 +41,10 @@ struct InputCellView: View {
 
 #Preview {
     InputCellView(text: .constant(""), title: "email address", placeholder: "name@gmail.com")
+        .environmentObject(HomeownerJobController())
+        .environmentObject(AuthController())
+        .environmentObject(JobController())
+        .environmentObject(FlyerController())
+        .environmentObject(BidController())
+        .environmentObject(ContractorController())
 }

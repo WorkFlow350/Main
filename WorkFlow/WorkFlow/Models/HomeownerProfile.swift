@@ -3,7 +3,10 @@ import Foundation
 // MARK: - HomeownerProfile Struct
 struct HomeownerProfile: Identifiable {
     var id: UUID
-    var homeowner: User
-    var address: String
-    var phone: String
+    var homeownerName: String
+    var bio: String
+    var city: String
+    var email: String
+    var number: String
+    var imageURL: String?
 }

@@ -1,27 +1,20 @@
 import SwiftUI
 import FirebaseAuth
+import FirebaseFirestore
+import FirebaseStorage
 
-enum JobFilter: String, CaseIterable {
-    case all = "All Jobs"
-    case landscaping = "Landscaping"
-    case cleaning = "Cleaning"
-    case construction = "Construction"
-}
-
-
-// MARK: - Contractor Feed View
 struct CoFeedView: View {
-    
-    @State private var selectedFilter: JobFilter = .all
-    @State private var isFilterMenuVisible: Bool = false
-    @State private var selectedCategories: [JobCategory] = []
-    
-    // MARK: - Environment Objects
-    @EnvironmentObject var authController: AuthController
     @EnvironmentObject var jobController: JobController
-    @EnvironmentObject var bidController: BidController
-    @EnvironmentObject var homeownerJobController: HomeownerJobController
-
+    @EnvironmentObject var contractorController: ContractorController
+    @EnvironmentObject var authController: AuthController
+    @State private var isContractor: Bool = true
+    @State private var selectedCategory: JobCategory?
+    @State private var selection = "Filter by Skills"
+    @State private var location: String = ""
+    @State private var isFilterJobsLocation: Bool = false
+    @State private var isShowAllJobs = false
+    @State private var filteredJobs: [Job] = []
+    @State private var isLoading = false
     
     var body: some View {
         NavigationView {
@@ -36,246 +29,202 @@ struct CoFeedView: View {
                     endPoint: .bottom
                 )
                 .ignoresSafeArea()
-
+                
                 // MARK: - Scrollable Content
                 ScrollView {
                     VStack(alignment: .leading) {
-                        // MARK: - Title
-                        Text("Jobs")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
-                            .foregroundColor(.white)
-                            .padding(.horizontal)
-                            .padding(.top, 20)
-
-                        Spacer()
-
-                        //filterDropdown
+                        // MARK: - Title and Filter Menu
+                        HStack {
+                            Text("Jobs")
+                                .font(.largeTitle)
+                                .fontWeight(.bold)
+                                .foregroundColor(.white)
+                            
+                            Spacer()
+                            
+                            Menu {
+                                Button("My Location") {
+                                    Task {
+                                        if await getContractorLocation() {
+                                            await filterJobs(location: location, category: selectedCategory)
+                                        }
+                                    }
+                                }
+                                    Picker("Category", selection: $selectedCategory) {
+                                        Text("All Categories").tag(nil as JobCategory?)
+                                        ForEach(JobCategory.allCases, id: \.self) { category in
+                                            Text(category.rawValue).tag(category as JobCategory?)
+                                        }
+                                    }
+                                    .onChange(of: selectedCategory) { newValue in
+                                        Task {
+                                            await filterJobs(location: location, category: newValue)
+                                        }
+                                    }
+                                Button("Clear", action: showAllJobs)
+                            } label: {
+                                Label("Filter Jobs", systemImage: "ellipsis.circle")
+                                    .accentColor(.white)
+                            }
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 20)
                         
                         // MARK: - Job Listings
-                        LazyVStack(spacing: 1) {
-                            ForEach(jobController.jobs.filter { job in
-                                let shouldDisplay = shouldDisplayJob(job)
-                                print("Job \(job.id.uuidString): \(shouldDisplay ? "Displayed" : "Excluded")")
-                                return shouldDisplay
-                            }) { job in
-                                NavigationLink(destination: CoJobCellView(job: job)) {
-                                    JobCellCoView(job: job)
+                        ScrollView {
+                            if hasJobs {
+                                LazyVStack(spacing: 10) {
+                                    ForEach(isShowAllJobs ? jobController.jobs : filteredJobs) { job in
+                                        NavigationLink(destination: CoJobCellView(job: job)) {
+                                            JobCellView(job: job)
+                                        }
+                                    }
+                                }
+                            } else {
+                                VStack {
+                                    Spacer()
+                                    Text(noJobsMessage)
+                                        .font(.headline)
+                                        .foregroundColor(.white)
+                                        .padding()
+                                    Spacer()
                                 }
                             }
                         }
+                        .padding()
+                        .background(Color.clear)
                     }
-                    .background(Color.clear)
                 }
-                .padding(.bottom, 43)
-                .onAppear {
-                    jobController.fetchJobs()
-                    bidController.fetchExcludedJobs()
+                
+                if isLoading {
+                    ProgressView()
+                }
+            }
+            .onAppear {
+                initializeJobsView()// show only jobs by location by default
+            }
+        }
+    }
+    
+    //MARK: function for clear button to show all jobs
+    func showAllJobs() {
+        Task {
+            isShowAllJobs = true
+            isFilterJobsLocation = false
+            location = ""
+            selectedCategory = nil
+            await jobController.fetchJobs()
+        }
+    }
+    
+    //MARK: Get Contractor Location
+    func getContractorLocation() async -> Bool {
+        await withCheckedContinuation { continuation in
+            guard let userId = Auth.auth().currentUser?.uid else {
+                continuation.resume(returning: false)
+                return
+            }
+            
+            let db = Firestore.firestore()
+            db.collection("users").document(userId).getDocument { document, error in
+                if let error = error {
+                    print("Error fetching user document: \(error.localizedDescription)")
+                    continuation.resume(returning: false)
+                    return
+                }
+                
+                if let document = document, document.exists {
+                    let data = document.data() ?? [:]
+                    self.location = data["city"] as? String ?? "Unknown"
+                    print("Contractor location: \(self.location)")
+                    continuation.resume(returning: true)
+                } else {
+                    print("User document does not exist")
+                    continuation.resume(returning: false)
                 }
             }
         }
     }
     
-    // MARK: - Filter Jobs
-//    private var filterDropdown: some View {
-//        DisclosureGroup("Filter Jobs", isExpanded: $isFilterMenuVisible) {
-//            VStack(alignment: .leading, spacing: 2) {
-//                ForEach(JobFilter.allCases, id: \.self) { filter in
-//                    Button(action: {
-//                        toggleCategorySelection(filter)
-//                    }) {
-//                        HStack {
-//                            Text(filter.rawValue)
-//                                .foregroundColor(.white)
-//                            Spacer()
-//                            if selectedCategories.contains(where: { $0.rawValue == filter.rawValue }) {
-//                                Image(systemName: "checkmark")
-//                                    .foregroundColor(.blue)
-//                            }
-//                        }
-//                        .padding(.vertical, 3)
-//                    }
-//                }
-//            }
-//            .padding(.horizontal, 8)
-//            .padding(.vertical, 5)
-//        }
-//        .padding(.horizontal, 5)
-//        .frame(maxWidth: 152)
-//        .background(Color.white.opacity(0.2))
-//        .cornerRadius(8)
-//    }
-    private func toggleCategorySelection(_ filter: JobFilter) {
-        if filter == .all {
-            selectedCategories.removeAll()
+    //MARK: Filter Jobs
+    func filterJobs(location: String?, category: JobCategory?) async {
+        isLoading = true
+        isFilterJobsLocation = location != nil
+        isShowAllJobs = false
+
+        let db = Firestore.firestore()
+        let collectionRef = db.collection("jobs")
+        var query: Query = collectionRef
+
+        if let location = location, !location.isEmpty {
+            query = query.whereField("city", isEqualTo: location)
+        }
+
+        if let category = category {
+            query = query.whereField("category", isEqualTo: category.rawValue)
+        }
+
+        do {
+            let snapshot = try await query.getDocuments()
+            self.filteredJobs = snapshot.documents.compactMap { document -> Job? in
+                try? document.data(as: Job.self)
+            }
+            print("Total jobs fetched: \(self.filteredJobs.count)")  //debug
+        } catch {
+            print("Error fetching jobs: \(error.localizedDescription)")
+        }
+        
+        isLoading = false
+    }
+    
+    //MARK: for error message no jobs in Location
+    var hasJobs: Bool {
+        isShowAllJobs ? !jobController.jobs.isEmpty : !filteredJobs.isEmpty
+    }
+
+    //MARK: function for error message no jobs in location, category
+    var noJobsMessage: String {
+        switch (location.isEmpty, selectedCategory) {
+        case (false, .some(let category)):
+            return "No \(category.rawValue) jobs found in \(location)"
+        case (false, .none):
+            return "No jobs found in \(location)"
+        case (true, .some(let category)):
+            return "No \(category.rawValue) jobs found"
+        case (true, .none):
+            return "No jobs found"
+        }
+    }
+    //MARK: Function for category
+    func selectCategory(_ category: JobCategory?) {
+        selectedCategory = category
+        Task {
+            await filterJobs(location: location, category: category)
+        }
+    }
+    
+    //MARK: Initalize with just jobs in Contractor's location
+    private func initializeJobsView() {
+    Task {
+        isLoading = true
+        if await getContractorLocation() {
+            await filterJobs(location: self.location, category: selectedCategory)
         } else {
-            if let category = JobCategory(rawValue: filter.rawValue) {
-                if selectedCategories.contains(category) {
-                    selectedCategories.removeAll { $0 == category }
-                } else {
-                    selectedCategories.append(category)
-                }
-            }
+            showAllJobs()
         }
-    }
-
-    // MARK: - Jobs To Display
-    private func shouldDisplayJob(_ job: Job) -> Bool {
-        // Exclude jobs with accepted or completed bids
-        if bidController.excludedJobIds.contains(job.id.uuidString) {
-            return false
-        }
-
-        // If no filters are applied, show all jobs
-        if selectedCategories.isEmpty {
-            return true
-        }
-
-        // Filter jobs by selected categories
-        return selectedCategories.contains(job.category)
+        isLoading = false
     }
 }
-
-// MARK: - JobCellView (for displaying job details)
-struct JobCellCoView: View {
-    let job: Job
-    @EnvironmentObject var authController: AuthController
-    @EnvironmentObject var bidController: BidController
-    @EnvironmentObject var jobController: JobController
-    @State private var bidStatus: String? = nil
-    @State private var bidPrice: Double? = nil
-    @State private var isFlashing = false
-
-
-    var body: some View {
-        HStack {
-            if let imageURL = job.imageURL, let url = URL(string: imageURL) {
-                AsyncImage(url: url) { image in
-                    image
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 50, height: 50)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                        .padding(.trailing, 8)
-                } placeholder: {
-                    Color.gray
-                        .frame(width: 50, height: 50)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                }
-            }
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(job.title)
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .foregroundColor(.black)
-
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text("Job Type:")
-                            .font(.subheadline)
-                            .foregroundColor(.primary)
-                        Text(job.category.rawValue)
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-
-                    HStack {
-                        Text("City:")
-                            .font(.subheadline)
-                            .foregroundColor(.primary)
-                        Text(job.city)
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                }
-                HStack(spacing: 4) {
-                    Image(systemName: "clock")
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                    Text(jobController.timeAgoSinceDate(job.datePosted))
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                    Spacer()
-                    if let status = bidStatus {
-                        Text("Bid Status: \(status.capitalized)")
-                            .font(.caption)
-                            .foregroundColor(statusColor(for: status))
-                            .opacity(isFlashing ? (status.lowercased() == "declined" ? 1.0 : 0.0) : 1.0)
-                            .onAppear {
-                                startFlashingIfNeeded()
-                            }
-                            .animation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true), value: isFlashing)
-                    }
-                }
-            }
-            
-            Spacer()
-            
-            Rectangle()
-                .frame(width: 4)
-                .foregroundColor(categoryColor(for: job.category))
-                .cornerRadius(2)
-                .padding(.vertical, 8)
-        }
-        .padding(8)
-        .background(
-            BlurView(style: .systemThickMaterialLight)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-        )
-        .cornerRadius(12)
-        .onAppear {
-            updateBidStatus()
-        }
-        .onChange(of: bidController.coBids) { _ in
-            updateBidStatus()
-        }
-    }
-
-    private func statusColor(for status: String) -> Color {
-        switch status.lowercased() {
-        case "pending":
-            return .orange
-        case "accepted":
-            return .green
-        case "declined":
-            return .red
-        case "completed":
-            return .blue
-        default:
-            return .gray
-        }
-    }
-
-    private func startFlashingIfNeeded() {
-        if bidStatus?.lowercased() == "declined" {
-            isFlashing = true
-        } else {
-            isFlashing = false
-        }
-    }
-
-    private func updateBidStatus() {
-        if let contractorId = authController.userSession?.uid {
-            if let existingBid = bidController.coBids.first(where: { $0.jobId == job.id.uuidString && $0.contractorId == contractorId }) {
-                bidStatus = existingBid.status.rawValue
-                bidPrice = existingBid.price
-            } else {
-                bidStatus = nil
-            }
+    
+    // MARK: - Preview
+    struct CoFeedView_Previews: PreviewProvider {
+        static var previews: some View {
+            CoFeedView()
+                .environmentObject(HomeownerJobController())
+                .environmentObject(AuthController())
+                .environmentObject(JobController())
+                .environmentObject(ContractorController())
         }
     }
 }
 
-// MARK: - Preview
-struct CoFeedView_Previews: PreviewProvider {
-    static var previews: some View {
-        CoFeedView()
-            .environmentObject(HomeownerJobController())
-            .environmentObject(AuthController())
-            .environmentObject(JobController())
-            .environmentObject(FlyerController())
-            .environmentObject(BidController())
-            .environmentObject(ContractorController())
-    }
-}

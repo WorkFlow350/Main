@@ -66,7 +66,7 @@ struct FlyerCellView: View {
         }
         .padding(8)
         .background(
-            BlurView(style: .systemMaterial)
+            BlurView(style: .systemThickMaterialLight)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
         )
         .cornerRadius(12)

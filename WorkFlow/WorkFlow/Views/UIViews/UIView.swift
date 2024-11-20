@@ -170,7 +170,7 @@ struct CustomDescriptionPopup: View {
     var body: some View {
         if isPresented {
             ZStack {
-                Color.black.opacity(0.3)
+                Color.gray.opacity(0.3)
                     .edgesIgnoringSafeArea(.all)
 
                 VStack(spacing: 20) {
@@ -192,7 +192,7 @@ struct CustomDescriptionPopup: View {
                         .padding()
                         .background(
                             LinearGradient(
-                                gradient: Gradient(colors: [Color(hex: "#708090"), Color(hex: "#2F4F4F")]),
+                                gradient: Gradient(colors: [Color.red, Color.red.opacity(0.7)]),
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -207,7 +207,7 @@ struct CustomDescriptionPopup: View {
                         .padding()
                         .background(
                             LinearGradient(
-                                gradient: Gradient(colors: [Color(hex: "#1E3A8A"), Color(hex: "#2563EB")]),
+                                gradient: Gradient(colors: [Color.black, Color.gray.opacity(0.6)]),
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )

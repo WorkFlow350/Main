@@ -65,7 +65,7 @@ struct FeedView: View {
                         }
                         .background(Color.clear)
                     }
-                    .padding(.bottom, 20) // Padding to separate from the bottom
+                    .padding(.bottom, 60)
                 }
             }
             .onAppear {

@@ -20,6 +20,8 @@ struct CoFeedView: View {
     @EnvironmentObject var authController: AuthController
     @EnvironmentObject var jobController: JobController
     @EnvironmentObject var bidController: BidController
+    @EnvironmentObject var homeownerJobController: HomeownerJobController
+
     
     var body: some View {
         NavigationView {
@@ -53,7 +55,9 @@ struct CoFeedView: View {
                         // MARK: - Job Listings
                         LazyVStack(spacing: 1) {
                             ForEach(jobController.jobs.filter { job in
-                                shouldDisplayJob(job)
+                                let shouldDisplay = shouldDisplayJob(job)
+                                print("Job \(job.id.uuidString): \(shouldDisplay ? "Displayed" : "Excluded")")
+                                return shouldDisplay
                             }) { job in
                                 NavigationLink(destination: CoJobCellView(job: job)) {
                                     JobCellCoView(job: job)
@@ -66,7 +70,7 @@ struct CoFeedView: View {
                 .padding(.bottom, 43)
                 .onAppear {
                     jobController.fetchJobs()
-                    bidController.getBidsForContractor()
+                    bidController.fetchExcludedJobs()
                 }
             }
         }
@@ -117,16 +121,17 @@ struct CoFeedView: View {
 
     // MARK: - Jobs To Display
     private func shouldDisplayJob(_ job: Job) -> Bool {
-        if let contractorId = authController.userSession?.uid {
-            if let existingBid = bidController.coBids.first(where: { $0.jobId == job.id.uuidString && $0.contractorId == contractorId }) {
-                if existingBid.status == .accepted || existingBid.status == .completed {
-                    return false
-                }
-            }
+        // Exclude jobs with accepted or completed bids
+        if bidController.excludedJobIds.contains(job.id.uuidString) {
+            return false
         }
+
+        // If no filters are applied, show all jobs
         if selectedCategories.isEmpty {
             return true
         }
+
+        // Filter jobs by selected categories
         return selectedCategories.contains(job.category)
     }
 }
@@ -139,6 +144,8 @@ struct JobCellCoView: View {
     @EnvironmentObject var jobController: JobController
     @State private var bidStatus: String? = nil
     @State private var bidPrice: Double? = nil
+    @State private var isFlashing = false
+
 
     var body: some View {
         HStack {
@@ -158,15 +165,30 @@ struct JobCellCoView: View {
             }
             
             VStack(alignment: .leading, spacing: 4) {
-                Text("\(job.city) - \(job.category.rawValue)")
-                    .font(.subheadline)
-                    .foregroundColor(.black)
-                
                 Text(job.title)
                     .font(.headline)
                     .fontWeight(.bold)
                     .foregroundColor(.black)
-                
+
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text("Job Type:")
+                            .font(.subheadline)
+                            .foregroundColor(.primary)
+                        Text(job.category.rawValue)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+
+                    HStack {
+                        Text("City:")
+                            .font(.subheadline)
+                            .foregroundColor(.primary)
+                        Text(job.city)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                }
                 HStack(spacing: 4) {
                     Image(systemName: "clock")
                         .font(.caption)
@@ -174,12 +196,17 @@ struct JobCellCoView: View {
                     Text(jobController.timeAgoSinceDate(job.datePosted))
                         .font(.caption)
                         .foregroundColor(.gray)
-                }
-                
-                if let status = bidStatus {
-                    Text("Status: \(status.capitalized)\(bidPrice != nil ? " | Your Current Bid: $\(String(format: "%.2f", bidPrice!))" : "")")
-                        .font(.caption)
-                        .foregroundColor(statusColor(for: status))
+                    Spacer()
+                    if let status = bidStatus {
+                        Text("Bid Status: \(status.capitalized)")
+                            .font(.caption)
+                            .foregroundColor(statusColor(for: status))
+                            .opacity(isFlashing ? (status.lowercased() == "declined" ? 1.0 : 0.0) : 1.0)
+                            .onAppear {
+                                startFlashingIfNeeded()
+                            }
+                            .animation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true), value: isFlashing)
+                    }
                 }
             }
             
@@ -192,9 +219,11 @@ struct JobCellCoView: View {
                 .padding(.vertical, 8)
         }
         .padding(8)
-        .background(Color.white)
+        .background(
+            BlurView(style: .systemThickMaterialLight)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+        )
         .cornerRadius(12)
-        .shadow(radius: 2)
         .onAppear {
             updateBidStatus()
         }
@@ -215,6 +244,14 @@ struct JobCellCoView: View {
             return .blue
         default:
             return .gray
+        }
+    }
+
+    private func startFlashingIfNeeded() {
+        if bidStatus?.lowercased() == "declined" {
+            isFlashing = true
+        } else {
+            isFlashing = false
         }
     }
 

@@ -9,6 +9,7 @@ struct HoPostView: View {
     @State private var title: String = ""
     @State private var description: String = ""
     @State private var city: String = ""
+    @State private var number: String = ""
     @State private var email: String = ""
     @State private var selectedCategories: [JobCategory] = []
     @State private var selectedImage: UIImage? = nil
@@ -91,6 +92,7 @@ struct HoPostView: View {
 
             jobTitleField
             cityField
+            phoneTitleField
             descriptionButton
             categoryPickerButton
         }
@@ -99,6 +101,19 @@ struct HoPostView: View {
 
     private var jobTitleField: some View {
         TextField("Title", text: $title)
+            .padding()
+            .background(Color.white)
+            .cornerRadius(15)
+            .overlay(RoundedRectangle(cornerRadius: 15).stroke(Color.gray.opacity(0.5), lineWidth: 1))
+            .onChange(of: title) {
+                if title.count > 20 {
+                    title = String(title.prefix(20))
+                }
+            }
+    }
+    
+    private var phoneTitleField: some View {
+        TextField("Phone Number", text: $number)
             .padding()
             .background(Color.white)
             .cornerRadius(15)
@@ -135,9 +150,6 @@ struct HoPostView: View {
                     .lineLimit(1)
                     .truncationMode(.tail)
                 Spacer()
-                Image(systemName: "arrow.up.backward.and.arrow.down.forward.rectangle")
-                    .foregroundColor(.gray)
-                    .padding(.trailing, 10)
             }
             .frame(height: 50)
             .background(Color.white)
@@ -151,54 +163,45 @@ struct HoPostView: View {
     
     // MARK: - Category Picker
     private var categoryPickerButton: some View {
-        Button(action: {
-            isCategoryPickerPresented = true
-        }) {
-            HStack {
-                Text(selectedCategories.first?.rawValue ?? "Select Category")
-                    .foregroundColor(.white)
-                    .font(.body)
-                Spacer()
-                Image(systemName: "chevron.down")
-                    .foregroundColor(.white)
-            }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 15)
-            .background(Color.white.opacity(0.2))
-            .cornerRadius(5)
-        }
-        .sheet(isPresented: $isCategoryPickerPresented) {
-            categoryPicker
-        }
-    }
-
-    private var categoryPicker: some View {
-        VStack {
-            Picker("Select Category", selection: Binding(
-                get: { selectedCategories.first ?? JobCategory.landscaping },
-                set: { newValue in selectedCategories = [newValue] }
-            )) {
+        DisclosureGroup(isExpanded: $isCategoryPickerPresented) {
+            VStack(alignment: .leading) {
                 ForEach(JobCategory.allCases, id: \.self) { category in
-                    Text(category.rawValue).tag(category)
+                    Button(action: {
+                        if selectedCategories.contains(category) {
+                            selectedCategories.removeAll { $0 == category }
+                        } else {
+                            selectedCategories.append(category)
+                        }
+                    }) {
+                        HStack {
+                            Text(category.rawValue)
+                                .foregroundColor(.white)
+                            Spacer()
+                            if selectedCategories.contains(category) {
+                                Image(systemName: "checkmark")
+                                    .foregroundColor(.blue)
+                            }
+                        }
+                        .padding(.vertical, 5)
+                    }
                 }
             }
-            .pickerStyle(WheelPickerStyle())
-            .background(.white)
-            .cornerRadius(20)
-            .padding()
-
-            Button("Done") {
-                isCategoryPickerPresented = false
+            .padding(.horizontal)
+        } label: {
+            HStack {
+                Text(selectedCategories.isEmpty ? "Select Job Type" : selectedCategories.map { $0.rawValue }.joined(separator: ", "))
+                    .foregroundColor(.white)
+                    .font(.body)
+                    .lineLimit(1)
+                Spacer()
             }
-            .padding()
-            .background(LinearGradient(
-                gradient: Gradient(colors: [Color(hex: "#1E3A8A"), Color(hex: "#2563EB")]),
-                startPoint: .leading,
-                endPoint: .trailing
-            ))
-            .foregroundColor(.white)
-            .cornerRadius(10)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .cornerRadius(5)
         }
+        .accentColor(.white)
+        .background(Color.white.opacity(0.2))
+        .cornerRadius(8)
     }
 
     // MARK: - Image Picker Section
@@ -244,7 +247,6 @@ struct HoPostView: View {
             isImagePickerPresented = true
         }) {
             Text("Select Image")
-                .underline()
                 .foregroundColor(.white)
                 .font(.body)
                 .padding(.horizontal, 10)
@@ -263,6 +265,7 @@ struct HoPostView: View {
                         let newJob = Job(
                             id: UUID(),
                             title: title,
+                            number: number,
                             description: description,
                             city: city,
                             category: selectedCategories.first ?? .landscaping,
@@ -289,17 +292,18 @@ struct HoPostView: View {
                 )
                 .cornerRadius(20)
                 .foregroundColor(.white)
-                .shadow(color: .white, radius: 2, x: 0, y: 0)
         }
-        .disabled(title.isEmpty || description.isEmpty || city.isEmpty || selectedImage == nil)
+        .disabled(title.isEmpty || description.isEmpty || city.isEmpty || number.isEmpty || selectedImage == nil)
         .padding(.horizontal)
         .padding(.vertical, 0)
+        .padding(.bottom, 50)
     }
 
     // MARK: - Reset Fields
     private func resetFields() {
         title = ""
         description = ""
+        number = ""
         city = ""
         email = ""
         selectedCategories = []

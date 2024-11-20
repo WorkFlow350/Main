@@ -90,7 +90,7 @@ struct GuestModeProfileView: View {
                 .font(.headline)
                 .foregroundColor(.white)
 
-            Text("You are currently in guest mode. Create a profile.")
+            Text("You are currently in guest mode. Create an account.")
                 .font(.body)
                 .foregroundColor(.white.opacity(0.8))
                 .multilineTextAlignment(.leading)

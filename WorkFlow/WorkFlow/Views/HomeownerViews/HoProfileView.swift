@@ -113,7 +113,7 @@ struct HomeownerProfileView: View {
                 Alert(title: Text("Error"), message: Text(error.message), dismissButton: .default(Text("OK")))
             }
             .navigationDestination(isPresented: $navigateToHoChat) {
-                HoChatView()
+                HoBidFeedView()
             }
             .navigationDestination(isPresented: $navigateToBiography) {
                 BiographyView(bio: bio)
@@ -244,7 +244,7 @@ struct HomeownerProfileView: View {
             Button(action: {
                 navigateToHoChat = true
             }) {
-                Text("Message")
+                Text("Bids")
                     .font(.headline)
                     .foregroundColor(.white)
                     .padding(.horizontal, 20)

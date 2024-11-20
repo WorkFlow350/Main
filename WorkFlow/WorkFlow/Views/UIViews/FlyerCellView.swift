@@ -22,6 +22,9 @@ struct FlyerCellView: View {
                     .font(.headline)
                     .fontWeight(.bold)
                     .foregroundColor(.black)
+                    .lineLimit(2)
+                    .truncationMode(.tail)
+                    .minimumScaleFactor(0.8)
                 
                 Text("Service Area: \(contractor.city)")
                     .font(.subheadline)

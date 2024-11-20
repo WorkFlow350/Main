@@ -96,7 +96,7 @@ struct HoMainView: View {
                     case .bids:
                         HoBidFeedView()
                     case .notifications:
-                        HoNotificationView()
+                        FAQPageViewHO()
                     }
                 }
                 .animation(.smooth(duration: 0.1), value: selectedTab)
@@ -126,7 +126,7 @@ struct HoMainView: View {
             Spacer()
             tabBarButton(imageName: "note", text: "Bids", tab: .bids)
             Spacer()
-            tabBarButton(imageName: "bell", text: "Notifications", tab: .notifications)
+            tabBarButton(imageName: "questionmark.circle", text: "FAQ", tab: .notifications)
             Spacer()
         }
         .padding()

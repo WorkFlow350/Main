@@ -391,7 +391,7 @@ struct DetailedCoJobView: View {
             return number
         }
         
-        let formattedNumber = "(\(digits.prefix(3)))\(digits.dropFirst(3).prefix(4))-\(digits.suffix(3))"
+        let formattedNumber = "(\(digits.prefix(3)))\(digits.dropFirst(3).prefix(3))-\(digits.suffix(4))"
         return formattedNumber
     }
     @State private var isCompleted = false

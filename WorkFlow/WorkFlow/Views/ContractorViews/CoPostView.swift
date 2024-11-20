@@ -105,8 +105,8 @@ struct CoPostView: View {
             .cornerRadius(15)
             .overlay(RoundedRectangle(cornerRadius: 15).stroke(Color.gray.opacity(0.5), lineWidth: 1))
             .onChange(of: title) {
-                if title.count > 20 {
-                    title = String(title.prefix(20))
+                if title.count > 40 {
+                    title = String(title.prefix(40))
                 }
             }
     }

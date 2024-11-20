@@ -491,16 +491,25 @@ class BidController: ObservableObject {
             number: data["number"] as? String ?? "Not available"
         )
     }
-    func fetchBid(by bidId: String, completion: @escaping (Bid?) -> Void) {
-        db.collection("bids").document(bidId).getDocument { document, error in
-            if let data = document?.data() {
+    func fetchBid(byJobId jobId: String, contractorId: String, completion: @escaping (Bid?) -> Void) {
+        db.collection("bids")
+            .whereField("jobId", isEqualTo: jobId)
+            .whereField("contractorId", isEqualTo: contractorId)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error fetching bid: \(error.localizedDescription)")
+                    completion(nil)
+                    return
+                }
+                guard let document = snapshot?.documents.first else {
+                    print("No bid found for jobId: \(jobId) and contractorId: \(contractorId)")
+                    completion(nil)
+                    return
+                }
+                let data = document.data()
                 let bid = self.parseBidData(data)
                 completion(bid)
-            } else {
-                print("Error fetching bid: \(error?.localizedDescription ?? "Unknown error")")
-                completion(nil)
             }
-        }
     }
     func getBid(by bidId: String) -> Bid? {
         return coBids.first(where: { $0.id == bidId })

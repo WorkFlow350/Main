@@ -18,7 +18,7 @@ struct DifferentiateView: View {
                 SplashScreenView()
                     .navigationBarBackButtonHidden(true)
                     .onAppear {
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 3.5) {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
                             withAnimation {
                                 showSplashScreen = false
                             }

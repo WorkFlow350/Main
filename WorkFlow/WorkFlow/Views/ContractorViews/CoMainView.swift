@@ -11,7 +11,7 @@ struct CoMainView: View {
     @State private var selectedTab: Tab = .home
     @State private var showProfileView = false
     @State private var profilePictureURL: String? = nil
-    @EnvironmentObject var bidController: BidController // Accessing the bidController
+    @EnvironmentObject var bidController: BidController
 
     var body: some View {
         ZStack {
@@ -98,7 +98,7 @@ struct CoMainView: View {
                     case .jobs:
                         CoMyJobsView()
                     case .notifications:
-                        CoNotificationView()
+                        FAQPageViewCO()
                     }
                 }
                 .animation(.smooth(duration: 0.1), value: selectedTab)
@@ -126,9 +126,9 @@ struct CoMainView: View {
             Spacer()
             tabBarButton(imageName: "plus.app", text: "Post", tab: .post)
             Spacer()
-            tabBarButton(imageName: "briefcase", text: "Jobs", tab: .jobs)
+            tabBarButton(imageName: "note", text: "Jobs", tab: .jobs)
             Spacer()
-            tabBarButton(imageName: "bell", text: "Notifications", tab: .notifications)
+            tabBarButton(imageName: "questionmark.circle", text: "FAQ", tab: .notifications)
             Spacer()
         }
         .padding()
@@ -152,19 +152,6 @@ struct CoMainView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 22)
-                    
-                    // Badge for Notifications Tab
-                    if tab == .notifications && !bidController.bidNotifications.isEmpty {
-                        Circle()
-                            .fill(Color.red)
-                            .frame(width: 14, height: 14)
-                            .overlay(
-                                Text("\(bidController.bidNotifications.count)")
-                                    .font(.caption2)
-                                    .foregroundColor(.white)
-                            )
-                            .offset(x: 10, y: -10)
-                    }
                 }
                 if selectedTab == tab {
                     Text(text)

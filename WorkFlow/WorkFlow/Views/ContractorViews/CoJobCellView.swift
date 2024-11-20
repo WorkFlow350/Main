@@ -115,7 +115,7 @@ struct CoJobCellView: View {
                         .padding(.top, 5)
                         VStack(alignment: .leading, spacing: 5) {
                             if let currentLowestBid = currentLowestBid {
-                                BidStatusView(status: "active", bidPrice: currentLowestBid, isCurrentBid: false)
+                                BidStatusView(status: "Current Lowest Bid", bidPrice: currentLowestBid, isCurrentBid: false)
                             }
                             if let bidStatus = bidStatus {
                                 BidStatusView(status: bidStatus, bidPrice: bidPrice, isCurrentBid: true)
@@ -128,7 +128,6 @@ struct CoJobCellView: View {
                 VStack {
                     if bidPlaced {
                         if let bidStatus = bidStatus, bidStatus.lowercased() == "declined" {
-                            // If the bid is declined, show a message and allow bidding again
                             Text("Your bid was declined.")
                                 .font(.subheadline)
                                 .foregroundColor(.red)
@@ -150,12 +149,10 @@ struct CoJobCellView: View {
                             .padding(.horizontal)
                             .padding(.bottom, 20)
                         } else {
-                            // Show shimmer text if bid is placed and not declined
                             TextShimmer(text: "Bid Placed", fontSize: 35, multiColors: .constant(true))
                                 .padding(.top, 10)
                         }
                     } else {
-                        // Show "Place Bid" button if no bid is placed
                         Button(action: { showBidSheet = true }) {
                             Text("Place Bid")
                                 .frame(minWidth: 100, maxWidth: .infinity)
@@ -197,6 +194,12 @@ struct CoJobCellView: View {
                 }
             }
         }
+        .onChange(of: bidController.jobBids) { _ in
+            updateBidStatus()
+        }
+        .onChange(of: bidController.coBids) { _ in
+            updateBidStatus()
+        }
     }
     struct BidStatusView: View {
         let status: String?
@@ -205,17 +208,17 @@ struct CoJobCellView: View {
 
         var body: some View {
             if let status = status {
-                    VStack(alignment: .leading, spacing: 5) {
-                        Text(isCurrentBid ? "Your Current Bid:" : "Current Bid:")
-                            .font(.headline)
-                            .foregroundColor(.white)
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(isCurrentBid ? "Your Current Bid:" : "Current Bid:")
+                        .font(.headline)
+                        .foregroundColor(.white)
 
-                        Text("$\(String(format: "%.2f", bidPrice ?? 0.0))")
-                            .font(isCurrentBid ? .body : .title2)
-                            .fontWeight(isCurrentBid ? .semibold : .bold)
-                            .foregroundColor(isCurrentBid ? statusColor(for: status) : .green)
-                    }
-                    .padding(.top, 5)
+                    Text("$\(String(format: "%.2f", bidPrice ?? 0.0))")
+                        .font(isCurrentBid ? .body : .title2)
+                        .fontWeight(isCurrentBid ? .semibold : .bold)
+                        .foregroundColor(isCurrentBid ? statusColor(for: status) : .green)
+                }
+                .padding(.top, 5)
             }
         }
 
@@ -229,8 +232,6 @@ struct CoJobCellView: View {
                 return .red
             case "completed":
                 return .blue
-            case "active":
-                return .purple
             default:
                 return .gray
             }
@@ -316,9 +317,8 @@ struct CoJobCellView: View {
         bidStatus = details.status
         bidPrice = details.price
 
-        if bidStatus == nil || bidPrice == nil {
-            bidPlaced = false
-        }
+        // Update bidPlaced based on the bid status
+        bidPlaced = bidStatus != nil && bidPrice != nil
     }
     // MARK: - Keyboard
     struct NumberKeypad: View {
@@ -397,22 +397,22 @@ struct CoJobCellView: View {
             confirmationMessage = AlertMessage(message: "Please enter a valid bid amount.")
             return
         }
-        
         bidController.placeBid(job: job, price: price, description: bidDescription)
-        
         bidPlaced = true
         showBidSheet = false
         bidPriceText = "$0"
         bidDescription = ""
-        confirmationMessage = AlertMessage(message: "Your bid was successfully placed!")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            bidController.getBidsForJob(job: job)
+            updateBidStatus()
+        }
+        UIApplication.shared.endEditing()
     }
     
     // MARK: - Check if bid exists
     private func checkExistingBid() {
         guard let contractorId = authController.userSession?.uid else { return }
-        
         bidController.getBidsForJob(job: job)
-
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             if let acceptedBid = bidController.jobBids.first(where: { $0.status == .accepted }) {
                 bidPlaced = true

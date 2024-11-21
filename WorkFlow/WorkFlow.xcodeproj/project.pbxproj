@@ -26,6 +26,7 @@
 		9E1788942CD07E8D00FD3288 /* GuestModeProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E1788932CD07E8200FD3288 /* GuestModeProfileView.swift */; };
 		9E81DCE82CDDCF870028C952 /* CoJobCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E81DCE72CDDCF7E0028C952 /* CoJobCellView.swift */; };
 		9E8AC25B2CD9AF1400FDC557 /* ContractorController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E8AC25A2CD9AF0700FDC557 /* ContractorController.swift */; };
+		9E95AB6E2CEEE029004ACC13 /* JobsMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E95AB6D2CEEE01E004ACC13 /* JobsMapView.swift */; };
 		9EC417C42CB4AF1B00F21C8F /* WorkFlowApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC417C32CB4AF1B00F21C8F /* WorkFlowApp.swift */; };
 		9EC417C82CB4AF1C00F21C8F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9EC417C72CB4AF1C00F21C8F /* Assets.xcassets */; };
 		9EC417CB2CB4AF1C00F21C8F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9EC417CA2CB4AF1C00F21C8F /* Preview Assets.xcassets */; };
@@ -106,6 +107,7 @@
 		9E1788932CD07E8200FD3288 /* GuestModeProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuestModeProfileView.swift; sourceTree = "<group>"; };
 		9E81DCE72CDDCF7E0028C952 /* CoJobCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoJobCellView.swift; sourceTree = "<group>"; };
 		9E8AC25A2CD9AF0700FDC557 /* ContractorController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContractorController.swift; sourceTree = "<group>"; };
+		9E95AB6D2CEEE01E004ACC13 /* JobsMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JobsMapView.swift; sourceTree = "<group>"; };
 		9EC417C02CB4AF1B00F21C8F /* WorkFlow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WorkFlow.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9EC417C32CB4AF1B00F21C8F /* WorkFlowApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkFlowApp.swift; sourceTree = "<group>"; };
 		9EC417C72CB4AF1C00F21C8F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -236,6 +238,7 @@
 		9E3AB6FE2CD8B8FE0082750B /* UIViews */ = {
 			isa = PBXGroup;
 			children = (
+				9E95AB6D2CEEE01E004ACC13 /* JobsMapView.swift */,
 				9E097ED92CE9B3E600C876A5 /* Animations.swift */,
 				9EC4181D2CB4C4E500F21C8F /* JobView.swift */,
 				9EC418022CB4B73E00F21C8F /* UIView.swift */,
@@ -523,6 +526,7 @@
 				9E1788942CD07E8D00FD3288 /* GuestModeProfileView.swift in Sources */,
 				9EC418052CB4B75600F21C8F /* ImagePickerView.swift in Sources */,
 				AA82E5872CBDEEF1009F916D /* JobDetailView.swift in Sources */,
+				9E95AB6E2CEEE029004ACC13 /* JobsMapView.swift in Sources */,
 				9EC417F12CB4B5E900F21C8F /* Job.swift in Sources */,
 				AA8715032CC858BA00464D05 /* SignUpView.swift in Sources */,
 				291AAA672CCDF335008757E3 /* HoNotificationView.swift in Sources */,

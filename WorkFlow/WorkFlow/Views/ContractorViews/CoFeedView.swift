@@ -2,6 +2,7 @@ import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
 import FirebaseStorage
+import MapKit
 
 struct CoFeedView: View {
     @EnvironmentObject var jobController: JobController
@@ -17,98 +18,124 @@ struct CoFeedView: View {
     @State private var filteredJobs: [Job] = []
     @State private var selectedCategories: [JobCategory] = []
     @State private var isLoading = false
+    @State private var isShowingMap = false
     
     var body: some View {
-        NavigationView {
-            ZStack {
-                // MARK: - Background Gradient
-                LinearGradient(
-                    gradient: Gradient(colors: [
-                        Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0),
-                        Color.black.opacity(0.99)
-                    ]),
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .ignoresSafeArea()
-                
-                // MARK: - Scrollable Content
-                ScrollView {
-                    VStack(alignment: .leading) {
-                        // MARK: - Title and Filter Menu
-                        HStack {
-                            Text("Jobs")
-                                .font(.largeTitle)
-                                .fontWeight(.bold)
-                                .foregroundColor(.white)
-                            
-                            Spacer()
-                            
-                            Menu {
-                                Button("My Location") {
-                                    Task {
-                                        if await getContractorLocation() {
-                                            await filterJobs(location: location, category: selectedCategory)
-                                        }
-                                    }
-                                }
-                                Picker("Category", selection: $selectedCategory) {
-                                    Text("All Categories").tag(nil as JobCategory?)
-                                    ForEach(JobCategory.allCases, id: \.self) { category in
-                                        Text(category.rawValue).tag(category as JobCategory?)
-                                    }
-                                }
-                                .onChange(of: selectedCategory) { newValue in
-                                    Task {
-                                        await filterJobs(location: location, category: newValue)
-                                    }
-                                }
-                                Button("Clear Filters", action: showAllJobs)
-                            } label: {
-                                Label("Filter Jobs", systemImage: "ellipsis.circle")
-                                    .accentColor(.white)
-                            }
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, 20)
-                        
-                        // MARK: - Job Listings
-                        ScrollView {
-                            if hasJobs {
-                                LazyVStack(spacing: 10) {
-                                    ForEach((isShowAllJobs ? jobController.jobs : filteredJobs).filter { shouldDisplayJob($0) }) { job in
-                                        NavigationLink(destination: CoJobCellView(job: job)) {
-                                            JobCellCoView(job: job)
-                                        }
-                                    }
-                                }
-                            } else {
-                                VStack {
-                                    Spacer()
-                                    Text(noJobsMessage)
-                                        .font(.headline)
-                                        .foregroundColor(.white)
-                                        .multilineTextAlignment(.center)
-                                        .padding()
-                                    Spacer()
-                                }
-                                .frame(maxWidth: .infinity)
-                            }
-                        }
-                        .padding()
-                        .background(Color.clear)
-                    }
-                }
-                
-                if isLoading {
-                    ProgressView()
-                }
+          NavigationView {
+              ZStack {
+                  // MARK: - Background Gradient
+                  LinearGradient(
+                      gradient: Gradient(colors: [
+                          Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0),
+                          Color.black.opacity(0.99)
+                      ]),
+                      startPoint: .top,
+                      endPoint: .bottom
+                  )
+                  .ignoresSafeArea()
+                  
+                  // MARK: - Scrollable Content
+                  ScrollView {
+                      VStack(alignment: .leading) {
+                          // MARK: - Title and Filter Menu
+                          HStack {
+                              Text("Jobs")
+                                  .font(.largeTitle)
+                                  .fontWeight(.bold)
+                                  .foregroundColor(.white)
+                              
+                              Spacer()
+                              
+                              Menu {
+                                  // My Location Button
+                                  Button("My Location") {
+                                      Task {
+                                          if await getContractorLocation() {
+                                              await filterJobs(location: location, category: selectedCategory)
+                                          }
+                                      }
+                                  }
+                                  
+                                  // Show Map Button
+                                  Button("Show Map") {
+                                      isShowingMap = true // Toggle map sheet
+                                  }
+                                  
+                                  Picker("Category", selection: $selectedCategory) {
+                                      Text("All Categories").tag(nil as JobCategory?)
+                                      ForEach(JobCategory.allCases, id: \.self) { category in
+                                          Text(category.rawValue).tag(category as JobCategory?)
+                                      }
+                                  }
+                                  .onChange(of: selectedCategory) { newValue in
+                                      Task {
+                                          await filterJobs(location: location, category: newValue)
+                                      }
+                                  }
+                                  Button("Clear Filters", action: showAllJobs)
+                              } label: {
+                                  Label("Filter Jobs", systemImage: "ellipsis.circle")
+                                      .accentColor(.white)
+                              }
+                          }
+                          .padding(.horizontal)
+                          .padding(.top, 20)
+                          
+                          // MARK: - Job Listings
+                          ScrollView {
+                              if hasJobs {
+                                  LazyVStack(spacing: 10) {
+                                      ForEach((isShowAllJobs ? jobController.jobs : filteredJobs).filter { shouldDisplayJob($0) }) { job in
+                                          NavigationLink(destination: CoJobCellView(job: job)) {
+                                              JobCellCoView(job: job)
+                                          }
+                                      }
+                                  }
+                              } else {
+                                  VStack {
+                                      Spacer()
+                                      Text(noJobsMessage)
+                                          .font(.headline)
+                                          .foregroundColor(.white)
+                                          .multilineTextAlignment(.center)
+                                          .padding()
+                                      Spacer()
+                                  }
+                                  .frame(maxWidth: .infinity)
+                              }
+                          }
+                          .padding()
+                          .background(Color.clear)
+                      }
+                  }
+                  
+                  if isLoading {
+                      ProgressView()
+                  }
+              }
+              .sheet(isPresented: $isShowingMap) {
+                  JobsMapView(
+                      isShowingMap: $isShowingMap,
+                      jobLocations: jobLocations()
+                  )
+              }
+              .onAppear {
+                  jobController.fetchJobs()
+                  bidController.fetchExcludedJobs()
+                  initializeJobsView()
+              }
+          }
+      }
+    
+    // MARK: - For Maps
+    private func jobLocations() -> [JobLocation] {
+        (isShowAllJobs ? jobController.jobs : filteredJobs).compactMap { job in
+            guard let latitude = job.latitude, let longitude = job.longitude,
+                  latitude != 0.0, longitude != 0.0 else {
+                print("Skipping job with invalid coordinates: \(job.title)")
+                return nil
             }
-            .onAppear {
-                jobController.fetchJobs()
-                bidController.fetchExcludedJobs()
-                initializeJobsView()
-            }
+            return JobLocation(id: job.id, job: job)
         }
     }
     

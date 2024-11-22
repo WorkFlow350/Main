@@ -6,7 +6,9 @@ import Combine
 struct CoMyJobsView: View {
     @State private var selectedTab: JobTab = .all
     @EnvironmentObject var bidController: BidController
-    @EnvironmentObject var homeownerJobController: HomeownerJobController
+    @EnvironmentObject var homeownerJobController:
+    HomeownerJobController
+    @EnvironmentObject var authController: AuthController
     @State private var selectedJob: Job?
 
     enum JobTab: String, CaseIterable {
@@ -174,6 +176,7 @@ struct DetailedCoJobView: View {
     let bid: Bid
     @EnvironmentObject var bidController: BidController
     @EnvironmentObject var homeownerJobController: HomeownerJobController
+    @EnvironmentObject var authController: AuthController
     @State private var homeownerProfile: HomeownerProfile?
     @State private var jobDescription: String = "Loading..."
     @State private var cancellables = Set<AnyCancellable>()
@@ -382,6 +385,21 @@ struct DetailedCoJobView: View {
                         .foregroundColor(.secondary)
                 }
             }
+            NavigationLink(
+                destination: ChatDetailView(
+                    conversationId: [authController.userSession?.uid ?? "", profile.id.uuidString].sorted().joined(separator: "_"),
+                    receiverId: profile.id.uuidString
+                )
+            ) {
+                Text("Message Homeowner")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
+            }
+            .padding(.top, 10)
         }
         .padding(.top, 10)
     }

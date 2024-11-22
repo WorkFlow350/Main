@@ -6,7 +6,7 @@ struct HoMainView: View {
 
     // MARK: - Tab Enum
     enum Tab {
-        case home, search, post, bids, notifications
+        case home, search, post, bids, chat
     }
 
     @State private var selectedTab: Tab = .home
@@ -95,8 +95,8 @@ struct HoMainView: View {
                         HoPostView()
                     case .bids:
                         HoBidFeedView()
-                    case .notifications:
-                        FAQPageViewHO()
+                    case .chat:
+                        HoConversationsView()
                     }
                 }
                 .animation(.smooth(duration: 0.1), value: selectedTab)
@@ -126,7 +126,7 @@ struct HoMainView: View {
             Spacer()
             tabBarButton(imageName: "note", text: "Bids", tab: .bids)
             Spacer()
-            tabBarButton(imageName: "questionmark.circle", text: "FAQ", tab: .notifications)
+            tabBarButton(imageName: "message", text: "Chat", tab: .chat)
             Spacer()
         }
         .padding()

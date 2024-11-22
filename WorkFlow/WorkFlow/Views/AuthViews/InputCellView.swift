@@ -47,4 +47,5 @@ struct InputCellView: View {
         .environmentObject(FlyerController())
         .environmentObject(BidController())
         .environmentObject(ContractorController())
+        .environmentObject(ChatController())
 }

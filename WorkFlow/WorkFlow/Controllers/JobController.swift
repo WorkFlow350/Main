@@ -90,7 +90,8 @@ class JobController: ObservableObject {
                     guard let imageURL = data["imageURL"] as? String else {
                         return print("Could not get job data")
                     }
-                    
+                    let latitude = data["latitude"] as? Double ?? 0.0
+                    let longitude = data["longitude"] as? Double ?? 0.0
                     let newJob = Job(id: id,
                                      title: title,
                                      number: number,
@@ -98,7 +99,9 @@ class JobController: ObservableObject {
                                      city: city,
                                      category: category,
                                      datePosted: datePosted,
-                                     imageURL: imageURL)
+                                     imageURL: imageURL,
+                                     latitude: latitude ?? 0.0,
+                                     longitude: longitude ?? 0.0)
                     self.jobsNotification.append(newJob)
                 }
             }
@@ -162,7 +165,9 @@ class JobController: ObservableObject {
                     city: data["city"] as? String ?? "",
                     category: JobCategory(rawValue: data["category"] as? String ?? "Landscaping") ?? .landscaping,
                     datePosted: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
-                    imageURL: data["imageURL"] as? String
+                    imageURL: data["imageURL"] as? String,
+                    latitude: data["latitude"] as? Double ?? 0.0,
+                    longitude: data["longitude"] as? Double ?? 0.0
                 )
             } ?? []
 

@@ -189,7 +189,9 @@ struct PostView: View {
                             city: city,
                             category: selectedCategories.first ?? .landscaping,
                             datePosted: Date(),
-                            imageURL: url
+                            imageURL: url,
+                            latitude: 0.0,
+                            longitude: 0.0
                         )
                         jobController.postJob(job: newJob, selectedImage: selectedImage)
                         resetFields()

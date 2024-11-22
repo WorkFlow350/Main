@@ -438,7 +438,9 @@ struct CoJobCellView_Previews: PreviewProvider {
             city: "Sample City",
             category: .landscaping,
             datePosted: Date(),
-            imageURL: "https://via.placeholder.com/300"
+            imageURL: "https://via.placeholder.com/300",
+            latitude: 34.0522,
+            longitude: -118.2437
         )
         
         CoJobCellView(job: sampleJob)

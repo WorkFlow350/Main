@@ -16,6 +16,8 @@ struct Job: Identifiable, Codable, Hashable {
     var category: JobCategory
     var datePosted: Date
     var imageURL: String?
+    let latitude: Double?
+    let longitude: Double?
 }
 
 // MARK: - NotificationModel Struct

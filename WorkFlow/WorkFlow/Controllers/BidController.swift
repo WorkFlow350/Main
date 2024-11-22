@@ -579,7 +579,9 @@ class BidController: ObservableObject {
                                 city: data["city"] as? String ?? "",
                                 category: JobCategory(rawValue: data["category"] as? String ?? "") ?? .cleaning,
                                 datePosted: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
-                                imageURL: data["imageURL"] as? String
+                                imageURL: data["imageURL"] as? String,
+                                latitude: data["latitude"] as? Double ?? 0.0,
+                                longitude: data["longitude"] as? Double ?? 0.0
                             ))
                         }
                         group.leave()

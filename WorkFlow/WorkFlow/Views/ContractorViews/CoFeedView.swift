@@ -21,111 +21,111 @@ struct CoFeedView: View {
     @State private var isShowingMap = false
     
     var body: some View {
-          NavigationView {
-              ZStack {
-                  // MARK: - Background Gradient
-                  LinearGradient(
-                      gradient: Gradient(colors: [
-                          Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0),
-                          Color.black.opacity(0.99)
-                      ]),
-                      startPoint: .top,
-                      endPoint: .bottom
-                  )
-                  .ignoresSafeArea()
-                  
-                  // MARK: - Scrollable Content
-                  ScrollView {
-                      VStack(alignment: .leading) {
-                          // MARK: - Title and Filter Menu
-                          HStack {
-                              Text("Jobs")
-                                  .font(.largeTitle)
-                                  .fontWeight(.bold)
-                                  .foregroundColor(.white)
-                              
-                              Spacer()
-                              
-                              Menu {
-                                  // My Location Button
-                                  Button("My Location") {
-                                      Task {
-                                          if await getContractorLocation() {
-                                              await filterJobs(location: location, category: selectedCategory)
-                                          }
-                                      }
-                                  }
-                                  
-                                  // Show Map Button
-                                  Button("Show Map") {
-                                      isShowingMap = true // Toggle map sheet
-                                  }
-                                  
-                                  Picker("Category", selection: $selectedCategory) {
-                                      Text("All Categories").tag(nil as JobCategory?)
-                                      ForEach(JobCategory.allCases, id: \.self) { category in
-                                          Text(category.rawValue).tag(category as JobCategory?)
-                                      }
-                                  }
-                                  .onChange(of: selectedCategory) { newValue in
-                                      Task {
-                                          await filterJobs(location: location, category: newValue)
-                                      }
-                                  }
-                                  Button("Clear Filters", action: showAllJobs)
-                              } label: {
-                                  Label("Filter Jobs", systemImage: "ellipsis.circle")
-                                      .accentColor(.white)
-                              }
-                          }
-                          .padding(.horizontal)
-                          .padding(.top, 20)
-                          
-                          // MARK: - Job Listings
-                          ScrollView {
-                              if hasJobs {
-                                  LazyVStack(spacing: 10) {
-                                      ForEach((isShowAllJobs ? jobController.jobs : filteredJobs).filter { shouldDisplayJob($0) }) { job in
-                                          NavigationLink(destination: CoJobCellView(job: job)) {
-                                              JobCellCoView(job: job)
-                                          }
-                                      }
-                                  }
-                              } else {
-                                  VStack {
-                                      Spacer()
-                                      Text(noJobsMessage)
-                                          .font(.headline)
-                                          .foregroundColor(.white)
-                                          .multilineTextAlignment(.center)
-                                          .padding()
-                                      Spacer()
-                                  }
-                                  .frame(maxWidth: .infinity)
-                              }
-                          }
-                          .padding()
-                          .background(Color.clear)
-                      }
-                  }
-                  
-                  if isLoading {
-                      ProgressView()
-                  }
-              }
-              .sheet(isPresented: $isShowingMap) {
-                  JobsMapView(
-                      isShowingMap: $isShowingMap,
-                      jobLocations: jobLocations()
-                  )
-              }
-              .onAppear {
-                  jobController.fetchJobs()
-                  bidController.fetchExcludedJobs()
-                  initializeJobsView()
-              }
-          }
-      }
+        NavigationView {
+            ZStack {
+                // MARK: - Background Gradient
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0),
+                        Color.black.opacity(0.99)
+                    ]),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
+                
+                // MARK: - Scrollable Content
+                ScrollView {
+                    VStack(alignment: .leading) {
+                        // MARK: - Title and Filter Menu
+                        HStack {
+                            Text("Jobs")
+                                .font(.largeTitle)
+                                .fontWeight(.bold)
+                                .foregroundColor(.white)
+                            
+                            Spacer()
+                            
+                            Menu {
+                                // My Location Button
+                                Button("My Location") {
+                                    Task {
+                                        if await getContractorLocation() {
+                                            await filterJobs(location: location, category: selectedCategory)
+                                        }
+                                    }
+                                }
+                                
+                                // Show Map Button
+                                Button("Show Map") {
+                                    isShowingMap = true // Toggle map sheet
+                                }
+                                
+                                Picker("Category", selection: $selectedCategory) {
+                                    Text("All Categories").tag(nil as JobCategory?)
+                                    ForEach(JobCategory.allCases, id: \.self) { category in
+                                        Text(category.rawValue).tag(category as JobCategory?)
+                                    }
+                                }
+                                .onChange(of: selectedCategory) { newValue in
+                                    Task {
+                                        await filterJobs(location: location, category: newValue)
+                                    }
+                                }
+                                Button("Clear Filters", action: showAllJobs)
+                            } label: {
+                                Label("Filter Jobs", systemImage: "ellipsis.circle")
+                                    .accentColor(.white)
+                            }
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 20)
+                        
+                        // MARK: - Job Listings
+                        ScrollView {
+                            if hasJobs {
+                                LazyVStack(spacing: 10) {
+                                    ForEach((isShowAllJobs ? jobController.jobs : filteredJobs).filter { shouldDisplayJob($0) }) { job in
+                                        NavigationLink(destination: CoJobCellView(job: job)) {
+                                            JobCellCoView(job: job)
+                                        }
+                                    }
+                                }
+                            } else {
+                                VStack {
+                                    Spacer()
+                                    Text(noJobsMessage)
+                                        .font(.headline)
+                                        .foregroundColor(.white)
+                                        .multilineTextAlignment(.center)
+                                        .padding()
+                                    Spacer()
+                                }
+                                .frame(maxWidth: .infinity)
+                            }
+                        }
+                        .padding()
+                        .background(Color.clear)
+                    }
+                }
+                
+                if isLoading {
+                    ProgressView()
+                }
+            }
+            .sheet(isPresented: $isShowingMap) {
+                JobsMapView(
+                    isShowingMap: $isShowingMap,
+                    jobLocations: jobLocations()
+                )
+            }
+            .onAppear {
+                jobController.fetchJobs()
+                bidController.fetchExcludedJobs()
+                initializeJobsView()
+            }
+        }
+    }
     
     // MARK: - For Maps
     private func jobLocations() -> [JobLocation] {
@@ -210,11 +210,11 @@ struct CoFeedView: View {
         isLoading = true
         isFilterJobsLocation = location != nil
         isShowAllJobs = false
-
+        
         let db = Firestore.firestore()
         let collectionRef = db.collection("jobs")
         var query: Query = collectionRef
-
+        
         if let location = location, !location.isEmpty {
             query = query.whereField("city", isEqualTo: location)
         }
@@ -231,7 +231,7 @@ struct CoFeedView: View {
         } catch {
             print("Error fetching jobs: \(error.localizedDescription)")
         }
-
+        
         isLoading = false
     }
     //MARK: For error message no jobs in Location
@@ -263,159 +263,161 @@ struct CoFeedView: View {
     //MARK: Initalize with just jobs in Contractor's location
     private func initializeJobsView() {
         Task {
-            isLoading = true
-            isShowAllJobs = true
-            isFilterJobsLocation = false
-            location = ""
-            selectedCategory = nil
-            await bidController.fetchExcludedJobs()
-            await jobController.fetchJobs()
-            isLoading = false
+            if filteredJobs.isEmpty {
+                isLoading = true
+                isShowAllJobs = true
+                isFilterJobsLocation = false
+                location = ""
+                selectedCategory = nil
+                await bidController.fetchExcludedJobs()
+                await jobController.fetchJobs()
+                isLoading = false
+            }
         }
     }
-}
-
-// MARK: - JobCellView (for displaying job details)
-struct JobCellCoView: View {
-    let job: Job
-    @EnvironmentObject var authController: AuthController
-    @EnvironmentObject var bidController: BidController
-    @EnvironmentObject var jobController: JobController
-    @State private var bidStatus: String? = nil
-    @State private var bidPrice: Double? = nil
-    @State private var isFlashing = false
-
-
-    var body: some View {
-        HStack {
-            if let imageURL = job.imageURL, let url = URL(string: imageURL) {
-                AsyncImage(url: url) { image in
-                    image
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 50, height: 50)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                        .padding(.trailing, 8)
-                } placeholder: {
-                    Color.gray
-                        .frame(width: 50, height: 50)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
+    
+    // MARK: - JobCellView (for displaying job details)
+    struct JobCellCoView: View {
+        let job: Job
+        @EnvironmentObject var authController: AuthController
+        @EnvironmentObject var bidController: BidController
+        @EnvironmentObject var jobController: JobController
+        @State private var bidStatus: String? = nil
+        @State private var bidPrice: Double? = nil
+        @State private var isFlashing = false
+        
+        
+        var body: some View {
+            HStack {
+                if let imageURL = job.imageURL, let url = URL(string: imageURL) {
+                    AsyncImage(url: url) { image in
+                        image
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 50, height: 50)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .padding(.trailing, 8)
+                    } placeholder: {
+                        Color.gray
+                            .frame(width: 50, height: 50)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                    }
                 }
-            }
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(job.title)
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .foregroundColor(.black)
-
+                
                 VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text("Job Type:")
-                            .font(.subheadline)
-                            .foregroundColor(.primary)
-                        Text(job.category.rawValue)
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+                    Text(job.title)
+                        .font(.headline)
+                        .fontWeight(.bold)
+                        .foregroundColor(.black)
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Text("Job Type:")
+                                .font(.subheadline)
+                                .foregroundColor(.primary)
+                            Text(job.category.rawValue)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        HStack {
+                            Text("City:")
+                                .font(.subheadline)
+                                .foregroundColor(.primary)
+                            Text(job.city)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
                     }
-
-                    HStack {
-                        Text("City:")
-                            .font(.subheadline)
-                            .foregroundColor(.primary)
-                        Text(job.city)
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                }
-                HStack(spacing: 4) {
-                    Image(systemName: "clock")
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                    Text(jobController.timeAgoSinceDate(job.datePosted))
-                        .font(.caption)
-                        .foregroundColor(.gray)
-                    Spacer()
-                    if let status = bidStatus {
-                        Text("Bid Status: \(status.capitalized)")
+                    HStack(spacing: 4) {
+                        Image(systemName: "clock")
                             .font(.caption)
-                            .foregroundColor(statusColor(for: status))
+                            .foregroundColor(.gray)
+                        Text(jobController.timeAgoSinceDate(job.datePosted))
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                        Spacer()
+                        if let status = bidStatus {
+                            Text("Bid Status: \(status.capitalized)")
+                                .font(.caption)
+                                .foregroundColor(statusColor(for: status))
+                        }
+                    }
+                }
+                
+                Spacer()
+                
+                Rectangle()
+                    .frame(width: 4)
+                    .foregroundColor(categoryColor(for: job.category))
+                    .cornerRadius(2)
+                    .padding(.vertical, 8)
+            }
+            .padding(8)
+            .background(
+                BlurView(style: .systemThickMaterialLight)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+            )
+            .cornerRadius(12)
+            .onAppear {
+                updateBidStatus()
+            }
+            .onChange(of: bidController.coBids) { _ in
+                updateBidStatus()
+            }
+        }
+        
+        // MARK: - Status Color
+        private func statusColor(for status: String) -> Color {
+            switch status.lowercased() {
+            case "pending":
+                return .orange
+            case "accepted":
+                return .green
+            case "declined":
+                return .red
+            case "completed":
+                return .blue
+            default:
+                return .gray
+            }
+        }
+        
+        // MARK: - Update Bid Status
+        private func updateBidStatus() {
+            guard let contractorId = authController.userSession?.uid else {
+                bidStatus = nil
+                bidPrice = nil
+                return
+            }
+            if let existingBid = bidController.coBids.first(where: { $0.jobId == job.id.uuidString && $0.contractorId == contractorId }) {
+                bidStatus = existingBid.status.rawValue
+                bidPrice = existingBid.price
+            } else {
+                // Fetch bid from Firestore
+                bidController.fetchBid(byJobId: job.id.uuidString, contractorId: contractorId) { fetchedBid in
+                    DispatchQueue.main.async {
+                        if let fetchedBid = fetchedBid {
+                            self.bidStatus = fetchedBid.status.rawValue
+                            self.bidPrice = fetchedBid.price
+                        } else {
+                            self.bidStatus = nil
+                            self.bidPrice = nil
+                        }
                     }
                 }
             }
-            
-            Spacer()
-            
-            Rectangle()
-                .frame(width: 4)
-                .foregroundColor(categoryColor(for: job.category))
-                .cornerRadius(2)
-                .padding(.vertical, 8)
-        }
-        .padding(8)
-        .background(
-            BlurView(style: .systemThickMaterialLight)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-        )
-        .cornerRadius(12)
-        .onAppear {
-            updateBidStatus()
-        }
-        .onChange(of: bidController.coBids) { _ in
-            updateBidStatus()
         }
     }
-
-    // MARK: - Status Color
-    private func statusColor(for status: String) -> Color {
-        switch status.lowercased() {
-        case "pending":
-            return .orange
-        case "accepted":
-            return .green
-        case "declined":
-            return .red
-        case "completed":
-            return .blue
-        default:
-            return .gray
+    
+    // MARK: - Preview
+    struct CoFeedView_Previews: PreviewProvider {
+        static var previews: some View {
+            CoFeedView()
+                .environmentObject(HomeownerJobController())
+                .environmentObject(AuthController())
+                .environmentObject(JobController())
+                .environmentObject(ContractorController())
         }
-    }
-
-    // MARK: - Update Bid Status
-    private func updateBidStatus() {
-        guard let contractorId = authController.userSession?.uid else {
-            bidStatus = nil
-            bidPrice = nil
-            return
-        }
-        if let existingBid = bidController.coBids.first(where: { $0.jobId == job.id.uuidString && $0.contractorId == contractorId }) {
-            bidStatus = existingBid.status.rawValue
-            bidPrice = existingBid.price
-        } else {
-            // Fetch bid from Firestore
-            bidController.fetchBid(byJobId: job.id.uuidString, contractorId: contractorId) { fetchedBid in
-                DispatchQueue.main.async {
-                    if let fetchedBid = fetchedBid {
-                        self.bidStatus = fetchedBid.status.rawValue
-                        self.bidPrice = fetchedBid.price
-                    } else {
-                        self.bidStatus = nil
-                        self.bidPrice = nil
-                    }
-                }
-            }
-        }
-    }
-}
-
-// MARK: - Preview
-struct CoFeedView_Previews: PreviewProvider {
-    static var previews: some View {
-        CoFeedView()
-            .environmentObject(HomeownerJobController())
-            .environmentObject(AuthController())
-            .environmentObject(JobController())
-            .environmentObject(ContractorController())
     }
 }

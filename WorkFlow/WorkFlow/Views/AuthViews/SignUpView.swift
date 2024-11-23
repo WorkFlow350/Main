@@ -24,6 +24,7 @@ struct SignUpView: View {
     @EnvironmentObject var flyerController: FlyerController
     @EnvironmentObject var bidController: BidController
     @EnvironmentObject var contractorController: ContractorController
+    @EnvironmentObject var chatController: ChatController
     
     // MARK: - Body
     var body: some View {
@@ -213,5 +214,6 @@ struct SignUpView_Previews: PreviewProvider {
             .environmentObject(FlyerController())
             .environmentObject(BidController())
             .environmentObject(ContractorController())
+            .environmentObject(ChatController())
     }
 }

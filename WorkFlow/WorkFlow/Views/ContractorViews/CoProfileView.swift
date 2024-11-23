@@ -19,6 +19,7 @@ struct ContractorProfileView: View {
     @EnvironmentObject var flyerController: FlyerController
     @EnvironmentObject var bidController: BidController
     @EnvironmentObject var contractorController: ContractorController
+    @EnvironmentObject var chatController: ChatController
     
     @State private var profileImage: Image? = Image("profilePlaceholder")
     @State private var name: String = ""
@@ -355,6 +356,7 @@ struct ContractorProfileView: View {
                         .environmentObject(FlyerController())
                         .environmentObject(BidController())
                         .environmentObject(ContractorController())
+                        .environmentObject(ChatController())
                 )
                 window.makeKeyAndVisible()
             }
@@ -406,5 +408,6 @@ struct ContractorProfileView_Previews: PreviewProvider {
             .environmentObject(FlyerController())
             .environmentObject(BidController())
             .environmentObject(ContractorController())
+            .environmentObject(ChatController())
     }
 }

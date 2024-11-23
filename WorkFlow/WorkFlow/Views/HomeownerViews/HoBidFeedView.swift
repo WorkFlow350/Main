@@ -284,6 +284,8 @@ struct DetailedBidView: View {
     @EnvironmentObject var bidController: BidController
     @State private var contractorProfile: ContractorProfile?
     @EnvironmentObject var homeownerJobController: HomeownerJobController
+    @EnvironmentObject var authController: AuthController
+
     
     var body: some View {
         ZStack {
@@ -414,6 +416,21 @@ struct DetailedBidView: View {
                                     .font(.body)
                                     .foregroundColor(.secondary)
                             }
+                            NavigationLink(
+                                destination: ChatDetailView(
+                                    conversationId: [authController.userSession?.uid ?? "", profile.id.uuidString].sorted().joined(separator: "_"),
+                                    receiverId: profile.id.uuidString
+                                )
+                            ) {
+                                Text("Message Contractor")
+                                    .font(.headline)
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(Color.blue)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(8)
+                            }
+                            .padding(.top, 10)
                         }
                         .padding(.top, 10)
                     }

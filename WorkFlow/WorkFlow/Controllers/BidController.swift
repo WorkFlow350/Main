@@ -69,33 +69,90 @@ class BidController: ObservableObject {
                 return
             }
 
-            // Check current lowest bid
-            self.getLowestBid(forJobId: job.id.uuidString) { lowestBid in
-                if let lowestBid = lowestBid, price >= lowestBid.price {
-                    print("Error: New bid must be lower than the current lowest bid (\(lowestBid.price))")
+            // Generate conversationId for this bid
+            let conversationId = self.generateConversationId(userId1: contractorId, userId2: homeownerId)
+
+            // Create or fetch the conversation
+            self.fetchOrCreateConversation(conversationId: conversationId, senderId: contractorId, receiverId: homeownerId)
+
+            let bidId = UUID().uuidString
+            let bidData: [String: Any] = [
+                "id": bidId,
+                "jobId": job.id.uuidString,
+                "contractorId": contractorId,
+                "homeownerId": homeownerId,
+                "price": price,
+                "description": description,
+                "number": job.number,
+                "datePosted": Date(),
+                "status": Bid.bidStatus.pending.rawValue,
+                "conversationId": conversationId // Store the conversationId with the bid
+            ]
+
+            self.db.collection("bids").document(bidId).setData(bidData) { error in
+                if let error = error {
+                    print("Error placing bid: \(error.localizedDescription)")
+                } else {
+                    print("Bid placed successfully!")
+                }
+            }
+        }
+    }
+    
+    
+    // MARK: - Fetch conversation for a bid
+    func fetchConversationForBid(contractorId: String, homeownerId: String) {
+        db.collection("conversations")
+            .whereField("participants", arrayContains: contractorId)
+            .whereField("participants", arrayContains: homeownerId)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error fetching conversation: \(error.localizedDescription)")
                     return
                 }
+                guard let snapshot = snapshot else { return }
+                snapshot.documents.forEach { doc in
+                    let data = doc.data()
+                    print("Found conversation: \(data)")
+                }
+            }
+    }
+    // MARK: - Generate Conversation ID
+    private func generateConversationId(userId1: String, userId2: String) -> String {
+        let sortedIds = [userId1, userId2].sorted() // Sort to ensure the ID is the same no matter the order
+        return sortedIds.joined(separator: "_")
+    }
+    
 
-                let bidId = UUID().uuidString
-                let bidData: [String: Any] = [
-                    "id": bidId,
-                    "jobId": job.id.uuidString,
-                    "contractorId": contractorId,
-                    "homeownerId": homeownerId,
-                    "price": price,
-                    "description": description,
-                    "number": job.number,
-                    "datePosted": Date(),
-                    "status": Bid.bidStatus.pending.rawValue
+    // MARK: - Create or Fetch a conversation
+    func fetchOrCreateConversation(conversationId: String, senderId: String, receiverId: String) {
+        let conversationRef = db.collection("conversations").document(conversationId)
+
+        conversationRef.getDocument { snapshot, error in
+            if let error = error {
+                print("Error fetching conversation: \(error.localizedDescription)")
+                return
+            }
+
+            guard let snapshot = snapshot else { return }
+
+            if !snapshot.exists {
+                // Create the conversation if it doesn't exist
+                let conversationData: [String: Any] = [
+                    "id": conversationId,
+                    "participants": [senderId, receiverId],
+                    "lastMessage": "",
+                    "lastMessageTimestamp": Date()
                 ]
-
-                self.db.collection("bids").document(bidId).setData(bidData) { error in
+                conversationRef.setData(conversationData) { error in
                     if let error = error {
-                        print("Error placing bid: \(error.localizedDescription)")
+                        print("Error creating conversation: \(error.localizedDescription)")
                     } else {
-                        print("Bid placed successfully!")
+                        print("Conversation created successfully!")
                     }
                 }
+            } else {
+                print("Conversation already exists.")
             }
         }
     }

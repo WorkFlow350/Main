@@ -1,5 +1,7 @@
 import Foundation
 import FirebaseFirestore
+import Firebase
+import FirebaseAuth
 
 class ChatController: ObservableObject {
     private let db = Firestore.firestore()
@@ -7,29 +9,67 @@ class ChatController: ObservableObject {
     @Published var homeownerProfile: HomeownerProfile?
     @Published var messages: [Message] = []
     @Published var conversations: [Conversation] = []
+    private var userCache: [String: String] = [:]
+    private var userProfileCache: [String: String] = [:]
 
+    // MARK: - Fetch Profile Picture
+    func fetchProfilePicture(for userId: String, completion: @escaping (String?) -> Void) {
+        if let cachedImageURL = userProfileCache[userId] {
+            completion(cachedImageURL)
+            return
+        }
+
+        db.collection("users").document(userId).getDocument { document, error in
+            if let error = error {
+                print("Error fetching profile picture: \(error.localizedDescription)")
+                completion(nil)
+                return
+            }
+            let imageURL = document?.data()?["profilePictureURL"] as? String
+            self.userProfileCache[userId] = imageURL // Cache the result
+            completion(imageURL)
+        }
+    }
+    
+    // MARK: - Fetch Names
+    func fetchUserName(for userId: String, completion: @escaping (String) -> Void) {
+        if let cachedName = userCache[userId] {
+            completion(cachedName)
+            return
+        }
+        db.collection("users").document(userId).getDocument { document, error in
+            if let error = error {
+                print("Error fetching user name: \(error.localizedDescription)")
+                completion("Unknown")
+                return
+            }
+            let name = document?.data()?["name"] as? String ?? "Unknown"
+            self.userCache[userId] = name
+            completion(name)
+        }
+    }
+    
     // MARK: - Send Message
-    func sendMessage(bidId: String, senderId: String, text: String) async throws {
-        // Retrieve the bid from Firestore
-        let bidRef = db.collection("bids").document(bidId)
-        let bidSnapshot = try await bidRef.getDocument()
-        
-        guard let bidData = bidSnapshot.data(),
-              let contractorId = bidData["contractorId"] as? String,
-              let homeownerId = bidData["homeownerId"] as? String,
-              let conversationId = bidData["conversationId"] as? String else {
+    func sendMessage(conversationId: String, senderId: String, text: String) async throws {
+        // Determine the receiverId based on the senderId (alternating between contractor and homeowner)
+        guard let bidSnapshot = try? await db.collection("bids").whereField("conversationId", isEqualTo: conversationId).getDocuments(),
+              let bidData = bidSnapshot.documents.first?.data() else {
             print("Bid not found or missing necessary data.")
             return
         }
 
-        // Determine sender and receiver based on current user
+        guard let contractorId = bidData["contractorId"] as? String,
+              let homeownerId = bidData["homeownerId"] as? String else {
+            print("Error: Missing contractorId or homeownerId.")
+            return
+        }
+
+        // Determine receiverId based on the current user (senderId)
         let receiverId: String
         if senderId == contractorId {
-            // If the sender is the contractor, the receiver is the homeowner
-            receiverId = homeownerId
+            receiverId = homeownerId  // Contractor sending message to homeowner
         } else if senderId == homeownerId {
-            // If the sender is the homeowner, the receiver is the contractor
-            receiverId = contractorId
+            receiverId = contractorId  // Homeowner sending message to contractor
         } else {
             print("Error: The senderId doesn't match either the contractor or homeowner.")
             return
@@ -38,6 +78,7 @@ class ChatController: ObservableObject {
         let messageId = UUID().uuidString
         let timestamp = Date()
 
+        // Create the message object
         let message = Message(
             id: messageId,
             conversationId: conversationId,
@@ -185,7 +226,7 @@ class ChatController: ObservableObject {
                         participants: participants,
                         lastMessage: lastMessage,
                         lastMessageTimestamp: timestamp.dateValue(),
-                        receiverName: receiverName // Pass receiverName here
+                        receiverName: receiverName
                     )
                 } ?? []
             }
@@ -226,16 +267,15 @@ class ChatController: ObservableObject {
     // MARK: - Delete Message
     func deleteMessage(messageId: String, conversationId: String) async throws {
         do {
-            // Delete message from the Firestore "messages" collection
             try await db.collection("messages").document(messageId).delete()
-
-            // Remove the deleted message from the local list of messages
-            messages.removeAll { $0.id == messageId }
-
-            // Update the conversation after message deletion
+            await MainActor.run {
+                self.messages.removeAll { $0.id == messageId }
+            }
             try await updateConversationAfterDeletion(conversationId: conversationId)
         } catch {
-            print("Failed to delete message: \(error)")
+            await MainActor.run {
+                print("Failed to delete message: \(error)")
+            }
             throw error
         }
     }
@@ -264,7 +304,6 @@ class ChatController: ObservableObject {
             try await db.collection("conversations").document(conversationId).delete()
         }
     }
-    
     // MARK: - Listener
     func listenToMessages(for conversationId: String) {
         db.collection("messages")
@@ -308,7 +347,6 @@ class ChatController: ObservableObject {
                     snapshot.documents.forEach { doc in
                         let data = doc.data()
                         print("Found conversation: \(data)")
-                        // Optionally, you can parse this data into your Conversation model and append it to the list
                     }
                 }
         }

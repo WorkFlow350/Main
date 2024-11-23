@@ -56,7 +56,9 @@ struct ChatDetailView: View {
                         text: message.text,
                         isSentByCurrentUser: message.senderId == authController.userSession?.uid,
                         messageId: message.id,
-                        conversationId: message.conversationId  // Pass conversationId here
+                        conversationId: message.conversationId, // Pass conversationId here
+                        timestamp: message.timestamp,  // Pass the timestamp
+                        isLastMessage: message.id == chatController.messages.last?.id
                     )
                     .id(message.id) // Assign unique ID to each message for scrolling
                 }
@@ -101,7 +103,7 @@ struct ChatDetailView: View {
 
                 // Send the message
                 try await chatController.sendMessage(
-                    bidId: conversationId,  // Use the conversationId passed into the view
+                    conversationId: conversationId,  // Corrected parameter name
                     senderId: senderId,
                     text: newMessageText  // No need to pass receiverId anymore
                 )

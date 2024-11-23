@@ -50,7 +50,7 @@ struct HoConversationsView: View {
                             LazyVStack(spacing: 10) {
                                 ForEach(chatController.conversations, id: \.id) { conversation in
                                     NavigationLink(destination: ChatDetailView(conversationId: conversation.id, receiverId: conversation.participants.first(where: { $0 != authController.userSession?.uid })!)) {
-                                        ChatCardView(conversation: conversation)
+                                        ConversationCardView(conversation: conversation)
                                     }
                                 }
                             }

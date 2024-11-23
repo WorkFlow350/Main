@@ -119,7 +119,7 @@ class BidController: ObservableObject {
     }
     // MARK: - Generate Conversation ID
     private func generateConversationId(userId1: String, userId2: String) -> String {
-        let sortedIds = [userId1, userId2].sorted() // Sort to ensure the ID is the same no matter the order
+        let sortedIds = [userId1, userId2].sorted()
         return sortedIds.joined(separator: "_")
     }
     

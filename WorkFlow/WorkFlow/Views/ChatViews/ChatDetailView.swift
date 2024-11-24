@@ -30,7 +30,6 @@ struct ChatDetailView: View {
                 chatInputBar
             }
         }
-        .navigationTitle("Chat")
         .onAppear {
             Task {
                 do {
@@ -115,7 +114,8 @@ struct ChatDetailView: View {
                     senderId: senderId,
                     receiverId: receiverId,  // This should be determined inside sendMessage method
                     text: newMessageText,
-                    timestamp: Date()
+                    timestamp: Date(),
+                    isRead: false
                 )
 
                 // Append the new message to the messages list

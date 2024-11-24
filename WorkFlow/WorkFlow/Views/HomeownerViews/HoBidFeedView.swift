@@ -12,7 +12,6 @@ struct HoBidFeedView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                // Background Gradient
                 LinearGradient(
                     gradient: Gradient(colors: [
                         Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0),
@@ -350,7 +349,7 @@ struct DetailedBidView: View {
                     
                     Divider()
                     
-                    // Contractor Profile
+                    // MARK: - Contractor Profile
                     if let profile = contractorProfile {
                         VStack(alignment: .leading, spacing: 12) {
                             Text("Contractor Profile:")
@@ -416,9 +415,10 @@ struct DetailedBidView: View {
                                     .font(.body)
                                     .foregroundColor(.secondary)
                             }
+                            // MARK: - Message Button
                             NavigationLink(
                                 destination: ChatDetailView(
-                                    conversationId: [authController.userSession?.uid ?? "", profile.id.uuidString].sorted().joined(separator: "_"),
+                                    conversationId: bid.conversationId,
                                     receiverId: profile.id.uuidString
                                 )
                             ) {
@@ -440,7 +440,7 @@ struct DetailedBidView: View {
                     // Show Accept/Decline buttons only if the bid is pending
                     if bid.status == .pending {
                         HStack {
-                            // Accept Button
+                            // MARK: - Accept Button
                             Button(action: {
                                 bidController.acceptBid(bidId: bid.id, jobId: bid.jobId)
                             }) {
@@ -453,7 +453,7 @@ struct DetailedBidView: View {
                                     .shadow(radius: 2)
                             }
                             
-                            // Decline Button
+                            // MARK: - Decline Button
                             Button(action: {
                                 bidController.declineBid(bidId: bid.id)
                             }) {

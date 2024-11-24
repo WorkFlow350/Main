@@ -13,6 +13,7 @@ struct Bid: Identifiable, Equatable {
     let bidDate: Date
     let review: String
     let number: String
+    let conversationId: String 
 
     enum bidStatus: String {
         case pending

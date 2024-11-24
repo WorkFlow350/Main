@@ -83,21 +83,24 @@ struct HoConversationsView_Previews: PreviewProvider {
                 participants: ["user1", "receiver1"],
                 lastMessage: "Hello there!",
                 lastMessageTimestamp: Date(),
-                receiverName: "receiver1"
+                receiverName: "receiver1",
+                hasNewMessage: false
             ),
             Conversation(
                 id: "2",
                 participants: ["user2", "receiver2"],
                 lastMessage: "Good morning!",
                 lastMessageTimestamp: Date().addingTimeInterval(-3600),
-                receiverName: "receiver2"
+                receiverName: "receiver2",
+                hasNewMessage: false
             ),
             Conversation(
                 id: "3",
                 participants: ["user3", "receiver3"],
                 lastMessage: "See you later.",
                 lastMessageTimestamp: Date().addingTimeInterval(-7200),
-                receiverName: "receiver3"
+                receiverName: "receiver3",
+                hasNewMessage: false 
             )
         ]
 

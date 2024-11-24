@@ -306,7 +306,9 @@ class BidController: ObservableObject {
                     status: Bid.bidStatus(rawValue: data["status"] as? String ?? "pending") ?? .pending,
                     bidDate: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
                     review: data["review"] as? String ?? "",
-                    number: data["number"] as? String ?? "Not available"
+                    number: data["number"] as? String ?? "Not available",
+                    conversationId: data["conversationId"] as? String ?? ""
+                    
                 )
             }
         }
@@ -335,7 +337,8 @@ class BidController: ObservableObject {
                     status: Bid.bidStatus(rawValue: data["status"] as? String ?? "pending") ?? .pending,
                     bidDate: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
                     review: data["review"] as? String ?? "",
-                    number: data["number"] as? String ?? "Not available"
+                    number: data["number"] as? String ?? "Not available",
+                    conversationId: data["conversationId"] as? String ?? ""
                 )
             }
             DispatchQueue.main.async {
@@ -401,7 +404,8 @@ class BidController: ObservableObject {
                     status: Bid.bidStatus(rawValue: data["status"] as? String ?? "pending") ?? .pending,
                     bidDate: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
                     review: data["review"] as? String ?? "",
-                    number: data["number"] as? String ?? "Not available"
+                    number: data["number"] as? String ?? "Not available",
+                    conversationId: data["conversationId"] as? String ?? ""
                 )
             }
         }
@@ -545,7 +549,8 @@ class BidController: ObservableObject {
             status: Bid.bidStatus(rawValue: data["status"] as? String ?? "pending") ?? .pending,
             bidDate: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
             review: data["review"] as? String ?? "",
-            number: data["number"] as? String ?? "Not available"
+            number: data["number"] as? String ?? "Not available",
+            conversationId: data["conversationId"] as? String ?? ""
         )
     }
     func fetchBid(byJobId jobId: String, contractorId: String, completion: @escaping (Bid?) -> Void) {

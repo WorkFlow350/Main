@@ -6,6 +6,7 @@ struct ConversationCardView: View {
     @EnvironmentObject var chatController: ChatController
     @State private var receiverName: String = "Loading..."
     @State private var receiverImageURL: String?
+    @State private var isGlowing: Bool = false
 
     var body: some View {
         HStack {
@@ -47,12 +48,28 @@ struct ConversationCardView: View {
         .background(
             BlurView(style: .systemThickMaterialLight)
                 .clipShape(RoundedRectangle(cornerRadius: 15))
+                .shadow(
+                    color: conversation.hasNewMessage && isGlowing ? Color.red.opacity(0.8) : Color.clear,
+                    radius: conversation.hasNewMessage && isGlowing ? 10 : 0
+                )
+                .animation(
+                    Animation.easeInOut(duration: 1.5)
+                        .repeatForever(autoreverses: true),
+                    value: isGlowing
+                )
         )
         .cornerRadius(15)
         .shadow(radius: 5)
         .padding(.horizontal)
         .onAppear {
             fetchReceiverProfile()
+
+            // Debugging
+            print("hasNewMessage: \(conversation.hasNewMessage)")
+
+            if conversation.hasNewMessage {
+                startGlowingEffect()
+            }
         }
     }
 
@@ -62,21 +79,23 @@ struct ConversationCardView: View {
         return formatter.string(from: timestamp)
     }
 
-    // Fetch the receiver's profile details using ChatController methods
+    private func startGlowingEffect() {
+        print("Starting glowing effect") // Debugging
+        isGlowing = true
+    }
+
     private func fetchReceiverProfile() {
         guard let receiverId = conversation.participants.first(where: { $0 != Auth.auth().currentUser?.uid }) else {
             receiverName = "Unknown"
             return
         }
 
-        // Fetch the receiver's name
         chatController.fetchUserName(for: receiverId) { name in
             DispatchQueue.main.async {
                 self.receiverName = name
             }
         }
 
-        // Fetch the receiver's profile picture
         chatController.fetchProfilePicture(for: receiverId) { imageURL in
             DispatchQueue.main.async {
                 self.receiverImageURL = imageURL

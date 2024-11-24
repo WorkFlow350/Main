@@ -51,44 +51,43 @@ class ChatController: ObservableObject {
     
     // MARK: - Send Message
     func sendMessage(conversationId: String, senderId: String, text: String) async throws {
-        // Determine the receiverId based on the senderId (alternating between contractor and homeowner)
-        guard let bidSnapshot = try? await db.collection("bids").whereField("conversationId", isEqualTo: conversationId).getDocuments(),
-              let bidData = bidSnapshot.documents.first?.data() else {
-            print("Bid not found or missing necessary data.")
+        // Fetch conversation details from the "conversations" collection
+        guard let conversationSnapshot = try? await db.collection("conversations").document(conversationId).getDocument(),
+              let conversationData = conversationSnapshot.data(),
+              let participants = conversationData["participants"] as? [String] else {
+            print("Error: Conversation not found or missing necessary data.")
             return
         }
 
-        guard let contractorId = bidData["contractorId"] as? String,
-              let homeownerId = bidData["homeownerId"] as? String else {
-            print("Error: Missing contractorId or homeownerId.")
+        // Determine the receiverId based on the participants
+        guard participants.count == 2 else {
+            print("Error: Invalid conversation participants.")
             return
         }
 
-        // Determine receiverId based on the current user (senderId)
-        let receiverId: String
-        if senderId == contractorId {
-            receiverId = homeownerId  // Contractor sending message to homeowner
-        } else if senderId == homeownerId {
-            receiverId = contractorId  // Homeowner sending message to contractor
-        } else {
-            print("Error: The senderId doesn't match either the contractor or homeowner.")
+        // The receiver is the participant who is not the sender
+        let receiverId = participants.first { $0 != senderId } ?? ""
+
+        if receiverId.isEmpty {
+            print("Error: Could not determine receiverId.")
             return
         }
 
+        // Create a new message
         let messageId = UUID().uuidString
         let timestamp = Date()
 
-        // Create the message object
         let message = Message(
             id: messageId,
             conversationId: conversationId,
             senderId: senderId,
             receiverId: receiverId,
             text: text,
-            timestamp: timestamp
+            timestamp: timestamp,
+            isRead: false
         )
 
-        // Save the message in the "messages" collection
+        // Prepare data for Firestore
         let messageData: [String: Any] = [
             "id": message.id,
             "conversationId": message.conversationId,
@@ -97,7 +96,8 @@ class ChatController: ObservableObject {
             "text": message.text,
             "timestamp": timestamp
         ]
-        
+
+        // Save the message in the "messages" collection
         try await db.collection("messages").document(messageId).setData(messageData)
 
         // Update the conversation with the last message
@@ -106,7 +106,7 @@ class ChatController: ObservableObject {
             "lastMessage": text,
             "lastMessageTimestamp": timestamp
         ]
-        
+
         try await conversationRef.updateData(conversationUpdate)
     }
 
@@ -114,7 +114,7 @@ class ChatController: ObservableObject {
     func fetchMessages(for conversationId: String) {
         db.collection("messages")
             .whereField("conversationId", isEqualTo: conversationId)
-            .order(by: "timestamp", descending: false)  // Ensure messages are ordered by timestamp
+            .order(by: "timestamp", descending: false)
             .addSnapshotListener { snapshot, error in
                 if let error = error {
                     print("Error fetching messages: \(error.localizedDescription)")
@@ -131,16 +131,16 @@ class ChatController: ObservableObject {
                         senderId: data["senderId"] as? String ?? "",
                         receiverId: data["receiverId"] as? String ?? "",
                         text: data["text"] as? String ?? "",
-                        timestamp: (data["timestamp"] as? Timestamp)?.dateValue() ?? Date()
+                        timestamp: (data["timestamp"] as? Timestamp)?.dateValue() ?? Date(),
+                        isRead: data["isRead"] as? Bool ?? false
                     )
                 }
-
-                // Update the UI with the latest messages
                 DispatchQueue.main.async {
                     self.messages = newMessages
                 }
             }
     }
+    
     // MARK: - Generate Conversation ID
     private func generateConversationId(userId1: String, userId2: String) -> String {
         let sortedIds = [userId1, userId2].sorted()
@@ -152,7 +152,6 @@ class ChatController: ObservableObject {
         let conversationId = generateConversationId(userId1: userId1, userId2: userId2)
         
         do {
-            // Ensure that this async call is marked with `await`
             let snapshot = try await db.collection("conversations")
                 .whereField("id", isEqualTo: conversationId)
                 .getDocuments()
@@ -174,30 +173,6 @@ class ChatController: ObservableObject {
             throw error
         }
     }
-    
-    // MARK: - Check If Exists
-    private func ensureConversationExists(for message: Message) {
-        let conversationRef = db.collection("conversations").document(message.conversationId)
-
-        conversationRef.getDocument { snapshot, error in
-            guard let snapshot = snapshot, !snapshot.exists else { return }
-
-            // Create a new conversation if it doesn't exist
-            let conversationData: [String: Any] = [
-                "id": message.conversationId,
-                "participants": [message.senderId, message.receiverId],
-                "receiverName": message.receiverId, // Replace with actual name lookup if needed
-                "lastMessage": message.text,
-                "lastMessageTimestamp": message.timestamp
-            ]
-            conversationRef.setData(conversationData) { error in
-                if let error = error {
-                    print("Error creating conversation: \(error.localizedDescription)")
-                }
-            }
-        }
-    }
-
 
     // MARK: - Fetch Conversations with Real-time Listener
     func fetchConversations(for userId: String) {
@@ -212,13 +187,13 @@ class ChatController: ObservableObject {
                 self.conversations = snapshot?.documents.compactMap { doc in
                     let data = doc.data()
                     
-                    // Assuming the receiverName is dynamically derived from participants
+                    // Check that the conversation has a lastMessage
                     guard let participants = data["participants"] as? [String],
-                          let lastMessage = data["lastMessage"] as? String,
+                          let lastMessage = data["lastMessage"] as? String, !lastMessage.isEmpty,
                           let timestamp = data["lastMessageTimestamp"] as? Timestamp else {
                         return nil
                     }
-                    
+
                     let receiverName = participants.first { $0 != userId } ?? "Unknown"
 
                     return Conversation(
@@ -226,41 +201,17 @@ class ChatController: ObservableObject {
                         participants: participants,
                         lastMessage: lastMessage,
                         lastMessageTimestamp: timestamp.dateValue(),
-                        receiverName: receiverName
+                        receiverName: receiverName,
+                        hasNewMessage: false
                     )
                 } ?? []
             }
     }
-
-    // MARK: - Create Conversation
-    func createConversation(conversationId: String, participants: [String], receiverName: String) async throws {
-        let conversationData: [String: Any] = [
-            "id": conversationId,
-            "participants": participants, // Array of participant user IDs
-            "receiverName": receiverName,
-            "lastMessage": "",
-            "lastMessageTimestamp": Date()
-        ]
-
-        // Add the conversation to Firestore
-        try await db.collection("conversations").document(conversationId).setData(conversationData)
-    }
-
-    // MARK: - Mark Messages as Read
-    func markMessagesAsRead(conversationId: String, for userId: String) async {
-        do {
-            let querySnapshot = try await db.collection("messages")
-                .whereField("conversationId", isEqualTo: conversationId)
-                .whereField("receiverId", isEqualTo: userId)
-                .whereField("isRead", isEqualTo: false)
-                .getDocuments()
-
-            // Mark each message as read
-            for document in querySnapshot.documents {
-                try await document.reference.updateData(["isRead": true])
-            }
-        } catch {
-            print("Failed to mark messages as read: \(error)")
+    private func hasUnreadMessages(conversationId: String, userId: String) -> Bool {
+        return messages.contains {
+            $0.conversationId == conversationId &&
+            $0.receiverId == userId &&
+            !$0.isRead
         }
     }
 
@@ -323,7 +274,8 @@ class ChatController: ObservableObject {
                         senderId: data["senderId"] as? String ?? "",
                         receiverId: data["receiverId"] as? String ?? "",
                         text: data["text"] as? String ?? "",
-                        timestamp: (data["timestamp"] as? Timestamp)?.dateValue() ?? Date()
+                        timestamp: (data["timestamp"] as? Timestamp)?.dateValue() ?? Date(),
+                        isRead: data["isRead"] as? Bool ?? false
                     )
                 }
                 DispatchQueue.main.async {
@@ -332,7 +284,33 @@ class ChatController: ObservableObject {
             }
     }
     
-
+    func fetchOrCreateConversationId(senderId: String, receiverId: String) async throws -> String {
+            // Sort participants to create a unique conversation ID
+            let conversationId = [senderId, receiverId].sorted().joined(separator: "_")
+            
+            // Check if the conversation already exists
+            if conversations.contains(where: { $0.id == conversationId }) {
+                return conversationId
+            }
+            
+            // If not, create a new conversation
+            let newConversation = Conversation(
+                id: conversationId,
+                participants: [senderId, receiverId],
+                lastMessage: "",
+                lastMessageTimestamp: Date(),
+                receiverName: receiverId, // Replace with actual receiver name if available
+                hasNewMessage: false
+            )
+            
+            // Simulate adding it to a database or local storage
+            DispatchQueue.main.async {
+                self.conversations.append(newConversation)
+            }
+            
+            return conversationId
+        }
+    
     func fetchConversationByParticipants(contractorId: String, homeownerId: String) {
             db.collection("conversations")
                 .whereField("participants", arrayContains: contractorId)

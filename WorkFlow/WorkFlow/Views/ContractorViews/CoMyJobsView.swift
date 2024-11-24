@@ -385,9 +385,10 @@ struct DetailedCoJobView: View {
                         .foregroundColor(.secondary)
                 }
             }
+            // MARK: - Message Button
             NavigationLink(
                 destination: ChatDetailView(
-                    conversationId: [authController.userSession?.uid ?? "", profile.id.uuidString].sorted().joined(separator: "_"),
+                    conversationId: bid.conversationId,
                     receiverId: profile.id.uuidString
                 )
             ) {
@@ -403,6 +404,8 @@ struct DetailedCoJobView: View {
         }
         .padding(.top, 10)
     }
+    
+    // MARK: - Number Format
     func formatPhoneNumber(_ number: String) -> String {
         let digits = number.filter { $0.isNumber }
         guard digits.count == 10 else {

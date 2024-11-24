@@ -8,6 +8,7 @@ struct Message: Identifiable, Encodable, Equatable {
     var receiverId: String
     var text: String
     var timestamp: Date
+    var isRead: Bool
     
     static func ==(lhs: Message, rhs: Message) -> Bool {
         return lhs.id == rhs.id &&
@@ -24,4 +25,5 @@ struct Conversation: Identifiable {
     var lastMessage: String
     var lastMessageTimestamp: Date
     var receiverName: String
+    var hasNewMessage: Bool
 }

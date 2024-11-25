@@ -31,51 +31,77 @@ struct JobsMapView: View {
     @State private var isNavigatingToJob = false
     @State private var distanceToJob: String = ""
     @State private var isRegionSet: Bool = false
+    @State private var selectedJobGroup: JobGroup? = nil
+    @State private var isShowingJobList: Bool = false
     var filteredJobLocations: [JobLocation] {
         jobLocations.filter { !bidController.excludedJobIds.contains($0.job.id.uuidString) }
     }
+    
     var body: some View {
         NavigationView {
             ZStack {
-                // MARK: - Map View
-                Map(coordinateRegion: $region, annotationItems: filteredJobLocations + contractorLocation()) { location in
-                    MapAnnotation(coordinate: location.coordinate) {
-                        if location.name == "Contractor Location" {
-                            VStack {
-                                Circle()
-                                    .fill(Color.blue)
-                                    .frame(width: 15, height: 15)
-                                    .shadow(color: .blue, radius: 10, x: 0, y: 0)
-                                    .overlay(
-                                        Circle()
-                                            .stroke(Color.blue.opacity(0.5), lineWidth: 5)
-                                            .scaleEffect(1.2)
-                                    )
-                            }
-                        } else {
+                let adjustedLocations = adjustJobLocations(locations: filteredJobLocations + contractorLocation())
+                let groupedLocations = groupJobsByCoordinates(locations: adjustedLocations)
+
+                Map(coordinateRegion: $region, annotationItems: groupedLocations) { group in
+                    MapAnnotation(coordinate: group.coordinate2D) {
+                        if group.isCluster {
+                            // Cluster marker for multiple jobs
                             Button(action: {
-                                calculateDistance(to: location)
-                                selectedJob = location
-                                isNavigatingToJob = true
+                                selectedJobGroup = group
+                                isShowingJobList = true
                             }) {
                                 VStack {
-                                    Image(systemName: "figure.wave")
-                                        .foregroundColor(.red)
-                                        .font(.title)
-                                    if selectedJob?.id == location.id && distanceToJob != "" {
-                                        Text("\(distanceToJob) miles")
-                                            .font(.caption)
-                                            .padding(4)
-                                            .background(Color.white.opacity(0.8))
-                                            .cornerRadius(8)
-                                            .foregroundColor(.black)
-                                    } else {
-                                        Text(location.name)
-                                            .font(.caption)
-                                            .padding(4)
-                                            .background(Color.white.opacity(0.8))
-                                            .cornerRadius(8)
-                                            .foregroundColor(.black)
+                                    Circle()
+                                        .fill(Color.orange)
+                                        .frame(width: 30, height: 30)
+                                        .overlay(Text("\(group.jobs.count)").foregroundColor(.white))
+                                    Text("\(group.jobs.count) Jobs")
+                                        .font(.caption)
+                                        .foregroundColor(.black)
+                                }
+                            }
+                        } else if let job = group.jobs.first {
+                            // Single job marker
+                            if job.name == "Contractor Location" {
+                                // Contractor Location Marker
+                                VStack {
+                                    Circle()
+                                        .fill(Color.blue)
+                                        .frame(width: 15, height: 15)
+                                        .shadow(color: .blue, radius: 10, x: 0, y: 0)
+                                        .overlay(
+                                            Circle()
+                                                .stroke(Color.blue.opacity(0.5), lineWidth: 5)
+                                                .scaleEffect(1.2)
+                                        )
+                                }
+                            } else {
+                                // Single Job Marker
+                                Button(action: {
+                                    calculateDistance(to: job)
+                                    selectedJob = job
+                                    isNavigatingToJob = true
+                                }) {
+                                    VStack {
+                                        Image(systemName: "figure.wave")
+                                            .foregroundColor(.red)
+                                            .font(.title)
+                                        if selectedJob?.id == job.id && distanceToJob != "" {
+                                            Text("\(distanceToJob) miles")
+                                                .font(.caption)
+                                                .padding(4)
+                                                .background(Color.white.opacity(0.8))
+                                                .cornerRadius(8)
+                                                .foregroundColor(.black)
+                                        } else {
+                                            Text(job.name)
+                                                .font(.caption)
+                                                .padding(4)
+                                                .background(Color.white.opacity(0.8))
+                                                .cornerRadius(8)
+                                                .foregroundColor(.black)
+                                        }
                                     }
                                 }
                             }
@@ -84,6 +110,35 @@ struct JobsMapView: View {
                 }
                 .onAppear {
                     bidController.fetchExcludedJobs()
+                }
+                .sheet(isPresented: $isShowingJobList) {
+                    if let jobGroup = selectedJobGroup {
+                        if jobGroup.jobs.isEmpty {
+                            Text("No jobs in this group.")
+                        } else {
+                            VStack {
+                                Text("Jobs")
+                                    .font(.headline)
+                                    .padding()
+                                
+                                List(jobGroup.jobs) { job in
+                                    VStack(alignment: .leading) {
+                                        Text(job.name)
+                                            .font(.headline)
+                                        if !job.job.description.isEmpty {
+                                            Text(job.job.description ?? "")
+                                                .font(.subheadline)
+                                                .foregroundColor(.gray)
+                                                .lineLimit(2)
+                                        }
+                                    }
+                                }
+                            }
+                            .presentationDetents([.medium, .large])
+                        }
+                    } else {
+                        Text("No jobs available.")
+                    }
                 }
 //                .onAppear {
 //                    setContractorLocation() // This Sets map to contractors profile location.
@@ -241,7 +296,37 @@ struct JobsMapView: View {
             )
         ]
     }
-    
+    func groupJobsByCoordinates(locations: [JobLocation]) -> [JobGroup] {
+        var groups: [String: [JobLocation]] = [:]
+
+        for location in locations {
+            let coordinateKey = "\(location.latitude),\(location.longitude)"
+            groups[coordinateKey, default: []].append(location)
+        }
+
+        return groups.map { JobGroup(coordinate: $0.key, jobs: $0.value) }
+    }
+    struct JobGroup: Identifiable {
+        let id = UUID()
+        let coordinate: String
+        let jobs: [JobLocation]
+
+        var latitude: Double {
+            Double(coordinate.split(separator: ",")[0]) ?? 0.0
+        }
+
+        var longitude: Double {
+            Double(coordinate.split(separator: ",")[1]) ?? 0.0
+        }
+
+        var coordinate2D: CLLocationCoordinate2D {
+            CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+        }
+
+        var isCluster: Bool {
+            jobs.count > 1
+        }
+    }
     // MARK: - Search for City
     private func searchCity() {
         let geocoder = CLGeocoder()
@@ -313,6 +398,30 @@ struct JobLocation: Identifiable {
     var coordinate: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
+    var offset: (latitude: Double, longitude: Double) = (0.0, 0.0) // Default no offset
+}
+func adjustJobLocations(locations: [JobLocation]) -> [JobLocation] {
+    var adjustedLocations = [JobLocation]()
+    var seenCoordinates = [String: Int]() // To track duplicate coordinates
+    
+    for var location in locations {
+        let coordinateKey = "\(location.latitude),\(location.longitude)"
+        
+        if let count = seenCoordinates[coordinateKey] {
+            // Increment the longitude offset for subsequent jobs with the same coordinates
+            let latitudeOffsetStep = 0.0 // Keep latitude unchanged (or minimal)
+            let longitudeOffsetStep = 0.0001 // Adjust longitude to move right
+            location.offset = (latitude: latitudeOffsetStep, longitude: longitudeOffsetStep * Double(count))
+            seenCoordinates[coordinateKey]! += 1
+        } else {
+            // First occurrence of this coordinate
+            seenCoordinates[coordinateKey] = 1
+        }
+        
+        adjustedLocations.append(location)
+    }
+    
+    return adjustedLocations
 }
 
 // MARK: - Preview
@@ -339,15 +448,20 @@ struct JobsMapView_Previews: PreviewProvider {
                     title: "Cleaning Job",
                     number: "123-456-7890",
                     description: "House cleaning required.",
-                    city: "Los Angeles",
+                    city: "Camarillo",
                     category: .cleaning,
                     datePosted: Date(),
                     imageURL: nil,
-                    latitude: 34.0522,
-                    longitude: -118.2437
+                    latitude: 34.2164,
+                    longitude: -119.0376
                 ))
             ]
         )
+        .environmentObject(HomeownerJobController())
         .environmentObject(AuthController())
+        .environmentObject(JobController())
+        .environmentObject(FlyerController())
+        .environmentObject(BidController())
+        .environmentObject(ContractorController())
     }
 }

@@ -306,6 +306,7 @@ class BidController: ObservableObject {
                     status: Bid.bidStatus(rawValue: data["status"] as? String ?? "pending") ?? .pending,
                     bidDate: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
                     review: data["review"] as? String ?? "",
+                    jobRating: data["jobRating"] as? Double ?? 0.0,
                     number: data["number"] as? String ?? "Not available",
                     conversationId: data["conversationId"] as? String ?? ""
                     
@@ -337,6 +338,7 @@ class BidController: ObservableObject {
                     status: Bid.bidStatus(rawValue: data["status"] as? String ?? "pending") ?? .pending,
                     bidDate: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
                     review: data["review"] as? String ?? "",
+                    jobRating: data["jobRating"] as? Double ?? 0.0,
                     number: data["number"] as? String ?? "Not available",
                     conversationId: data["conversationId"] as? String ?? ""
                 )
@@ -358,6 +360,19 @@ class BidController: ObservableObject {
             }
         }
     }
+    //MARK: - leave a rating
+    func leaveJobRating(bidId: String, jobRating: Double) {
+        db.collection("bids").document(bidId).updateData(["jobRating": jobRating]) { error in
+            if let error = error {
+                print("error updating job rating")
+                return
+            } else {
+                print("Successfully updated job rating")
+            }
+        }
+    }
+    
+    
     // MARK: - Count Bids for a Job
     func countBidsForJob(jobId: UUID, completion: @escaping (Int) -> Void) {
         db.collection("bids").whereField("jobId", isEqualTo: jobId.uuidString).getDocuments { snapshot, error in
@@ -404,6 +419,7 @@ class BidController: ObservableObject {
                     status: Bid.bidStatus(rawValue: data["status"] as? String ?? "pending") ?? .pending,
                     bidDate: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
                     review: data["review"] as? String ?? "",
+                    jobRating: data["jobRating"] as? Double ?? 0.0,
                     number: data["number"] as? String ?? "Not available",
                     conversationId: data["conversationId"] as? String ?? ""
                 )
@@ -549,6 +565,7 @@ class BidController: ObservableObject {
             status: Bid.bidStatus(rawValue: data["status"] as? String ?? "pending") ?? .pending,
             bidDate: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
             review: data["review"] as? String ?? "",
+            jobRating: data["jobRating"] as? Double ?? 0.0,
             number: data["number"] as? String ?? "Not available",
             conversationId: data["conversationId"] as? String ?? ""
         )

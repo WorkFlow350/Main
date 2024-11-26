@@ -12,6 +12,7 @@ struct Bid: Identifiable, Equatable {
     let status: bidStatus
     let bidDate: Date
     let review: String
+    let jobRating: Double
     let number: String
     let conversationId: String 
 

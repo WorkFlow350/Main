@@ -167,6 +167,8 @@ struct HomeownerProfileView: View {
         storageRef.getData(maxSize: 5 * 1024 * 1024) { data, error in
             if let error = error {
                 self.errorMessage = IdentifiableError(message: "Failed to load profile image: \(error.localizedDescription)")
+            } else if let imageData = data, let uiImage = UIImage(data: imageData) {
+                self.profileImage = Image(uiImage: uiImage)
             }
             else if let imageData = data, let uiImage = UIImage(data: imageData) {
               self.profileImage = Image(uiImage: uiImage)

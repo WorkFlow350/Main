@@ -19,7 +19,7 @@ struct CoConversationsView: View {
 
                 VStack {
                     HStack {
-                        Text("Chats")
+                        Text("Messages")
                             .font(.largeTitle)
                             .fontWeight(.bold)
                             .foregroundColor(.white)
@@ -27,7 +27,7 @@ struct CoConversationsView: View {
                     }
                     .padding(.horizontal)
                     .padding(.top, 20)
-
+                    // MARK: - No Conversations State
                     if chatController.conversations.isEmpty {
                         VStack {
                             Spacer()
@@ -67,6 +67,9 @@ struct CoConversationsView: View {
                         await chatController.fetchConversations(for: userId)
                     }
                 }
+            }
+            .safeAreaInset(edge: .bottom) {
+                Color.clear.frame(height: 50)
             }
         }
     }

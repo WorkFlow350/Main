@@ -107,6 +107,9 @@ struct HoSearchView: View {
             .onChange(of: flyerController.flyers) {
                 flyerController.objectWillChange.send()
             }
+            .safeAreaInset(edge: .bottom) {
+                Color.clear.frame(height: 50)
+            }
         }
     }
 }

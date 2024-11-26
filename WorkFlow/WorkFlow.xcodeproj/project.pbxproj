@@ -23,6 +23,7 @@
 		9E097EDC2CE9B73800C876A5 /* SplashScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E097EDB2CE9B72800C876A5 /* SplashScreenView.swift */; };
 		9E144A2E2CC30ECD00C2A39A /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9E144A2D2CC30ECD00C2A39A /* GoogleService-Info.plist */; };
 		9E1788942CD07E8D00FD3288 /* GuestModeProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E1788932CD07E8200FD3288 /* GuestModeProfileView.swift */; };
+		9E5D1D542CF5228B00EB57E8 /* Fireworks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5D1D532CF5228300EB57E8 /* Fireworks.swift */; };
 		9E81DCE82CDDCF870028C952 /* CoJobCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E81DCE72CDDCF7E0028C952 /* CoJobCellView.swift */; };
 		9E8AC25B2CD9AF1400FDC557 /* ContractorController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E8AC25A2CD9AF0700FDC557 /* ContractorController.swift */; };
 		9E95AB6E2CEEE029004ACC13 /* JobsMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E95AB6D2CEEE01E004ACC13 /* JobsMapView.swift */; };
@@ -109,6 +110,7 @@
 		9E097EDB2CE9B72800C876A5 /* SplashScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashScreenView.swift; sourceTree = "<group>"; };
 		9E144A2D2CC30ECD00C2A39A /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		9E1788932CD07E8200FD3288 /* GuestModeProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuestModeProfileView.swift; sourceTree = "<group>"; };
+		9E5D1D532CF5228300EB57E8 /* Fireworks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Fireworks.swift; sourceTree = "<group>"; };
 		9E81DCE72CDDCF7E0028C952 /* CoJobCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoJobCellView.swift; sourceTree = "<group>"; };
 		9E8AC25A2CD9AF0700FDC557 /* ContractorController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContractorController.swift; sourceTree = "<group>"; };
 		9E95AB6D2CEEE01E004ACC13 /* JobsMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JobsMapView.swift; sourceTree = "<group>"; };
@@ -248,6 +250,7 @@
 		9E3AB6FE2CD8B8FE0082750B /* UIViews */ = {
 			isa = PBXGroup;
 			children = (
+				9E5D1D532CF5228300EB57E8 /* Fireworks.swift */,
 				9E95AB6D2CEEE01E004ACC13 /* JobsMapView.swift */,
 				9E097ED92CE9B3E600C876A5 /* Animations.swift */,
 				9EC4181D2CB4C4E500F21C8F /* JobView.swift */,
@@ -564,6 +567,7 @@
 				9EC417FF2CB4B70B00F21C8F /* PostView.swift in Sources */,
 				291AAA652CCDF26A008757E3 /* HoConversationsView.swift in Sources */,
 				9EC417C42CB4AF1B00F21C8F /* WorkFlowApp.swift in Sources */,
+				9E5D1D542CF5228B00EB57E8 /* Fireworks.swift in Sources */,
 				AAB9E3622CE1B82F00011ECB /* HoBidFeedView.swift in Sources */,
 				9EC418202CB4C50300F21C8F /* CoProfileView.swift in Sources */,
 				294CF3FA2CDDA32800AAD3E0 /* Bid.swift in Sources */,

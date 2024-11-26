@@ -86,6 +86,9 @@ struct HoBidFeedView: View {
                     homeownerJobController.fetchJobsForHomeowner(homeownerId: homeownerId)
                 }
             }
+            .safeAreaInset(edge: .bottom) {
+                Color.clear.frame(height: 50)
+            }
         }
     }
 }

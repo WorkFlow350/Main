@@ -1,9 +1,9 @@
 import SwiftUI
+import FirebaseAuth
 
 struct ChatDetailView: View {
     @EnvironmentObject var chatController: ChatController
     @EnvironmentObject var authController: AuthController
-    
     let conversationId: String
     let receiverId: String
     @State private var newMessageText = ""
@@ -35,10 +35,10 @@ struct ChatDetailView: View {
                 do {
                     // Fetch messages for the conversation once the view appears
                     await chatController.fetchMessages(for: conversationId)
-                    
                     // Fetch conversation by participants if it's not already fetched
                     guard let contractorId = authController.userSession?.uid else { return }
                     await chatController.fetchConversationByParticipants(contractorId: contractorId, homeownerId: receiverId)
+                    await chatController.markMessagesAsRead(conversationId: conversationId, userId: Auth.auth().currentUser?.uid ?? "")
                 } catch {
                     print("Failed to fetch conversation or messages: \(error)")
                 }
@@ -55,17 +55,27 @@ struct ChatDetailView: View {
                         text: message.text,
                         isSentByCurrentUser: message.senderId == authController.userSession?.uid,
                         messageId: message.id,
-                        conversationId: message.conversationId, // Pass conversationId here
-                        timestamp: message.timestamp,  // Pass the timestamp
+                        conversationId: message.conversationId,
+                        timestamp: message.timestamp,
                         isLastMessage: message.id == chatController.messages.last?.id
                     )
-                    .id(message.id) // Assign unique ID to each message for scrolling
+                    .id(message.id)
+                }
+            }
+            .onAppear {
+                // Scroll to the last message when the view appears
+                if let lastMessageId = chatController.messages.last?.id {
+                    DispatchQueue.main.async {
+                        scrollViewProxy.scrollTo(lastMessageId, anchor: .bottom)
+                    }
                 }
             }
             .onChange(of: chatController.messages) { _ in
-                // Scroll to the last message when new messages come in
+                // Scroll to the last message when new messages are added
                 if let lastMessageId = chatController.messages.last?.id {
-                    scrollViewProxy.scrollTo(lastMessageId, anchor: .bottom)
+                    DispatchQueue.main.async {
+                        scrollViewProxy.scrollTo(lastMessageId, anchor: .bottom)
+                    }
                 }
             }
         }

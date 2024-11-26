@@ -289,7 +289,9 @@ struct CoPostView: View {
                 .foregroundColor(.white)
         }
         .disabled(title.isEmpty || description.isEmpty || city.isEmpty || email.isEmpty || selectedImage == nil)
-        .padding(.bottom, 50)
+        .safeAreaInset(edge: .bottom) {
+            Color.clear.frame(height: 50)
+        }
     }
 
     // MARK: - Reset Fields

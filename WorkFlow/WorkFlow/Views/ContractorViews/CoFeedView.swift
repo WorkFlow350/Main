@@ -108,7 +108,9 @@ struct CoFeedView: View {
                         .background(Color.clear)
                     }
                 }
-                
+                .safeAreaInset(edge: .bottom) {
+                    Color.clear.frame(height: 50)
+                }
                 if isLoading {
                     ProgressView()
                 }

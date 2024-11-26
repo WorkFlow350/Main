@@ -27,7 +27,6 @@ struct CoMyJobsView: View {
                     jobStatusPicker
                     jobListView
                 }
-                .padding(.bottom, 10)
             }
             .onAppear {
                 bidController.fetchContractorBidsByStatus()
@@ -89,7 +88,9 @@ struct CoMyJobsView: View {
         }
         .listStyle(PlainListStyle())
         .background(Color.clear)
-        .padding(.bottom, 43)
+        .safeAreaInset(edge: .bottom) {
+            Color.clear.frame(height: 50)
+        }
     }
 
     private func currentBids() -> [Bid] {

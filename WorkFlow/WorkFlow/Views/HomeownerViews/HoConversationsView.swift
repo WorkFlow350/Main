@@ -7,7 +7,6 @@ struct HoConversationsView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                // Background Gradient
                 LinearGradient(
                     gradient: Gradient(colors: [
                         Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0),
@@ -20,7 +19,7 @@ struct HoConversationsView: View {
 
                 VStack {
                     HStack {
-                        Text("Chats")
+                        Text("Messages")
                             .font(.largeTitle)
                             .fontWeight(.bold)
                             .foregroundColor(.white)
@@ -30,7 +29,7 @@ struct HoConversationsView: View {
                     .padding(.top, 20)
 
                     if chatController.conversations.isEmpty {
-                        // No Conversations State
+                        // MARK: - No Conversations State
                         VStack {
                             Spacer()
                             Image(systemName: "message.fill")
@@ -65,7 +64,9 @@ struct HoConversationsView: View {
                     }
                 }
             }
-            .navigationBarHidden(true)
+            .safeAreaInset(edge: .bottom) {
+                Color.clear.frame(height: 50)
+            }
         }
     }
 }

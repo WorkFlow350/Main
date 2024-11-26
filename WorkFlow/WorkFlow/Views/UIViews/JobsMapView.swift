@@ -2,6 +2,7 @@ import SwiftUI
 import MapKit
 import CoreLocation
 import CoreLocationUI
+import Combine
 
 struct JobsMapView: View {
     @EnvironmentObject var authController: AuthController
@@ -33,6 +34,7 @@ struct JobsMapView: View {
     @State private var isRegionSet: Bool = false
     @State private var selectedJobGroup: JobGroup? = nil
     @State private var isShowingJobList: Bool = false
+    @State private var groupedLocations: [JobGroup] = []
     var filteredJobLocations: [JobLocation] {
         jobLocations.filter { !bidController.excludedJobIds.contains($0.job.id.uuidString) }
     }
@@ -46,7 +48,6 @@ struct JobsMapView: View {
                 Map(coordinateRegion: $region, annotationItems: groupedLocations) { group in
                     MapAnnotation(coordinate: group.coordinate2D) {
                         if group.isCluster {
-                            // Cluster marker for multiple jobs
                             Button(action: {
                                 selectedJobGroup = group
                                 isShowingJobList = true
@@ -62,9 +63,7 @@ struct JobsMapView: View {
                                 }
                             }
                         } else if let job = group.jobs.first {
-                            // Single job marker
                             if job.name == "Contractor Location" {
-                                // Contractor Location Marker
                                 VStack {
                                     Circle()
                                         .fill(Color.blue)
@@ -77,7 +76,7 @@ struct JobsMapView: View {
                                         )
                                 }
                             } else {
-                                // Single Job Marker
+                                // MARK: - Single Job Marker
                                 Button(action: {
                                     calculateDistance(to: job)
                                     selectedJob = job
@@ -108,36 +107,56 @@ struct JobsMapView: View {
                         }
                     }
                 }
-                .onAppear {
-                    bidController.fetchExcludedJobs()
-                }
+                // MARK: - Sheet for Group
                 .sheet(isPresented: $isShowingJobList) {
                     if let jobGroup = selectedJobGroup {
-                        if jobGroup.jobs.isEmpty {
-                            Text("No jobs in this group.")
-                        } else {
-                            VStack {
-                                Text("Jobs")
-                                    .font(.headline)
-                                    .padding()
-                                
-                                List(jobGroup.jobs) { job in
-                                    VStack(alignment: .leading) {
-                                        Text(job.name)
-                                            .font(.headline)
-                                        if !job.job.description.isEmpty {
-                                            Text(job.job.description ?? "")
-                                                .font(.subheadline)
-                                                .foregroundColor(.gray)
-                                                .lineLimit(2)
+                        VStack {
+                            Text("Jobs in \(jobGroup.jobs.first?.job.city ?? "Unknown Location")")
+                                .font(.headline)
+                                .padding()
+                            List(jobGroup.jobs) { job in
+                                Button(action: {
+                                    selectedJob = job
+                                    isNavigatingToJob = true
+                                    isShowingJobList = false
+                                }) {
+                                    HStack(alignment: .top, spacing: 12) {
+                                        VStack(alignment: .leading, spacing: 8) {
+                                            Text(job.name)
+                                                .font(.headline)
+                                                .foregroundColor(.primary)
+                                            if !job.job.description.isEmpty {
+                                                Text(job.job.description)
+                                                    .font(.subheadline)
+                                                    .foregroundColor(.secondary)
+                                                    .lineLimit(2)
+                                            }
+                                            Text("Type: \(job.job.category.rawValue.capitalized)")
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
                                         }
+
+                                        Spacer()
                                     }
+                                    .frame(maxWidth: .infinity, minHeight: 100)
+                                    .padding()
+                                    .background(Color(UIColor.systemBackground).shadow(radius: 2))
+                                    .cornerRadius(10)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                                    )
                                 }
+                                .buttonStyle(PlainButtonStyle())
                             }
-                            .presentationDetents([.medium, .large])
+                            .listStyle(PlainListStyle())
                         }
+                        .presentationDetents([.medium, .large])
+                        .padding(.horizontal)
                     } else {
-                        Text("No jobs available.")
+                        Text("Zoom In, and Try Again.")
+                            .font(.headline)
+                            .foregroundColor(.gray)
                     }
                 }
 //                .onAppear {
@@ -274,7 +293,14 @@ struct JobsMapView: View {
         let distanceInMiles = distanceInMeters / 1609.34 // Convert meters to miles
         distanceToJob = String(format: "%.2f", distanceInMiles) // Format to 2 decimal places
     }
-    
+    private func refreshGroupedLocations() {
+        let adjustedLocations = adjustJobLocations(locations: filteredJobLocations + contractorLocation())
+        let newGroupedLocations = groupJobsByCoordinates(locations: adjustedLocations)
+        // Ensure the state updates properly
+        DispatchQueue.main.async {
+            groupedLocations = newGroupedLocations
+        }
+    }
     // MARK: - Contractor Location
     private func contractorLocation() -> [JobLocation] {
         guard let userLocation = locationManager.currentLocation else { return [] }
@@ -297,14 +323,24 @@ struct JobsMapView: View {
         ]
     }
     func groupJobsByCoordinates(locations: [JobLocation]) -> [JobGroup] {
+        let groupingTolerance = 0.0005 // Adjust for desired sensitivity
         var groups: [String: [JobLocation]] = [:]
 
         for location in locations {
-            let coordinateKey = "\(location.latitude),\(location.longitude)"
+            // Round coordinates for clustering
+            let roundedLat = (location.latitude / groupingTolerance).rounded() * groupingTolerance
+            let roundedLong = (location.longitude / groupingTolerance).rounded() * groupingTolerance
+            let coordinateKey = "\(roundedLat),\(roundedLong)"
+
+            // Append location to its group
             groups[coordinateKey, default: []].append(location)
         }
 
-        return groups.map { JobGroup(coordinate: $0.key, jobs: $0.value) }
+        // Map grouped locations into JobGroup array
+        return groups.compactMap { key, jobs in
+            guard !jobs.isEmpty else { return nil } // Skip empty groups
+            return JobGroup(coordinate: key, jobs: jobs)
+        }
     }
     struct JobGroup: Identifiable {
         let id = UUID()
@@ -400,6 +436,8 @@ struct JobLocation: Identifiable {
     }
     var offset: (latitude: Double, longitude: Double) = (0.0, 0.0) // Default no offset
 }
+
+// MARK: - Adjust Group
 func adjustJobLocations(locations: [JobLocation]) -> [JobLocation] {
     var adjustedLocations = [JobLocation]()
     var seenCoordinates = [String: Int]() // To track duplicate coordinates
@@ -410,7 +448,7 @@ func adjustJobLocations(locations: [JobLocation]) -> [JobLocation] {
         if let count = seenCoordinates[coordinateKey] {
             // Increment the longitude offset for subsequent jobs with the same coordinates
             let latitudeOffsetStep = 0.0 // Keep latitude unchanged (or minimal)
-            let longitudeOffsetStep = 0.0001 // Adjust longitude to move right
+            let longitudeOffsetStep = 0.0 // Adjust longitude to move right
             location.offset = (latitude: latitudeOffsetStep, longitude: longitudeOffsetStep * Double(count))
             seenCoordinates[coordinateKey]! += 1
         } else {

@@ -60,6 +60,7 @@
 		9EC418202CB4C50300F21C8F /* CoProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC4181F2CB4C50300F21C8F /* CoProfileView.swift */; };
 		9EC418222CB4C51A00F21C8F /* HoProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC418212CB4C51A00F21C8F /* HoProfileView.swift */; };
 		9EC418262CB4C7BC00F21C8F /* HomeownerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC418252CB4C7BC00F21C8F /* HomeownerController.swift */; };
+		AA35FF1C2CF5495700614DEE /* CoPublicProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA35FF1B2CF5495700614DEE /* CoPublicProfileView.swift */; };
 		AA82E5852CBDD324009F916D /* JobCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA82E5842CBDD324009F916D /* JobCellView.swift */; };
 		AA82E5872CBDEEF1009F916D /* JobDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA82E5862CBDEEF1009F916D /* JobDetailView.swift */; };
 		AA82E58F2CBF39F3009F916D /* FlyerCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA82E58E2CBF39F3009F916D /* FlyerCellView.swift */; };
@@ -143,6 +144,7 @@
 		9EC4181F2CB4C50300F21C8F /* CoProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoProfileView.swift; sourceTree = "<group>"; };
 		9EC418212CB4C51A00F21C8F /* HoProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoProfileView.swift; sourceTree = "<group>"; };
 		9EC418252CB4C7BC00F21C8F /* HomeownerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeownerController.swift; sourceTree = "<group>"; };
+		AA35FF1B2CF5495700614DEE /* CoPublicProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoPublicProfileView.swift; sourceTree = "<group>"; };
 		AA82E5842CBDD324009F916D /* JobCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JobCellView.swift; sourceTree = "<group>"; };
 		AA82E5862CBDEEF1009F916D /* JobDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JobDetailView.swift; sourceTree = "<group>"; };
 		AA82E58E2CBF39F3009F916D /* FlyerCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlyerCellView.swift; sourceTree = "<group>"; };
@@ -198,6 +200,7 @@
 				9E81DCE72CDDCF7E0028C952 /* CoJobCellView.swift */,
 				29E2041F2CCF217100047F21 /* CoConversationsView.swift */,
 				9EC4181F2CB4C50300F21C8F /* CoProfileView.swift */,
+				AA35FF1B2CF5495700614DEE /* CoPublicProfileView.swift */,
 			);
 			path = ContractorViews;
 			sourceTree = "<group>";
@@ -549,6 +552,7 @@
 				9EC418222CB4C51A00F21C8F /* HoProfileView.swift in Sources */,
 				9EC417F52CB4B68800F21C8F /* JobController.swift in Sources */,
 				9E1788942CD07E8D00FD3288 /* GuestModeProfileView.swift in Sources */,
+				AA35FF1C2CF5495700614DEE /* CoPublicProfileView.swift in Sources */,
 				9EC418052CB4B75600F21C8F /* ImagePickerView.swift in Sources */,
 				AA82E5872CBDEEF1009F916D /* JobDetailView.swift in Sources */,
 				9E95AB6E2CEEE029004ACC13 /* JobsMapView.swift in Sources */,

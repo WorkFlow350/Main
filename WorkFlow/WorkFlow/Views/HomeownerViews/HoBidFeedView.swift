@@ -356,41 +356,42 @@ struct DetailedBidView: View {
                                 .font(.headline)
                                 .foregroundColor(.primary)
                                 .padding(.bottom, 4)
-                            
-                            HStack(spacing: 12) {
-                                // Profile Picture
-                                if let imageURL = profile.imageURL, let url = URL(string: imageURL) {
-                                    AsyncImage(url: url) { image in
-                                        image
-                                            .resizable()
-                                            .scaledToFill()
-                                            .frame(width: 60, height: 60)
-                                            .clipShape(Circle())
-                                            .shadow(radius: 3)
-                                    } placeholder: {
-                                        Circle()
-                                            .fill(Color.gray.opacity(0.3))
-                                            .frame(width: 60, height: 60)
+                            NavigationLink(destination: CoPublicProfileView(contractorProfile: profile, contractorId: bid.contractorId)) {
+                                HStack(spacing: 12) {
+                                    // Profile Picture
+                                    if let imageURL = profile.imageURL, let url = URL(string: imageURL) {
+                                        AsyncImage(url: url) { image in
+                                            image
+                                                .resizable()
+                                                .scaledToFill()
+                                                .frame(width: 60, height: 60)
+                                                .clipShape(Circle())
+                                                .shadow(radius: 3)
+                                        } placeholder: {
+                                            Circle()
+                                                .fill(Color.gray.opacity(0.3))
+                                                .frame(width: 60, height: 60)
+                                        }
                                     }
-                                }
-                                
-                                // Contractor Details
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("Name: \(profile.contractorName)")
-                                        .font(.headline)
-                                        .fontWeight(.bold)
-                                        .foregroundColor(.secondary)
                                     
-                                    Text("City: \(profile.city)")
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
-                                    
-                                    HStack {
-                                        Image(systemName: "star.fill")
-                                            .foregroundColor(.yellow)
-                                        Text(String(format: "%.1f", profile.rating))
+                                    // Contractor Details
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text("Name: \(profile.contractorName)")
+                                            .font(.headline)
+                                            .fontWeight(.bold)
+                                            .foregroundColor(.secondary)
+                                        
+                                        Text("City: \(profile.city)")
                                             .font(.subheadline)
                                             .foregroundColor(.secondary)
+                                        
+                                        HStack {
+                                            Image(systemName: "star.fill")
+                                                .foregroundColor(.yellow)
+                                            Text(String(format: "%.1f", profile.rating))
+                                                .font(.subheadline)
+                                                .foregroundColor(.secondary)
+                                        }
                                     }
                                 }
                             }

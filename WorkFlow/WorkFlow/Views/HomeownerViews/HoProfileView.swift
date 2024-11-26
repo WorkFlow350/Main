@@ -476,7 +476,7 @@ private struct ReviewSection: View {
             }
             
             Button(action: {
-                bidController.leaveJobRating(bidId: completedBid.id, jobRating: jobRating)
+                bidController.leaveJobRating(bidId: completedBid.id, contractorId: completedBid.contractorId ,jobRating: jobRating)
                 bidController.leaveReview(bidId: completedBid.id, review: review)
                 review = ""
                 isReviewEditorPresented = false

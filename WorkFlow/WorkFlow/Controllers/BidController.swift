@@ -361,17 +361,61 @@ class BidController: ObservableObject {
         }
     }
     //MARK: - leave a rating
-    func leaveJobRating(bidId: String, jobRating: Double) {
-        db.collection("bids").document(bidId).updateData(["jobRating": jobRating]) { error in
+    func leaveJobRating(bidId: String, contractorId: String, jobRating: Double) {
+        db.collection("bids").document(bidId).updateData(["jobRating": jobRating]) { [weak self] error in
             if let error = error {
                 print("error updating job rating")
                 return
             } else {
                 print("Successfully updated job rating")
+                self?.averageReviewsForContractor(ContractorId: contractorId)
             }
         }
     }
+    // MARK: - Update Contractor's Average Rating
+    func updateContractorAverageRating(contractorId: String, average: Double) {
+        db.collection("users").document(contractorId).updateData(["rating": average]) { error in
+            if let error = error {
+                print("Error updating contractor's average rating: \(error.localizedDescription)")
+            } else {
+                print("Successfully updated contractor's average rating to \(average)")
+            }
+        }
+    }
+
     
+    // MARK: - Count Reviews and Calculate Average
+    func averageReviewsForContractor(ContractorId: String) {
+        db.collection("bids")
+            .whereField("contractorId", isEqualTo: ContractorId)
+            .getDocuments { [weak self] snapshot, error in
+                if let error = error {
+                    print("Error fetching documents: \(error.localizedDescription)")
+                    return  // Don't proceed if there's an error
+                }
+                
+                let reviews = snapshot?.documents.compactMap { document in
+                    if let rating = document.data()["jobRating"] as? Double {
+                        return rating
+                    } else {
+                        return nil
+                    }
+                }
+                
+                guard let reviews = reviews, !reviews.isEmpty else {
+                    print("No reviews found for contractor.")
+                    return
+                }
+                
+                let average = reviews.reduce(0, +) / Double(reviews.count)
+                print("Average Rating: \(average)")
+                
+                // Step 3: Update contractor's average rating
+                self?.updateContractorAverageRating(contractorId: ContractorId, average: average)
+            }
+    }
+    
+
     
     // MARK: - Count Bids for a Job
     func countBidsForJob(jobId: UUID, completion: @escaping (Int) -> Void) {

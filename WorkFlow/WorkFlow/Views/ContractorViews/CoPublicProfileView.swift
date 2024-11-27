@@ -18,6 +18,7 @@ struct CoPublicProfileView: View {
     @State private var name: String = ""
     @State private var location: String = ""
     @State private var bio: String = ""
+    @State private var rating: Double = 0.0
     @State private var flyers: [ContractorProfile] = []
     @State private var navigateToCoChat: Bool = false
     @State private var navigateToBiography: Bool = false
@@ -94,6 +95,7 @@ struct CoPublicProfileView: View {
                 self.location = "\(role) | \(self.location)"
                 self.bio = data["bio"] as? String ?? "No bio available."
                 self.profilePictureURL = data["profilePictureURL"] as? String
+                self.rating = data["rating"] as? Double ?? 0.0
                 loadProfileImage()
                 
                 contractorController.fetchFlyersForContractor(contractorId: contractorId)
@@ -155,6 +157,8 @@ struct CoPublicProfileView: View {
             Text(location)
                 .font(.subheadline)
                 .foregroundColor(.white.opacity(0.8))
+            RatingView(label: "Rating", Rating: rating)
+            
             
         }
     }
@@ -289,6 +293,57 @@ struct BiographyPublicViewCO: View {
         }
     }
 }
+
+//MARK: Review Star View
+struct RatingView: View {
+    var label = ""
+    var maximumRating = 5
+    var offImage: Image?
+    var onImage = Image(systemName: "star.fill")
+    var offColor = Color.gray.opacity(0.5)
+    var onColor = Color.yellow
+    var Rating: Double
+
+    var body: some View {
+        VStack {
+            HStack {
+                // Show the label if it's not empty
+                if !label.isEmpty {
+                    Text(label)
+                        .padding(.trailing, 8)
+                        .foregroundColor(.white)
+                }
+                
+                // Loop through the maximum number of stars
+                ForEach(1...maximumRating, id: \.self) { number in
+                    let ratingNumber = Double(number)
+                    
+                    image(for: ratingNumber)
+                        .foregroundColor(onColor)
+                        .frame(width: 20, height: 20)
+                }
+            }
+        }
+    }
+    
+    // Function to determine the image to display based on the rating
+    private func image(for ratingNumber: Double) -> Image {
+        // If ratingNumber is less than or equal to the current rating, it's a filled star
+        if ratingNumber <= Rating {
+            return onImage
+        }
+        // If ratingNumber is within a half-star range
+        else if ratingNumber - 0.5 <= Rating && ratingNumber > Rating {
+            return Image(systemName: "star.leadinghalf.fill") // Half star image
+        }
+        // Otherwise, it's an empty star
+        else {
+            return offImage ?? Image(systemName: "star") // Empty star
+        }
+    }
+}
+
+
 
 // MARK: - Preview
 struct ContractorPublicProfileView_Previews: PreviewProvider {

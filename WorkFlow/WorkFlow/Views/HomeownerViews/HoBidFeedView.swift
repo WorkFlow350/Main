@@ -421,7 +421,7 @@ struct DetailedBidView: View {
                             }
                             // MARK: - Message Button
                             NavigationLink(
-                                destination: ChatDetailView(
+                                destination: HoChatDetailView(
                                     conversationId: bid.conversationId,
                                     receiverId: profile.id.uuidString
                                 )

@@ -48,7 +48,7 @@ struct CoConversationsView: View {
                             LazyVStack(spacing: 10) {
                                 ForEach(chatController.conversations, id: \.id) { conversation in
                                     NavigationLink(
-                                        destination: ChatDetailView(
+                                        destination: CoChatDetailView(
                                             conversationId: conversation.id,
                                             receiverId: conversation.participants.first(where: { $0 != authController.userSession?.uid })!
                                         )

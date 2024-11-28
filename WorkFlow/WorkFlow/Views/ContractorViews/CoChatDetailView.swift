@@ -1,12 +1,16 @@
 import SwiftUI
 import FirebaseAuth
 
-struct ChatDetailView: View {
+struct CoChatDetailView: View {
     @EnvironmentObject var chatController: ChatController
     @EnvironmentObject var authController: AuthController
+    @EnvironmentObject var bidController: BidController
+    @EnvironmentObject var jobController: JobController
     let conversationId: String
     let receiverId: String
     @State private var newMessageText = ""
+    @State private var retrievedBid: Bid?
+    @State private var retrievedJob: Job?
     
     private let chatBackgroundGradient = LinearGradient(
         gradient: Gradient(colors: [
@@ -16,21 +20,45 @@ struct ChatDetailView: View {
         startPoint: .top,
         endPoint: .bottom
     )
-
+    
     var body: some View {
         ZStack {
             chatBackgroundGradient
                 .ignoresSafeArea()
-
+            
             VStack {
                 // MARK: - Messages List
                 ScrollView {
+                    statusBar
+                    Divider()
                     messagesList
                 }
                 chatInputBar
             }
         }
         .onAppear {
+            bidController.fetchSingleBid(conversationId: conversationId) { bid in
+                if let bid = bid {
+                    retrievedBid = bid
+                    print("bid retrieved")
+                    
+                    if let bidId = retrievedBid?.jobId {
+                        jobController.fetchSingleJob(bidJobId: bidId) { job in
+                            if let job = job {
+                                retrievedJob = job
+                                print("job retrieved")
+                            } else {
+                                print("no job found")
+                            }
+                        }
+                    } else {
+                        print("no jobid found in retrieved bid")
+                    }
+                } else {
+                    print("no bid found")
+                }
+            }
+            
             Task {
                 do {
                     // Fetch messages for the conversation once the view appears
@@ -45,7 +73,7 @@ struct ChatDetailView: View {
             }
         }
     }
-
+    
     // MARK: - Messages List
     private var messagesList: some View {
         ScrollViewReader { scrollViewProxy in
@@ -80,7 +108,7 @@ struct ChatDetailView: View {
             }
         }
     }
-
+    
     // MARK: - Message Input Bar
     private var chatInputBar: some View {
         HStack {
@@ -101,7 +129,28 @@ struct ChatDetailView: View {
         }
         .padding()
     }
-
+    
+    //MARK: - status bar
+    private var statusBar: some View {
+        HStack{
+            if let job = retrievedJob, let bid = retrievedBid {
+                Text("\(job.title):")
+                    .font(.footnote)
+                    .foregroundColor(.white)
+                
+                Text("\(bid.status.rawValue.capitalized)")
+                    .font(.footnote)
+                    .foregroundColor(
+                        bid.status == .accepted ? .green :
+                            bid.status == .declined ? .red :
+                            bid.status == .completed ? .blue :
+                                .orange
+                    )
+            } else {
+                Text("no job or bid data available")
+            }
+        }
+    }
     // MARK: - Send Message
     private func sendMessage() {
         Task {
@@ -109,14 +158,14 @@ struct ChatDetailView: View {
             do {
                 // Use the already passed conversationId
                 let conversationId = self.conversationId
-
+                
                 // Send the message
                 try await chatController.sendMessage(
                     conversationId: conversationId,  // Corrected parameter name
                     senderId: senderId,
                     text: newMessageText  // No need to pass receiverId anymore
                 )
-
+                
                 // Create a new message object for the UI
                 let newMessage = Message(
                     id: UUID().uuidString,
@@ -127,14 +176,14 @@ struct ChatDetailView: View {
                     timestamp: Date(),
                     isRead: false
                 )
-
+                
                 // Append the new message to the messages list
                 chatController.messages.append(newMessage)
                 newMessageText = ""  // Clear the input field
-
+                
                 // Fetch the latest messages for the conversation
                 await chatController.fetchMessages(for: conversationId)
-
+                
             } catch {
                 print("Error sending message: \(error.localizedDescription)")
             }
@@ -142,10 +191,3 @@ struct ChatDetailView: View {
     }
 }
 
-struct ChatDetailView_Previews: PreviewProvider {
-    static var previews: some View {
-        ChatDetailView(conversationId: "test_conversation", receiverId: "receiver_id")
-            .environmentObject(AuthController())
-            .environmentObject(ChatController())
-    }
-}

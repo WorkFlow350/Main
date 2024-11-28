@@ -388,7 +388,7 @@ struct DetailedCoJobView: View {
             }
             // MARK: - Message Button
             NavigationLink(
-                destination: ChatDetailView(
+                destination: CoChatDetailView(
                     conversationId: bid.conversationId,
                     receiverId: profile.id.uuidString
                 )

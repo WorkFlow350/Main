@@ -86,7 +86,7 @@ class BidController: ObservableObject {
                 "number": job.number,
                 "datePosted": Date(),
                 "status": Bid.bidStatus.pending.rawValue,
-                "conversationId": conversationId // Store the conversationId with the bid
+                "conversationId": conversationId
             ]
 
             self.db.collection("bids").document(bidId).setData(bidData) { error in
@@ -163,7 +163,7 @@ class BidController: ObservableObject {
             if let bid = lowestBid {
                 completion(bid.price)
             } else {
-                completion(nil) // No bids yet
+                completion(nil)
             }
         }
     }

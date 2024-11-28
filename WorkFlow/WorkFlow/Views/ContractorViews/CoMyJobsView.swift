@@ -9,6 +9,7 @@ struct CoMyJobsView: View {
     @EnvironmentObject var homeownerJobController:
     HomeownerJobController
     @EnvironmentObject var authController: AuthController
+    @EnvironmentObject var jobController: JobController
     @State private var selectedJob: Job?
 
     enum JobTab: String, CaseIterable {
@@ -30,6 +31,7 @@ struct CoMyJobsView: View {
             }
             .onAppear {
                 bidController.fetchContractorBidsByStatus()
+                jobController.fetchJobs()
             }
         }
     }
@@ -116,6 +118,7 @@ struct BidCellCoView: View {
     let maxDescriptionLength = 25
     @EnvironmentObject var bidController: BidController
     @EnvironmentObject var homeownerJobController: HomeownerJobController
+    @EnvironmentObject var jobController: JobController
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -130,8 +133,19 @@ struct BidCellCoView: View {
                     .cornerRadius(8)
                     .padding(.bottom, 5)
             }
+            if let jobTitle = jobController.jobs.first(where: { $0.id.uuidString == bid.jobId })?.title {
+                Text(jobTitle)
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+            } else {
+                Text("Job title not found")
+                    .font(.headline)
+                    .foregroundColor(.red)
+            }
             HStack {
-                Text("Amount: \(bid.price, specifier: "%.2f")")
+                
+                Text("Amount: $\(bid.price, specifier: "%.2f")")
                     .font(.headline)
                     .foregroundColor(.green)
 

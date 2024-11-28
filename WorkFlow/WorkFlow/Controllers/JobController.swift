@@ -243,6 +243,38 @@ class JobController: ObservableObject {
             }
         }
     }
+    //MARK: - get single job
+    func fetchSingleJob(bidJobId: String, completion: @escaping (Job?) -> Void) {
+        let db = Firestore.firestore()
+        db.collection("jobs").whereField("id", isEqualTo: bidJobId).getDocuments { snapshot, error in
+            if let error = error {
+                print("Error getting single job: \(error.localizedDescription)")
+                completion(nil)
+                return
+            }
+            
+            guard let document = snapshot?.documents.first else {
+                print("No job found for bidJobId: \(bidJobId)")
+                completion(nil)
+                return
+            }
+            
+            let data = document.data()
+            let job = Job(
+                id: UUID(uuidString: document.documentID) ?? UUID(),
+                title: data["title"] as? String ?? "",
+                number: data["number"] as? String ?? "",
+                description: data["description"] as? String ?? "",
+                city: data["city"] as? String ?? "",
+                category: JobCategory(rawValue: data["category"] as? String ?? "Landscaping") ?? .landscaping,
+                datePosted: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
+                imageURL: data["imageURL"] as? String,
+                latitude: data["latitude"] as? Double ?? 0.0,
+                longitude: data["longitude"] as? Double ?? 0.0
+            )
+            completion(job)
+        }
+    }
 
     // MARK: - Time Ago Since Date
     func timeAgoSinceDate(_ date: Date) -> String {

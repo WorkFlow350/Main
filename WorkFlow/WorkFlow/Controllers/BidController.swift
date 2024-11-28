@@ -86,7 +86,7 @@ class BidController: ObservableObject {
                 "number": job.number,
                 "datePosted": Date(),
                 "status": Bid.bidStatus.pending.rawValue,
-                "conversationId": conversationId // Store the conversationId with the bid
+                "conversationId": conversationId
             ]
 
             self.db.collection("bids").document(bidId).setData(bidData) { error in
@@ -163,7 +163,7 @@ class BidController: ObservableObject {
             if let bid = lowestBid {
                 completion(bid.price)
             } else {
-                completion(nil) // No bids yet
+                completion(nil)
             }
         }
     }
@@ -739,6 +739,43 @@ class BidController: ObservableObject {
                     print("Excluded job IDs updated: \(self.excludedJobIds)")
                 }
             }
+    }
+    //MARK: - fetch single Bid
+    func fetchSingleBid(conversationId: String, completion: @escaping (Bid?) -> Void) {
+        db.collection("bids").whereField("conversationId", isEqualTo: conversationId).getDocuments { snapshot, error in
+            if let error = error {
+                print("Error getting single bid: \(error.localizedDescription)")
+                completion(nil)
+                return
+            }
+            
+            // Get the first matching document
+            guard let documents = snapshot?.documents, !documents.isEmpty else {
+                print("No bid found for conversationId: \(conversationId)")
+                completion(nil)
+                return
+            }
+            
+            let bids = documents.compactMap { document -> Bid? in
+                let data = document.data()
+                return Bid(
+                    id: data["id"] as? String ?? "",
+                    jobId: data["jobId"] as? String ?? "",
+                    contractorId: data["contractorId"] as? String ?? "",
+                    homeownerId: data["homeownerId"] as? String ?? "",
+                    price: data["price"] as? Double ?? 0.0,
+                    description: data["description"] as? String ?? "",
+                    status: Bid.bidStatus(rawValue: data["status"] as? String ?? "pending") ?? .pending,
+                    bidDate: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
+                    review: data["review"] as? String ?? "",
+                    jobRating: data["jobRating"] as? Double ?? 0.0,
+                    number: data["number"] as? String ?? "Not available",
+                    conversationId: data["conversationId"] as? String ?? ""
+                )
+            }
+            let latestBid = bids.max(by: {$0.bidDate < $1.bidDate})
+            completion(latestBid)
+        }
     }
     
     deinit {

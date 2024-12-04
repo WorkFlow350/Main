@@ -24,7 +24,12 @@ struct RatingImageUtility {
     }
 }
 
-
+struct JobReview {
+    var review: String = ""
+    var jobRating: Double = 0.0
+    var reviewPosted: Bool = false
+    var ratingPosted: Bool = false
+}
 
 
 // MARK: - HomeownerProfileView
@@ -56,6 +61,7 @@ struct HomeownerProfileView: View {
     @State private var review: String = ""
     @State private var reviewPosted: Bool = false
     @State private var ratingPosted: Bool = false
+    @State private var jobReviews: [String: String] = [:]
     
     private let db = Firestore.firestore()
     private let storage = Storage.storage()
@@ -331,62 +337,35 @@ struct HomeownerProfileView: View {
                 .foregroundColor(.white)
                 .padding(.bottom, 5)
             
-            ForEach(homeownerJobController.homeownerJobs) { job in
-                Group {
-                NavigationLink(destination: JobDetailView(job: job)) {
-                    HStack {
-                        if let imageURL = job.imageURL, let url = URL(string: imageURL) {
-                            AsyncImage(url: url) { image in
-                                image
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 125, height: 125)
-                                    .clipShape(RoundedRectangle(cornerRadius: 15))
-                                    .shadow(radius: 3)
-                            } placeholder: {
-                                ProgressView()
-                                    .frame(width: 125, height: 125)
-                                    .background(Color.gray.opacity(0.2))
-                                    .clipShape(RoundedRectangle(cornerRadius: 15))
-                            }
+            JobListView(homeownerJobController: homeownerJobController, isReviewEditorPresented: $isReviewEditorPresented, review: $review, reviewPosted: $reviewPosted, ratingPosted: $ratingPosted)
+        }
+        .overlay(CustomDescriptionPopup(
+            isPresented: $isReviewEditorPresented,
+            description: $review,
+            title: "Leave your review"
+        ))
+        .padding(.horizontal)
+        .padding(.top, 10)
+        
+    }
+
+        struct JobListView: View {
+            @ObservedObject var homeownerJobController: HomeownerJobController
+            @Binding var isReviewEditorPresented: Bool
+            @Binding var review: String
+            @Binding var reviewPosted: Bool
+            @Binding var ratingPosted: Bool
+            @EnvironmentObject var bidController: BidController
+
+            var body: some View {
+                ForEach(homeownerJobController.homeownerJobs) { job in
+                    JobCardView(job: job, isReviewEditorPresented: $isReviewEditorPresented, review: $review)
+                        .onAppear {
+                            bidController.getBidsForJob2(job: job)
                         }
-                        JobCard(job: job, isReviewEditorPresented: $isReviewEditorPresented, review: $review,
-                                reviewPosted: $reviewPosted, ratingPosted: $ratingPosted)
-                    }
-                    .frame(maxWidth: .infinity, minHeight: 120)
-                    .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 15)
-                            .fill(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [
-                                        categoryColor(for: job.category).opacity(0.8),
-                                        categoryColor(for: job.category).opacity(0.3)
-                                    ]),
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                    )
-                    .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 2)
-                    }
-                }
-                .onAppear {
-                    bidController.getBidsForJob2(job: job)
                 }
             }
         }
-        .overlay(
-            CustomDescriptionPopup(
-                isPresented: $isReviewEditorPresented,
-                description: $review,
-                title: "Leave your review"
-                
-            )
-        )
-        .padding(.horizontal)
-        .padding(.top, 10)
-    }
     
     // MARK: - Sign Out
     private func signOut() {
@@ -444,7 +423,7 @@ struct BiographyView: View {
 }
 
 // MARK: - review Box
-private func reviewButton(isReviewEditorPresented: Binding<Bool>, review: Binding<String>) -> some View {
+private func reviewButton(jobId: String, isReviewEditorPresented: Binding<Bool>, review: Binding<String>) -> some View {
     Button(action: {
         isReviewEditorPresented.wrappedValue = true
     }) {
@@ -470,63 +449,62 @@ private func reviewButton(isReviewEditorPresented: Binding<Bool>, review: Bindin
 private struct ReviewSection: View {
     let completedBid: Bid
     @EnvironmentObject var bidController: BidController
-    @Binding var review: String
+    @Binding var reviews: [String: String]
+    @Binding var ratings: [String: Double]
     @Binding var isReviewEditorPresented: Bool
-    @Binding var jobRating: Double
-    @Binding var reviewPosted: Bool
-    @Binding var ratingPosted: Bool
+    @State private var localReview: String = ""
+    @State private var localRating: Double = 0.0
 
     var body: some View {
         VStack {
-            if reviewPosted && ratingPosted {
-                ViewReviewSection(completedBid: completedBid, review: review, jobRating: jobRating)
+            if reviews[completedBid.id] != nil && ratings[completedBid.id] != nil {
+                ViewReviewSection(completedBid: completedBid, review: reviews[completedBid.id] ?? "", jobRating: ratings[completedBid.id] ?? 0.0)
             } else {
-                if !reviewPosted {
-                    reviewButton(isReviewEditorPresented: $isReviewEditorPresented, review: $review)
-                        .padding(.vertical, 20)
-                }
-                if !ratingPosted {
-                    HStack {
-                        ForEach(1...5, id: \.self) { number in
-                            let ratingNumber = Double(number)
-                            Button(action: { jobRating = ratingNumber }) {
-                                RatingImageUtility.image(for: ratingNumber, rating: jobRating)
-                                    .foregroundStyle(ratingNumber > jobRating ? RatingImageUtility.offColor : RatingImageUtility.onColor)
-                            }
+                TextField("Write your review", text: $localReview)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .padding()
+
+                HStack {
+                    ForEach(1...5, id: \.self) { number in
+                        let ratingNumber = Double(number)
+                        Button(action: { localRating = ratingNumber }) {
+                            Image(systemName: ratingNumber <= localRating ? "star.fill" : "star")
+                                .foregroundColor(ratingNumber <= localRating ? .yellow : .gray)
                         }
                     }
                 }
-                if !reviewPosted || !ratingPosted {
-                    Button(action: {
-                        if !review.isEmpty {
-                            reviewPosted = true
-                            bidController.leaveReview(bidId: completedBid.id, contractorId: completedBid.contractorId, review: review)
-                        }
-                        if jobRating > 0 {
-                            ratingPosted = true
-                            bidController.leaveJobRating(bidId: completedBid.id, contractorId: completedBid.contractorId, jobRating: jobRating)
-                        }
-                        isReviewEditorPresented = false
-                    }) {
-                        Text("Post")
-                            .frame(minWidth: 100, maxWidth: 200)
-                            .padding()
-                            .background(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [Color(hex: "#1E3A8A"), Color(hex: "#2563EB")]),
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
+
+                Button(action: {
+                    if !localReview.isEmpty {
+                        reviews[completedBid.id] = localReview
+                        bidController.leaveReview(bidId: completedBid.id, jobId: completedBid.contractorId, review: localReview)
+                    }
+                    if localRating > 0 {
+                        ratings[completedBid.id] = localRating
+                        bidController.leaveJobRating(bidId: completedBid.id, jobId: completedBid.contractorId, jobRating: localRating)
+                    }
+                    isReviewEditorPresented = false
+                }) {
+                    Text("Post")
+                        .frame(minWidth: 100, maxWidth: 200)
+                        .padding()
+                        .background(
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color(hex: "#1E3A8A"), Color(hex: "#2563EB")]),
+                                startPoint: .leading,
+                                endPoint: .trailing
                             )
-                            .cornerRadius(20)
-                            .foregroundColor(.white)
-                    }
-                    .disabled(review.isEmpty && jobRating == 0)
+                        )
+                        .cornerRadius(20)
+                        .foregroundColor(.white)
                 }
+                .disabled(localReview.isEmpty && localRating == 0)
             }
         }
     }
 }
+
+
 
   //MARK: View Review Section View
 private struct ViewReviewSection: View {
@@ -613,6 +591,64 @@ private struct JobCard: View {
         }
     }
 }
+
+struct JobCardView: View {
+    let job: Job
+    @Binding var isReviewEditorPresented: Bool
+    @Binding var review: String
+    @State private var reviewPosted = false
+    @State private var ratingPosted = false
+    
+    var body: some View {
+        NavigationLink(destination: JobDetailView(job: job)) {
+            HStack {
+                JobImageView(imageURL: job.imageURL)
+                JobCard(job: job, isReviewEditorPresented: $isReviewEditorPresented, review: $review, reviewPosted: $reviewPosted, ratingPosted: $ratingPosted)
+            }
+            .frame(maxWidth: .infinity, minHeight: 120)
+            .padding()
+            .background(jobBackground)
+            .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 2)
+        }
+    }
+    
+    private var jobBackground: some View {
+        RoundedRectangle(cornerRadius: 15)
+            .fill(LinearGradient(
+                gradient: Gradient(colors: [
+                    categoryColor(for: job.category).opacity(0.8),
+                    categoryColor(for: job.category).opacity(0.3)
+                ]),
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ))
+    }
+}
+
+//MARK: Job Image View
+private struct JobImageView: View {
+    let imageURL: String?
+
+    var body: some View {
+        if let imageURL = imageURL, let url = URL(string: imageURL) {
+            AsyncImage(url: url) { image in
+                image
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 125, height: 125)
+                    .clipShape(RoundedRectangle(cornerRadius: 15))
+                    .shadow(radius: 3)
+            } placeholder: {
+                ProgressView()
+                    .frame(width: 125, height: 125)
+                    .background(Color.gray.opacity(0.2))
+                    .clipShape(RoundedRectangle(cornerRadius: 15))
+            }
+        }
+    }
+}
+
+
     // MARK: - Preview
     struct HomeownerProfileView_Previews: PreviewProvider {
         static var previews: some View {

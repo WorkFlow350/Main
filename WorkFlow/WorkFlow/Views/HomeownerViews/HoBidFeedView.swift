@@ -12,7 +12,6 @@ struct HoBidFeedView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                // Background Gradient
                 LinearGradient(
                     gradient: Gradient(colors: [
                         Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0),
@@ -87,6 +86,9 @@ struct HoBidFeedView: View {
                     homeownerJobController.fetchJobsForHomeowner(homeownerId: homeownerId)
                 }
             }
+            .safeAreaInset(edge: .bottom) {
+                Color.clear.frame(height: 50)
+            }
         }
     }
 }
@@ -98,7 +100,10 @@ struct JobCellYView: View {
     @EnvironmentObject var bidController: BidController
     @EnvironmentObject var jobController: JobController
     @EnvironmentObject var homeownerJobController: HomeownerJobController
+    @State private var isJobClosed: Bool = false
+    @State private var hasAcceptedBid: Bool = false
     @State private var bidCount: Int = 0
+    
     var body: some View {
         HStack {
             if let imageURL = job.imageURL, let url = URL(string: imageURL) {
@@ -120,12 +125,12 @@ struct JobCellYView: View {
                 Text("\(job.city) - \(job.category.rawValue)")
                     .font(.subheadline)
                     .foregroundColor(.black)
-                
+                    .multilineTextAlignment(.leading)
                 Text(job.title)
                     .font(.headline)
                     .fontWeight(.bold)
                     .foregroundColor(.black)
-                
+                    .multilineTextAlignment(.leading)
                 HStack(spacing: 4) {
                     Image(systemName: "clock")
                         .font(.caption)
@@ -134,11 +139,26 @@ struct JobCellYView: View {
                         .font(.caption)
                         .foregroundColor(.gray)
                 }
-                
-                Text("Bids: \(bidCount)")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-                    .fontWeight(.bold)
+                HStack(spacing: 4) {
+                    Text("Bids: \(bidCount)")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                        .fontWeight(.bold)
+                    
+                    if isJobClosed {
+                        Text("Job Completed")
+                            .font(.caption)
+                            .foregroundColor(.blue)
+                            .fontWeight(.bold)
+                    } else if hasAcceptedBid {
+                        Text("Bid Accepted")
+                            .font(.caption)
+                            .foregroundColor(.green)
+                            .fontWeight(.bold)
+                    }
+                    
+                    Spacer()
+                }
             }
             
             Spacer()
@@ -160,6 +180,16 @@ struct JobCellYView: View {
             // Fetch the bid count when the view appears
             bidController.countBidsForJob(jobId: job.id) { count in
                 bidCount = count
+            }
+            
+            // Check if the job is closed
+            bidController.checkIfJobIsClosed(jobId: job.id) { isClosed in
+                isJobClosed = isClosed
+            }
+            
+            // Check if the job has an accepted bid
+            bidController.checkIfJobHasAcceptedBid(jobId: job.id) { hasAccepted in
+                hasAcceptedBid = hasAccepted
             }
         }
     }
@@ -284,6 +314,8 @@ struct DetailedBidView: View {
     @EnvironmentObject var bidController: BidController
     @State private var contractorProfile: ContractorProfile?
     @EnvironmentObject var homeownerJobController: HomeownerJobController
+    @EnvironmentObject var authController: AuthController
+
     
     var body: some View {
         ZStack {
@@ -348,48 +380,49 @@ struct DetailedBidView: View {
                     
                     Divider()
                     
-                    // Contractor Profile
+                    // MARK: - Contractor Profile
                     if let profile = contractorProfile {
                         VStack(alignment: .leading, spacing: 12) {
                             Text("Contractor Profile:")
                                 .font(.headline)
                                 .foregroundColor(.primary)
                                 .padding(.bottom, 4)
-                            
-                            HStack(spacing: 12) {
-                                // Profile Picture
-                                if let imageURL = profile.imageURL, let url = URL(string: imageURL) {
-                                    AsyncImage(url: url) { image in
-                                        image
-                                            .resizable()
-                                            .scaledToFill()
-                                            .frame(width: 60, height: 60)
-                                            .clipShape(Circle())
-                                            .shadow(radius: 3)
-                                    } placeholder: {
-                                        Circle()
-                                            .fill(Color.gray.opacity(0.3))
-                                            .frame(width: 60, height: 60)
+                            NavigationLink(destination: CoPublicProfileView(contractorProfile: profile, contractorId: bid.contractorId)) {
+                                HStack(spacing: 12) {
+                                    // Profile Picture
+                                    if let imageURL = profile.imageURL, let url = URL(string: imageURL) {
+                                        AsyncImage(url: url) { image in
+                                            image
+                                                .resizable()
+                                                .scaledToFill()
+                                                .frame(width: 60, height: 60)
+                                                .clipShape(Circle())
+                                                .shadow(radius: 3)
+                                        } placeholder: {
+                                            Circle()
+                                                .fill(Color.gray.opacity(0.3))
+                                                .frame(width: 60, height: 60)
+                                        }
                                     }
-                                }
-                                
-                                // Contractor Details
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("Name: \(profile.contractorName)")
-                                        .font(.headline)
-                                        .fontWeight(.bold)
-                                        .foregroundColor(.secondary)
                                     
-                                    Text("City: \(profile.city)")
-                                        .font(.subheadline)
-                                        .foregroundColor(.secondary)
-                                    
-                                    HStack {
-                                        Image(systemName: "star.fill")
-                                            .foregroundColor(.yellow)
-                                        Text(String(format: "%.1f", profile.rating))
+                                    // Contractor Details
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text("Name: \(profile.contractorName)")
+                                            .font(.headline)
+                                            .fontWeight(.bold)
+                                            .foregroundColor(.secondary)
+                                        
+                                        Text("City: \(profile.city)")
                                             .font(.subheadline)
                                             .foregroundColor(.secondary)
+                                        
+                                        HStack {
+                                            Image(systemName: "star.fill")
+                                                .foregroundColor(.yellow)
+                                            Text(String(format: "%.1f", profile.rating))
+                                                .font(.subheadline)
+                                                .foregroundColor(.secondary)
+                                        }
                                     }
                                 }
                             }
@@ -414,6 +447,22 @@ struct DetailedBidView: View {
                                     .font(.body)
                                     .foregroundColor(.secondary)
                             }
+                            // MARK: - Message Button
+                            NavigationLink(
+                                destination: HoChatDetailView(
+                                    conversationId: bid.conversationId,
+                                    receiverId: profile.id.uuidString
+                                )
+                            ) {
+                                Text("Message Contractor")
+                                    .font(.headline)
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(Color.blue)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(8)
+                            }
+                            .padding(.top, 10)
                         }
                         .padding(.top, 10)
                     }
@@ -423,7 +472,7 @@ struct DetailedBidView: View {
                     // Show Accept/Decline buttons only if the bid is pending
                     if bid.status == .pending {
                         HStack {
-                            // Accept Button
+                            // MARK: - Accept Button
                             Button(action: {
                                 bidController.acceptBid(bidId: bid.id, jobId: bid.jobId)
                             }) {
@@ -436,7 +485,7 @@ struct DetailedBidView: View {
                                     .shadow(radius: 2)
                             }
                             
-                            // Decline Button
+                            // MARK: - Decline Button
                             Button(action: {
                                 bidController.declineBid(bidId: bid.id)
                             }) {

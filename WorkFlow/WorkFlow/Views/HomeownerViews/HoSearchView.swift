@@ -86,7 +86,7 @@ struct HoSearchView: View {
                 if !searchText.isEmpty {
                     List(filteredFlyers) { flyer in
                         NavigationLink(destination: FlyerDetailView(contractor: flyer)) {
-                            SearchCard(flyer: flyer)
+                            FlyerCellView(contractor: flyer)
                         }
                         .listRowBackground(Color.clear)
                     }
@@ -106,6 +106,9 @@ struct HoSearchView: View {
             }
             .onChange(of: flyerController.flyers) {
                 flyerController.objectWillChange.send()
+            }
+            .safeAreaInset(edge: .bottom) {
+                Color.clear.frame(height: 50)
             }
         }
     }

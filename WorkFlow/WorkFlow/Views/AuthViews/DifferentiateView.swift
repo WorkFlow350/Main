@@ -8,6 +8,8 @@ struct DifferentiateView: View {
     @EnvironmentObject var flyerController: FlyerController
     @EnvironmentObject var bidController: BidController
     @EnvironmentObject var contractorController: ContractorController
+    @EnvironmentObject var chatController: ChatController
+    
     @State private var showSplashScreen = true
     @State private var isLoading = true
     

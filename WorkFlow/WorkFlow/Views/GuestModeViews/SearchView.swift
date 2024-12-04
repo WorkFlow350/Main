@@ -133,8 +133,9 @@ struct SearchView: View {
 
                     Spacer(minLength: 0)
                 }
-                .padding(.top, 8)
-                .background(Color.clear)
+                .safeAreaInset(edge: .bottom) {
+                    Color.clear.frame(height: 50)
+                }
                 .onAppear {
                     jobController.fetchJobs()
                     flyerController.fetchFlyers()
@@ -202,7 +203,7 @@ struct SearchCard: View {
         }
         .padding(10)
         .background(
-            BlurView(style: .systemMaterial)
+            BlurView(style: .systemThickMaterialLight)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
         )
         .cornerRadius(12)

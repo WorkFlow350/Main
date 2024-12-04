@@ -6,7 +6,10 @@ import Combine
 struct CoMyJobsView: View {
     @State private var selectedTab: JobTab = .all
     @EnvironmentObject var bidController: BidController
-    @EnvironmentObject var homeownerJobController: HomeownerJobController
+    @EnvironmentObject var homeownerJobController:
+    HomeownerJobController
+    @EnvironmentObject var authController: AuthController
+    @EnvironmentObject var jobController: JobController
     @State private var selectedJob: Job?
 
     enum JobTab: String, CaseIterable {
@@ -25,10 +28,10 @@ struct CoMyJobsView: View {
                     jobStatusPicker
                     jobListView
                 }
-                .padding(.bottom, 10)
             }
             .onAppear {
                 bidController.fetchContractorBidsByStatus()
+                jobController.fetchJobs()
             }
         }
     }
@@ -87,7 +90,9 @@ struct CoMyJobsView: View {
         }
         .listStyle(PlainListStyle())
         .background(Color.clear)
-        .padding(.bottom, 43)
+        .safeAreaInset(edge: .bottom) {
+            Color.clear.frame(height: 50)
+        }
     }
 
     private func currentBids() -> [Bid] {
@@ -113,6 +118,7 @@ struct BidCellCoView: View {
     let maxDescriptionLength = 25
     @EnvironmentObject var bidController: BidController
     @EnvironmentObject var homeownerJobController: HomeownerJobController
+    @EnvironmentObject var jobController: JobController
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -127,8 +133,19 @@ struct BidCellCoView: View {
                     .cornerRadius(8)
                     .padding(.bottom, 5)
             }
+            if let jobTitle = jobController.jobs.first(where: { $0.id.uuidString == bid.jobId })?.title {
+                Text(jobTitle)
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+            } else {
+                Text("Job title not found")
+                    .font(.headline)
+                    .foregroundColor(.red)
+            }
             HStack {
-                Text("Amount: \(bid.price, specifier: "%.2f")")
+                
+                Text("Amount: $\(bid.price, specifier: "%.2f")")
                     .font(.headline)
                     .foregroundColor(.green)
 
@@ -174,6 +191,7 @@ struct DetailedCoJobView: View {
     let bid: Bid
     @EnvironmentObject var bidController: BidController
     @EnvironmentObject var homeownerJobController: HomeownerJobController
+    @EnvironmentObject var authController: AuthController
     @State private var homeownerProfile: HomeownerProfile?
     @State private var jobDescription: String = "Loading..."
     @State private var cancellables = Set<AnyCancellable>()
@@ -382,9 +400,27 @@ struct DetailedCoJobView: View {
                         .foregroundColor(.secondary)
                 }
             }
+            // MARK: - Message Button
+            NavigationLink(
+                destination: CoChatDetailView(
+                    conversationId: bid.conversationId,
+                    receiverId: profile.id.uuidString
+                )
+            ) {
+                Text("Message Homeowner")
+                    .font(.headline)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
+            }
+            .padding(.top, 10)
         }
         .padding(.top, 10)
     }
+    
+    // MARK: - Number Format
     func formatPhoneNumber(_ number: String) -> String {
         let digits = number.filter { $0.isNumber }
         guard digits.count == 10 else {
@@ -395,9 +431,10 @@ struct DetailedCoJobView: View {
         return formattedNumber
     }
     @State private var isCompleted = false
-    // MARK: - Action Buttons
+    @State private var showFireworks = false
+    
     private var actionButtons: some View {
-        HStack {
+        VStack {
             if !isCompleted {
                 Button(action: {
                     markAsCompletedWithAnimation()
@@ -412,20 +449,33 @@ struct DetailedCoJobView: View {
                 }
                 .transition(.opacity.combined(with: .scale))
             } else {
-                Text("Job Completed! 🎉")
-                    .font(.headline)
-                    .foregroundColor(.green)
-                    .transition(.scale)
+                VStack {
+                    Spacer() // Push content down to center vertically
+                    Text("Job Completed! 🎉")
+                        .font(.headline)
+                        .foregroundColor(.green)
+                        .transition(.scale)
+                    Spacer() // Push content up to center vertically
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity) // Take full space
+                .background(Color.clear) // Optional, to see layout clearly
             }
         }
         .padding(.top, 10)
+        .background(
+            showFireworks ? FireworksEffect().transition(.opacity) : nil
+        )
     }
     private func markAsCompletedWithAnimation() {
         withAnimation {
-            isCompleted = true // Trigger the fade-out of the button
+            markBidAsCompleted()
+            isCompleted = true
+            showFireworks = true
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            markBidAsCompleted() // Call the existing function after animation
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+            withAnimation {
+                showFireworks = false
+            }
         }
     }
     private func markBidAsCompleted() {
@@ -454,7 +504,7 @@ private func colorForStatus(_ status: Bid.bidStatus) -> Color {
     }
 }
 
-//MARK: - review section
+//MARK: - Review Section
 private func reviewSection(bid: Bid) -> some View {
     VStack(alignment: .leading) {
         Text("Review:")

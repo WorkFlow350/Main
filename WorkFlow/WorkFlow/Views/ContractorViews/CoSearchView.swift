@@ -4,7 +4,6 @@ import SwiftUI
 struct CoSearchView: View {
     @State private var searchText: String = ""
     @State private var selectedCategory: JobCategory? = nil
-    // MARK: - Environment Objects
     @EnvironmentObject var authController: AuthController
     @EnvironmentObject var homeownerJobController: HomeownerJobController
     @EnvironmentObject var jobController: JobController
@@ -12,7 +11,6 @@ struct CoSearchView: View {
     @EnvironmentObject var bidController: BidController
     @EnvironmentObject var contractorController: ContractorController
 
-    // MARK: - Filtered Jobs
     var filteredJobs: [Job] {
         var jobs = jobController.jobs.filter { $0.city.lowercased().contains(searchText.lowercased()) }
         if let category = selectedCategory {
@@ -23,7 +21,7 @@ struct CoSearchView: View {
 
     var body: some View {
         ZStack {
-            // MARK: - Background Gradient
+            // Gradient Background
             LinearGradient(
                 gradient: Gradient(colors: [
                     Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0),
@@ -32,10 +30,9 @@ struct CoSearchView: View {
                 startPoint: .top,
                 endPoint: .bottom
             )
-            .ignoresSafeArea()
+            .ignoresSafeArea(edges: .all)
 
             VStack(alignment: .leading, spacing: 10) {
-                // MARK: - Title
                 Text("Search Jobs")
                     .font(.largeTitle)
                     .fontWeight(.bold)
@@ -43,7 +40,7 @@ struct CoSearchView: View {
                     .padding(.horizontal)
                     .padding(.top, 20)
 
-                // MARK: - Custom Category Filter Picker
+                // Category Filter
                 HStack {
                     ForEach([nil, JobCategory.landscaping, JobCategory.construction, JobCategory.cleaning], id: \.self) { category in
                         Button(action: {
@@ -64,34 +61,26 @@ struct CoSearchView: View {
                 }
                 .padding(.horizontal)
 
-                // MARK: - Search Bar
+                // Search Bar
                 TextField("Search by city", text: $searchText)
                     .padding(10)
                     .background(Color(.systemGray6))
                     .cornerRadius(10)
                     .padding(.horizontal)
-                    .onChange(of: searchText) {
-                        jobController.objectWillChange.send()
-                    }
-                    .toolbar {
-                        ToolbarItemGroup(placement: .keyboard) {
-                            Spacer()
-                            Button("Done") {
-                                UIApplication.shared.endEditing()
-                            }
-                        }
-                    }
 
-                // MARK: - Search Results
+                // Search Results
                 if !searchText.isEmpty {
                     List(filteredJobs) { job in
-                        NavigationLink(destination: JobDetailView(job: job)) {
+                        NavigationLink(destination: CoJobCellView(job: job)) {
                             SearchCard(job: job)
                         }
                         .listRowBackground(Color.clear)
                     }
                     .listStyle(PlainListStyle())
                     .scrollContentBackground(.hidden)
+                    .safeAreaInset(edge: .bottom) {
+                        Color.clear.frame(height: 60)
+                    }
                 } else {
                     Text("Enter a city to search for jobs")
                         .foregroundColor(.white)
@@ -103,9 +92,6 @@ struct CoSearchView: View {
             }
             .onAppear {
                 jobController.fetchJobs()
-            }
-            .onChange(of: jobController.jobs) {
-                jobController.objectWillChange.send()
             }
         }
     }

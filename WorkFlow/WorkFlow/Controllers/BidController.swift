@@ -29,6 +29,36 @@ class BidController: ObservableObject {
         getBidsForContractor()
     }
     
+    // MARK: - Review Stuff
+    func fetchReviewForBid(bid: Bid) {
+        db.collection("bids").document(bid.id).getDocument { snapshot, error in
+            if let error = error {
+                print("Error fetching review for bid: \(error.localizedDescription)")
+                return
+            }
+            if let data = snapshot?.data() {
+                let review = data["review"] as? String ?? ""
+                let jobRating = data["jobRating"] as? Double ?? 0.0
+                
+                DispatchQueue.main.async {
+                    self.updateBidReviewAndRating(bidId: bid.id, review: review, jobRating: jobRating)
+                }
+            }
+        }
+    }
+    func updateBidReviewAndRating(bidId: String, review: String, jobRating: Double) {
+        for (jobId, bids) in jobBids2 {
+            if let index = bids.firstIndex(where: { $0.id == bidId }) {
+                var updatedBid = bids[index]
+                updatedBid.review = review
+                updatedBid.jobRating = jobRating
+                jobBids2[jobId]?[index] = updatedBid
+                print("Updated bid \(bidId) with review: \(review) and rating: \(jobRating)")
+                break
+            }
+        }
+    }
+    
     //MARK: - Date Formatter
     func timeAgoSincePost(_ date: Date) -> String {
         let formatter = DateComponentsFormatter()
@@ -69,33 +99,90 @@ class BidController: ObservableObject {
                 return
             }
 
-            // Check current lowest bid
-            self.getLowestBid(forJobId: job.id.uuidString) { lowestBid in
-                if let lowestBid = lowestBid, price >= lowestBid.price {
-                    print("Error: New bid must be lower than the current lowest bid (\(lowestBid.price))")
+            // Generate conversationId for this bid
+            let conversationId = self.generateConversationId(userId1: contractorId, userId2: homeownerId)
+
+            // Create or fetch the conversation
+            self.fetchOrCreateConversation(conversationId: conversationId, senderId: contractorId, receiverId: homeownerId)
+
+            let bidId = UUID().uuidString
+            let bidData: [String: Any] = [
+                "id": bidId,
+                "jobId": job.id.uuidString,
+                "contractorId": contractorId,
+                "homeownerId": homeownerId,
+                "price": price,
+                "description": description,
+                "number": job.number,
+                "datePosted": Date(),
+                "status": Bid.bidStatus.pending.rawValue,
+                "conversationId": conversationId
+            ]
+
+            self.db.collection("bids").document(bidId).setData(bidData) { error in
+                if let error = error {
+                    print("Error placing bid: \(error.localizedDescription)")
+                } else {
+                    print("Bid placed successfully!")
+                }
+            }
+        }
+    }
+    
+    
+    // MARK: - Fetch conversation for a bid
+    func fetchConversationForBid(contractorId: String, homeownerId: String) {
+        db.collection("conversations")
+            .whereField("participants", arrayContains: contractorId)
+            .whereField("participants", arrayContains: homeownerId)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error fetching conversation: \(error.localizedDescription)")
                     return
                 }
+                guard let snapshot = snapshot else { return }
+                snapshot.documents.forEach { doc in
+                    let data = doc.data()
+                    print("Found conversation: \(data)")
+                }
+            }
+    }
+    // MARK: - Generate Conversation ID
+    private func generateConversationId(userId1: String, userId2: String) -> String {
+        let sortedIds = [userId1, userId2].sorted()
+        return sortedIds.joined(separator: "_")
+    }
+    
 
-                let bidId = UUID().uuidString
-                let bidData: [String: Any] = [
-                    "id": bidId,
-                    "jobId": job.id.uuidString,
-                    "contractorId": contractorId,
-                    "homeownerId": homeownerId,
-                    "price": price,
-                    "description": description,
-                    "number": job.number,
-                    "datePosted": Date(),
-                    "status": Bid.bidStatus.pending.rawValue
+    // MARK: - Create or Fetch a conversation
+    func fetchOrCreateConversation(conversationId: String, senderId: String, receiverId: String) {
+        let conversationRef = db.collection("conversations").document(conversationId)
+
+        conversationRef.getDocument { snapshot, error in
+            if let error = error {
+                print("Error fetching conversation: \(error.localizedDescription)")
+                return
+            }
+
+            guard let snapshot = snapshot else { return }
+
+            if !snapshot.exists {
+                // Create the conversation if it doesn't exist
+                let conversationData: [String: Any] = [
+                    "id": conversationId,
+                    "participants": [senderId, receiverId],
+                    "lastMessage": "",
+                    "lastMessageTimestamp": Date()
                 ]
-
-                self.db.collection("bids").document(bidId).setData(bidData) { error in
+                conversationRef.setData(conversationData) { error in
                     if let error = error {
-                        print("Error placing bid: \(error.localizedDescription)")
+                        print("Error creating conversation: \(error.localizedDescription)")
                     } else {
-                        print("Bid placed successfully!")
+                        print("Conversation created successfully!")
                     }
                 }
+            } else {
+                print("Conversation already exists.")
             }
         }
     }
@@ -106,7 +193,7 @@ class BidController: ObservableObject {
             if let bid = lowestBid {
                 completion(bid.price)
             } else {
-                completion(nil) // No bids yet
+                completion(nil)
             }
         }
     }
@@ -170,6 +257,7 @@ class BidController: ObservableObject {
             }
             let profile = ContractorProfile(
                 id: UUID(uuidString: document!.documentID) ?? UUID(),
+                contractorId: data["contractorId"] as? String ?? "",
                 contractorName: data["name"] as? String ?? "Unknown",
                 bio: data["bio"] as? String ?? "",
                 skills: data["skills"] as? [String] ?? [],
@@ -249,13 +337,17 @@ class BidController: ObservableObject {
                     status: Bid.bidStatus(rawValue: data["status"] as? String ?? "pending") ?? .pending,
                     bidDate: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
                     review: data["review"] as? String ?? "",
-                    number: data["number"] as? String ?? "Not available"
+                    jobRating: data["jobRating"] as? Double ?? 0.0,
+                    number: data["number"] as? String ?? "Not available",
+                    conversationId: data["conversationId"] as? String ?? ""
+                    
                 )
             }
         }
     }
     
-    //MARK: - fetch bids for job but in dictionary
+    
+    //MARK: - Fetch bids for job but in dictionary
     func getBidsForJob2(job: Job) {
         listener3 = db.collection("bids").whereField("jobId", isEqualTo: job.id.uuidString).addSnapshotListener { snapshot, error in
             if let error = error {
@@ -278,7 +370,9 @@ class BidController: ObservableObject {
                     status: Bid.bidStatus(rawValue: data["status"] as? String ?? "pending") ?? .pending,
                     bidDate: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
                     review: data["review"] as? String ?? "",
-                    number: data["number"] as? String ?? "Not available"
+                    jobRating: data["jobRating"] as? Double ?? 0.0,
+                    number: data["number"] as? String ?? "Not available",
+                    conversationId: data["conversationId"] as? String ?? ""
                 )
             }
             DispatchQueue.main.async {
@@ -287,7 +381,7 @@ class BidController: ObservableObject {
         }
     }
     
-    //MARK: - leave a review
+    //MARK: - Leave a review
     func leaveReview(bidId: String, review: String) {
         db.collection("bids").document(bidId).updateData(["review": review]) { error in
             if let error = error {
@@ -298,6 +392,63 @@ class BidController: ObservableObject {
             }
         }
     }
+    //MARK: - Leave a rating
+    func leaveJobRating(bidId: String, contractorId: String, jobRating: Double) {
+        db.collection("bids").document(bidId).updateData(["jobRating": jobRating]) { [weak self] error in
+            if let error = error {
+                print("error updating job rating")
+                return
+            } else {
+                print("Successfully updated job rating")
+                self?.averageReviewsForContractor(ContractorId: contractorId)
+            }
+        }
+    }
+    // MARK: - Update Contractor's Average Rating
+    func updateContractorAverageRating(contractorId: String, average: Double) {
+        db.collection("users").document(contractorId).updateData(["rating": average]) { error in
+            if let error = error {
+                print("Error updating contractor's average rating: \(error.localizedDescription)")
+            } else {
+                print("Successfully updated contractor's average rating to \(average)")
+            }
+        }
+    }
+
+    
+    // MARK: - Count Reviews and Calculate Average
+    func averageReviewsForContractor(ContractorId: String) {
+        db.collection("bids")
+            .whereField("contractorId", isEqualTo: ContractorId)
+            .getDocuments { [weak self] snapshot, error in
+                if let error = error {
+                    print("Error fetching documents: \(error.localizedDescription)")
+                    return  // Don't proceed if there's an error
+                }
+                
+                let reviews = snapshot?.documents.compactMap { document in
+                    if let rating = document.data()["jobRating"] as? Double {
+                        return rating
+                    } else {
+                        return nil
+                    }
+                }
+                
+                guard let reviews = reviews, !reviews.isEmpty else {
+                    print("No reviews found for contractor.")
+                    return
+                }
+                
+                let average = reviews.reduce(0, +) / Double(reviews.count)
+                print("Average Rating: \(average)")
+                
+                // Step 3: Update contractor's average rating
+                self?.updateContractorAverageRating(contractorId: ContractorId, average: average)
+            }
+    }
+    
+
+    
     // MARK: - Count Bids for a Job
     func countBidsForJob(jobId: UUID, completion: @escaping (Int) -> Void) {
         db.collection("bids").whereField("jobId", isEqualTo: jobId.uuidString).getDocuments { snapshot, error in
@@ -344,7 +495,9 @@ class BidController: ObservableObject {
                     status: Bid.bidStatus(rawValue: data["status"] as? String ?? "pending") ?? .pending,
                     bidDate: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
                     review: data["review"] as? String ?? "",
-                    number: data["number"] as? String ?? "Not available"
+                    jobRating: data["jobRating"] as? Double ?? 0.0,
+                    number: data["number"] as? String ?? "Not available",
+                    conversationId: data["conversationId"] as? String ?? ""
                 )
             }
         }
@@ -488,7 +641,9 @@ class BidController: ObservableObject {
             status: Bid.bidStatus(rawValue: data["status"] as? String ?? "pending") ?? .pending,
             bidDate: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
             review: data["review"] as? String ?? "",
-            number: data["number"] as? String ?? "Not available"
+            jobRating: data["jobRating"] as? Double ?? 0.0,
+            number: data["number"] as? String ?? "Not available",
+            conversationId: data["conversationId"] as? String ?? ""
         )
     }
     func fetchBid(byJobId jobId: String, contractorId: String, completion: @escaping (Bid?) -> Void) {
@@ -579,7 +734,9 @@ class BidController: ObservableObject {
                                 city: data["city"] as? String ?? "",
                                 category: JobCategory(rawValue: data["category"] as? String ?? "") ?? .cleaning,
                                 datePosted: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
-                                imageURL: data["imageURL"] as? String
+                                imageURL: data["imageURL"] as? String,
+                                latitude: data["latitude"] as? Double ?? 0.0,
+                                longitude: data["longitude"] as? Double ?? 0.0
                             ))
                         }
                         group.leave()
@@ -614,6 +771,82 @@ class BidController: ObservableObject {
                     print("Excluded job IDs updated: \(self.excludedJobIds)")
                 }
             }
+    }
+    
+    // MARK: - Completed
+    func checkIfJobIsClosed(jobId: UUID, completion: @escaping (Bool) -> Void) {
+        // Check for bids with "completed" status for the given job
+        db.collection("bids").whereField("jobId", isEqualTo: jobId.uuidString).getDocuments { snapshot, error in
+            if let error = error {
+                print("Error checking job closed status: \(error.localizedDescription)")
+                completion(false)
+                return
+            }
+
+            // Check if there's at least one "completed" bid for this job
+            let isClosed = snapshot?.documents.contains(where: { document in
+                let status = document.data()["status"] as? String
+                return status == "completed"
+            }) ?? false
+
+            completion(isClosed)
+        }
+    }
+    
+    // MARK: - Accepted
+    func checkIfJobHasAcceptedBid(jobId: UUID, completion: @escaping (Bool) -> Void) {
+        db.collection("bids").whereField("jobId", isEqualTo: jobId.uuidString).getDocuments { snapshot, error in
+            if let error = error {
+                print("Error checking accepted bid status: \(error.localizedDescription)")
+                completion(false)
+                return
+            }
+
+            let hasAccepted = snapshot?.documents.contains(where: { document in
+                let status = document.data()["status"] as? String
+                return status == "accepted"
+            }) ?? false
+
+            completion(hasAccepted)
+        }
+    }
+    
+    //MARK: - Fetch Single Bid
+    func fetchSingleBid(conversationId: String, completion: @escaping (Bid?) -> Void) {
+        db.collection("bids").whereField("conversationId", isEqualTo: conversationId).getDocuments { snapshot, error in
+            if let error = error {
+                print("Error getting single bid: \(error.localizedDescription)")
+                completion(nil)
+                return
+            }
+            
+            // Get the first matching document
+            guard let documents = snapshot?.documents, !documents.isEmpty else {
+                print("No bid found for conversationId: \(conversationId)")
+                completion(nil)
+                return
+            }
+            
+            let bids = documents.compactMap { document -> Bid? in
+                let data = document.data()
+                return Bid(
+                    id: data["id"] as? String ?? "",
+                    jobId: data["jobId"] as? String ?? "",
+                    contractorId: data["contractorId"] as? String ?? "",
+                    homeownerId: data["homeownerId"] as? String ?? "",
+                    price: data["price"] as? Double ?? 0.0,
+                    description: data["description"] as? String ?? "",
+                    status: Bid.bidStatus(rawValue: data["status"] as? String ?? "pending") ?? .pending,
+                    bidDate: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
+                    review: data["review"] as? String ?? "",
+                    jobRating: data["jobRating"] as? Double ?? 0.0,
+                    number: data["number"] as? String ?? "Not available",
+                    conversationId: data["conversationId"] as? String ?? ""
+                )
+            }
+            let latestBid = bids.max(by: {$0.bidDate < $1.bidDate})
+            completion(latestBid)
+        }
     }
     
     deinit {

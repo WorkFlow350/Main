@@ -3,6 +3,7 @@ import Foundation
 // MARK: - ContractorProfile Struct
 struct ContractorProfile: Identifiable, Equatable {
     let id: UUID
+    let contractorId: String
     let contractorName: String
     let bio: String
     let skills: [String]

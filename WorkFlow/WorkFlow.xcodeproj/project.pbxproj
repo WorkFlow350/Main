@@ -11,21 +11,28 @@
 		291AAA5F2CCDE250008757E3 /* HoFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 291AAA5E2CCDE250008757E3 /* HoFeedView.swift */; };
 		291AAA612CCDE4E9008757E3 /* HoPostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 291AAA602CCDE4E9008757E3 /* HoPostView.swift */; };
 		291AAA632CCDECA0008757E3 /* HoSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 291AAA622CCDECA0008757E3 /* HoSearchView.swift */; };
-		291AAA652CCDF26A008757E3 /* HoChatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 291AAA642CCDF26A008757E3 /* HoChatView.swift */; };
-		291AAA672CCDF335008757E3 /* HoNotificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 291AAA662CCDF335008757E3 /* HoNotificationView.swift */; };
+		291AAA652CCDF26A008757E3 /* HoConversationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 291AAA642CCDF26A008757E3 /* HoConversationsView.swift */; };
 		291AAA692CCDF5C2008757E3 /* CoMainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 291AAA682CCDF5C2008757E3 /* CoMainView.swift */; };
 		294CF3FA2CDDA32800AAD3E0 /* Bid.swift in Sources */ = {isa = PBXBuildFile; fileRef = 294CF3F92CDDA32800AAD3E0 /* Bid.swift */; };
 		29E204182CCF156100047F21 /* CoFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29E204172CCF156100047F21 /* CoFeedView.swift */; };
 		29E2041A2CCF173D00047F21 /* CoSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29E204192CCF173D00047F21 /* CoSearchView.swift */; };
 		29E2041C2CCF1B3700047F21 /* CoPostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29E2041B2CCF1B3700047F21 /* CoPostView.swift */; };
 		29E2041E2CCF20B700047F21 /* CoMyJobsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29E2041D2CCF20B700047F21 /* CoMyJobsView.swift */; };
-		29E204202CCF217100047F21 /* CoNotificationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29E2041F2CCF217100047F21 /* CoNotificationView.swift */; };
+		29E204202CCF217100047F21 /* CoConversationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29E2041F2CCF217100047F21 /* CoConversationsView.swift */; };
+		29E3F7D42CF7EB64002356C3 /* CoChatDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29E3F7D32CF7EB00002356C3 /* CoChatDetailView.swift */; };
 		9E097EDA2CE9B3EA00C876A5 /* Animations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E097ED92CE9B3E600C876A5 /* Animations.swift */; };
 		9E097EDC2CE9B73800C876A5 /* SplashScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E097EDB2CE9B72800C876A5 /* SplashScreenView.swift */; };
 		9E144A2E2CC30ECD00C2A39A /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9E144A2D2CC30ECD00C2A39A /* GoogleService-Info.plist */; };
 		9E1788942CD07E8D00FD3288 /* GuestModeProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E1788932CD07E8200FD3288 /* GuestModeProfileView.swift */; };
+		9E5D1D542CF5228B00EB57E8 /* Fireworks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5D1D532CF5228300EB57E8 /* Fireworks.swift */; };
 		9E81DCE82CDDCF870028C952 /* CoJobCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E81DCE72CDDCF7E0028C952 /* CoJobCellView.swift */; };
 		9E8AC25B2CD9AF1400FDC557 /* ContractorController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E8AC25A2CD9AF0700FDC557 /* ContractorController.swift */; };
+		9E95AB6E2CEEE029004ACC13 /* JobsMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E95AB6D2CEEE01E004ACC13 /* JobsMapView.swift */; };
+		9E95AB702CF02EF4004ACC13 /* ChatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E95AB6F2CF02EEB004ACC13 /* ChatController.swift */; };
+		9E95AB722CF02F0F004ACC13 /* Chat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E95AB712CF02F0B004ACC13 /* Chat.swift */; };
+		9E95AB742CF03103004ACC13 /* HoChatDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E95AB732CF030FB004ACC13 /* HoChatDetailView.swift */; };
+		9E95AB762CF0ECC9004ACC13 /* ChatMessageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E95AB752CF0ECC3004ACC13 /* ChatMessageView.swift */; };
+		9E95AB782CF122A0004ACC13 /* ConversationCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E95AB772CF1229F004ACC13 /* ConversationCardView.swift */; };
 		9EC417C42CB4AF1B00F21C8F /* WorkFlowApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC417C32CB4AF1B00F21C8F /* WorkFlowApp.swift */; };
 		9EC417C82CB4AF1C00F21C8F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9EC417C72CB4AF1C00F21C8F /* Assets.xcassets */; };
 		9EC417CB2CB4AF1C00F21C8F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9EC417CA2CB4AF1C00F21C8F /* Preview Assets.xcassets */; };
@@ -55,6 +62,7 @@
 		9EC418202CB4C50300F21C8F /* CoProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC4181F2CB4C50300F21C8F /* CoProfileView.swift */; };
 		9EC418222CB4C51A00F21C8F /* HoProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC418212CB4C51A00F21C8F /* HoProfileView.swift */; };
 		9EC418262CB4C7BC00F21C8F /* HomeownerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EC418252CB4C7BC00F21C8F /* HomeownerController.swift */; };
+		AA35FF1C2CF5495700614DEE /* CoPublicProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA35FF1B2CF5495700614DEE /* CoPublicProfileView.swift */; };
 		AA82E5852CBDD324009F916D /* JobCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA82E5842CBDD324009F916D /* JobCellView.swift */; };
 		AA82E5872CBDEEF1009F916D /* JobDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA82E5862CBDEEF1009F916D /* JobDetailView.swift */; };
 		AA82E58F2CBF39F3009F916D /* FlyerCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA82E58E2CBF39F3009F916D /* FlyerCellView.swift */; };
@@ -91,21 +99,28 @@
 		291AAA5E2CCDE250008757E3 /* HoFeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoFeedView.swift; sourceTree = "<group>"; };
 		291AAA602CCDE4E9008757E3 /* HoPostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoPostView.swift; sourceTree = "<group>"; };
 		291AAA622CCDECA0008757E3 /* HoSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoSearchView.swift; sourceTree = "<group>"; };
-		291AAA642CCDF26A008757E3 /* HoChatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoChatView.swift; sourceTree = "<group>"; };
-		291AAA662CCDF335008757E3 /* HoNotificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoNotificationView.swift; sourceTree = "<group>"; };
+		291AAA642CCDF26A008757E3 /* HoConversationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoConversationsView.swift; sourceTree = "<group>"; };
 		291AAA682CCDF5C2008757E3 /* CoMainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoMainView.swift; sourceTree = "<group>"; };
 		294CF3F92CDDA32800AAD3E0 /* Bid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bid.swift; sourceTree = "<group>"; };
 		29E204172CCF156100047F21 /* CoFeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoFeedView.swift; sourceTree = "<group>"; };
 		29E204192CCF173D00047F21 /* CoSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoSearchView.swift; sourceTree = "<group>"; };
 		29E2041B2CCF1B3700047F21 /* CoPostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoPostView.swift; sourceTree = "<group>"; };
 		29E2041D2CCF20B700047F21 /* CoMyJobsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoMyJobsView.swift; sourceTree = "<group>"; };
-		29E2041F2CCF217100047F21 /* CoNotificationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoNotificationView.swift; sourceTree = "<group>"; };
+		29E2041F2CCF217100047F21 /* CoConversationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoConversationsView.swift; sourceTree = "<group>"; };
+		29E3F7D32CF7EB00002356C3 /* CoChatDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoChatDetailView.swift; sourceTree = "<group>"; };
 		9E097ED92CE9B3E600C876A5 /* Animations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Animations.swift; sourceTree = "<group>"; };
 		9E097EDB2CE9B72800C876A5 /* SplashScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashScreenView.swift; sourceTree = "<group>"; };
 		9E144A2D2CC30ECD00C2A39A /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		9E1788932CD07E8200FD3288 /* GuestModeProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuestModeProfileView.swift; sourceTree = "<group>"; };
+		9E5D1D532CF5228300EB57E8 /* Fireworks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Fireworks.swift; sourceTree = "<group>"; };
 		9E81DCE72CDDCF7E0028C952 /* CoJobCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoJobCellView.swift; sourceTree = "<group>"; };
 		9E8AC25A2CD9AF0700FDC557 /* ContractorController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContractorController.swift; sourceTree = "<group>"; };
+		9E95AB6D2CEEE01E004ACC13 /* JobsMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JobsMapView.swift; sourceTree = "<group>"; };
+		9E95AB6F2CF02EEB004ACC13 /* ChatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatController.swift; sourceTree = "<group>"; };
+		9E95AB712CF02F0B004ACC13 /* Chat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chat.swift; sourceTree = "<group>"; };
+		9E95AB732CF030FB004ACC13 /* HoChatDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoChatDetailView.swift; sourceTree = "<group>"; };
+		9E95AB752CF0ECC3004ACC13 /* ChatMessageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessageView.swift; sourceTree = "<group>"; };
+		9E95AB772CF1229F004ACC13 /* ConversationCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationCardView.swift; sourceTree = "<group>"; };
 		9EC417C02CB4AF1B00F21C8F /* WorkFlow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WorkFlow.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9EC417C32CB4AF1B00F21C8F /* WorkFlowApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkFlowApp.swift; sourceTree = "<group>"; };
 		9EC417C72CB4AF1C00F21C8F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -133,6 +148,7 @@
 		9EC4181F2CB4C50300F21C8F /* CoProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoProfileView.swift; sourceTree = "<group>"; };
 		9EC418212CB4C51A00F21C8F /* HoProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoProfileView.swift; sourceTree = "<group>"; };
 		9EC418252CB4C7BC00F21C8F /* HomeownerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeownerController.swift; sourceTree = "<group>"; };
+		AA35FF1B2CF5495700614DEE /* CoPublicProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoPublicProfileView.swift; sourceTree = "<group>"; };
 		AA82E5842CBDD324009F916D /* JobCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JobCellView.swift; sourceTree = "<group>"; };
 		AA82E5862CBDEEF1009F916D /* JobDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JobDetailView.swift; sourceTree = "<group>"; };
 		AA82E58E2CBF39F3009F916D /* FlyerCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlyerCellView.swift; sourceTree = "<group>"; };
@@ -180,14 +196,16 @@
 		29165D472CC9B428009721B7 /* ContractorViews */ = {
 			isa = PBXGroup;
 			children = (
+				29E3F7D32CF7EB00002356C3 /* CoChatDetailView.swift */,
 				291AAA682CCDF5C2008757E3 /* CoMainView.swift */,
 				29E204172CCF156100047F21 /* CoFeedView.swift */,
 				29E204192CCF173D00047F21 /* CoSearchView.swift */,
 				29E2041B2CCF1B3700047F21 /* CoPostView.swift */,
 				29E2041D2CCF20B700047F21 /* CoMyJobsView.swift */,
 				9E81DCE72CDDCF7E0028C952 /* CoJobCellView.swift */,
-				29E2041F2CCF217100047F21 /* CoNotificationView.swift */,
+				29E2041F2CCF217100047F21 /* CoConversationsView.swift */,
 				9EC4181F2CB4C50300F21C8F /* CoProfileView.swift */,
+				AA35FF1B2CF5495700614DEE /* CoPublicProfileView.swift */,
 			);
 			path = ContractorViews;
 			sourceTree = "<group>";
@@ -199,10 +217,10 @@
 				291AAA5E2CCDE250008757E3 /* HoFeedView.swift */,
 				291AAA622CCDECA0008757E3 /* HoSearchView.swift */,
 				291AAA602CCDE4E9008757E3 /* HoPostView.swift */,
-				291AAA642CCDF26A008757E3 /* HoChatView.swift */,
-				291AAA662CCDF335008757E3 /* HoNotificationView.swift */,
+				291AAA642CCDF26A008757E3 /* HoConversationsView.swift */,
 				9EC418212CB4C51A00F21C8F /* HoProfileView.swift */,
 				AAB9E3612CE1B82F00011ECB /* HoBidFeedView.swift */,
+				9E95AB732CF030FB004ACC13 /* HoChatDetailView.swift */,
 			);
 			path = HomeownerViews;
 			sourceTree = "<group>";
@@ -236,6 +254,8 @@
 		9E3AB6FE2CD8B8FE0082750B /* UIViews */ = {
 			isa = PBXGroup;
 			children = (
+				9E5D1D532CF5228300EB57E8 /* Fireworks.swift */,
+				9E95AB6D2CEEE01E004ACC13 /* JobsMapView.swift */,
 				9E097ED92CE9B3E600C876A5 /* Animations.swift */,
 				9EC4181D2CB4C4E500F21C8F /* JobView.swift */,
 				9EC418022CB4B73E00F21C8F /* UIView.swift */,
@@ -247,6 +267,15 @@
 				AA925F782CE2C2B3009CD9B5 /* BidCellView.swift */,
 			);
 			path = UIViews;
+			sourceTree = "<group>";
+		};
+		9E95AB7B2CF122C7004ACC13 /* ChatViews */ = {
+			isa = PBXGroup;
+			children = (
+				9E95AB772CF1229F004ACC13 /* ConversationCardView.swift */,
+				9E95AB752CF0ECC3004ACC13 /* ChatMessageView.swift */,
+			);
+			path = ChatViews;
 			sourceTree = "<group>";
 		};
 		9EC417B72CB4AF1B00F21C8F = {
@@ -311,6 +340,7 @@
 		9EC417ED2CB4B2AA00F21C8F /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				9E95AB712CF02F0B004ACC13 /* Chat.swift */,
 				9EC417F02CB4B5E900F21C8F /* Job.swift */,
 				9EC417F22CB4B5FD00F21C8F /* User.swift */,
 				9EC418132CB4BBD200F21C8F /* ContractorProfile.swift */,
@@ -323,6 +353,7 @@
 		9EC417EE2CB4B2CE00F21C8F /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				9E95AB6F2CF02EEB004ACC13 /* ChatController.swift */,
 				9EC417F42CB4B68800F21C8F /* JobController.swift */,
 				AAB9E3552CD9A46800011ECB /* FlyerController.swift */,
 				9E8AC25A2CD9AF0700FDC557 /* ContractorController.swift */,
@@ -338,6 +369,7 @@
 			children = (
 				29165D482CC9B45A009721B7 /* HomeownerViews */,
 				29165D472CC9B428009721B7 /* ContractorViews */,
+				9E95AB7B2CF122C7004ACC13 /* ChatViews */,
 				9E3AB6FC2CD8B7D20082750B /* GuestModeViews */,
 				9E3AB6FD2CD8B82C0082750B /* AuthViews */,
 				9E3AB6FE2CD8B8FE0082750B /* UIViews */,
@@ -488,18 +520,21 @@
 			files = (
 				AA925F792CE2C2B3009CD9B5 /* BidCellView.swift in Sources */,
 				29E2041C2CCF1B3700047F21 /* CoPostView.swift in Sources */,
-				29E204202CCF217100047F21 /* CoNotificationView.swift in Sources */,
+				29E204202CCF217100047F21 /* CoConversationsView.swift in Sources */,
 				AA8715012CC84F6F00464D05 /* InputCellView.swift in Sources */,
 				9EC418262CB4C7BC00F21C8F /* HomeownerController.swift in Sources */,
 				9EC417FB2CB4B6ED00F21C8F /* FeedView.swift in Sources */,
 				291AAA612CCDE4E9008757E3 /* HoPostView.swift in Sources */,
 				9E81DCE82CDDCF870028C952 /* CoJobCellView.swift in Sources */,
 				291AAA632CCDECA0008757E3 /* HoSearchView.swift in Sources */,
+				29E3F7D42CF7EB64002356C3 /* CoChatDetailView.swift in Sources */,
 				9EC4181E2CB4C4E500F21C8F /* JobView.swift in Sources */,
 				9EC417FD2CB4B6FB00F21C8F /* SearchView.swift in Sources */,
 				291AAA5F2CCDE250008757E3 /* HoFeedView.swift in Sources */,
 				AAB9E3562CD9A46900011ECB /* FlyerController.swift in Sources */,
+				9E95AB722CF02F0F004ACC13 /* Chat.swift in Sources */,
 				29E204182CCF156100047F21 /* CoFeedView.swift in Sources */,
+				9E95AB702CF02EF4004ACC13 /* ChatController.swift in Sources */,
 				9E097EDA2CE9B3EA00C876A5 /* Animations.swift in Sources */,
 				9EC417F72CB4B69900F21C8F /* BidController.swift in Sources */,
 				AA82E5912CBF494A009F916D /* FlyerDetailView.swift in Sources */,
@@ -514,24 +549,29 @@
 				AA82E58F2CBF39F3009F916D /* FlyerCellView.swift in Sources */,
 				29E2041A2CCF173D00047F21 /* CoSearchView.swift in Sources */,
 				9EC417F32CB4B5FD00F21C8F /* User.swift in Sources */,
+				9E95AB782CF122A0004ACC13 /* ConversationCardView.swift in Sources */,
+				9E95AB762CF0ECC9004ACC13 /* ChatMessageView.swift in Sources */,
 				9E097EDC2CE9B73800C876A5 /* SplashScreenView.swift in Sources */,
 				9EC418142CB4BBD200F21C8F /* ContractorProfile.swift in Sources */,
 				29E2041E2CCF20B700047F21 /* CoMyJobsView.swift in Sources */,
+				9E95AB742CF03103004ACC13 /* HoChatDetailView.swift in Sources */,
 				9E8AC25B2CD9AF1400FDC557 /* ContractorController.swift in Sources */,
 				9EC418222CB4C51A00F21C8F /* HoProfileView.swift in Sources */,
 				9EC417F52CB4B68800F21C8F /* JobController.swift in Sources */,
 				9E1788942CD07E8D00FD3288 /* GuestModeProfileView.swift in Sources */,
+				AA35FF1C2CF5495700614DEE /* CoPublicProfileView.swift in Sources */,
 				9EC418052CB4B75600F21C8F /* ImagePickerView.swift in Sources */,
 				AA82E5872CBDEEF1009F916D /* JobDetailView.swift in Sources */,
+				9E95AB6E2CEEE029004ACC13 /* JobsMapView.swift in Sources */,
 				9EC417F12CB4B5E900F21C8F /* Job.swift in Sources */,
 				AA8715032CC858BA00464D05 /* SignUpView.swift in Sources */,
-				291AAA672CCDF335008757E3 /* HoNotificationView.swift in Sources */,
 				291AAA692CCDF5C2008757E3 /* CoMainView.swift in Sources */,
 				291AAA5D2CCDE1A2008757E3 /* HoMainView.swift in Sources */,
 				AA8715052CC874B900464D05 /* AuthController.swift in Sources */,
 				9EC417FF2CB4B70B00F21C8F /* PostView.swift in Sources */,
-				291AAA652CCDF26A008757E3 /* HoChatView.swift in Sources */,
+				291AAA652CCDF26A008757E3 /* HoConversationsView.swift in Sources */,
 				9EC417C42CB4AF1B00F21C8F /* WorkFlowApp.swift in Sources */,
+				9E5D1D542CF5228B00EB57E8 /* Fireworks.swift in Sources */,
 				AAB9E3622CE1B82F00011ECB /* HoBidFeedView.swift in Sources */,
 				9EC418202CB4C50300F21C8F /* CoProfileView.swift in Sources */,
 				294CF3FA2CDDA32800AAD3E0 /* Bid.swift in Sources */,

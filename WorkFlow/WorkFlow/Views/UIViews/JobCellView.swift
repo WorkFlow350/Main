@@ -30,12 +30,12 @@ struct JobCellView: View {
                 Text("\(job.city)  \(job.category.rawValue)")
                     .font(.subheadline)
                     .foregroundColor(.black)
-
+                    .multilineTextAlignment(.leading)
                 Text(job.title)
                     .font(.headline)
                     .fontWeight(.bold)
                     .foregroundColor(.black)
-
+                    .multilineTextAlignment(.leading)
                 Text(jobController.timeAgoSinceDate(job.datePosted))
                     .font(.caption)
                     .foregroundColor(.gray)
@@ -76,7 +76,9 @@ struct JobCellView_Previews: PreviewProvider {
             city: "Sample City",
             category: .landscaping,
             datePosted: Date(),
-            imageURL: "https://via.placeholder.com/300"
+            imageURL: "https://via.placeholder.com/300",
+            latitude: 34.0522,
+            longitude: -118.2437
         )
         
         JobCellView(job: sampleJob)

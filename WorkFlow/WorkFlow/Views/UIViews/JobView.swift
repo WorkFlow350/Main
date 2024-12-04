@@ -14,17 +14,17 @@ struct JobView: View {
                 .foregroundColor(.black)
                 .fontWeight(.bold)
                 .font(.system(size: 18))
-
+                .multilineTextAlignment(.leading)
             Text(job.description)
                 .font(.body)
                 .foregroundColor(.gray)
                 .font(.system(size: 14))
-
+                .multilineTextAlignment(.leading)
             Text(job.category.rawValue)
                 .font(.subheadline)
                 .foregroundColor(.blue)
                 .font(.system(size: 14))
-
+                .multilineTextAlignment(.leading)
             // MARK: - Image Section
             if let imageURL = job.imageURL, let url = URL(string: imageURL) {
                 if isFullScreen {
@@ -75,7 +75,7 @@ struct JobView: View {
 // MARK: - Preview for JobView
 struct JobView_Previews: PreviewProvider {
     static var previews: some View {
-        JobView(job: Job(id: UUID(), title: "Sample Job",            number: "805-123-4567", description: "Job description goes here.", city: "Sample City", category: .construction, datePosted: Date(), imageURL: nil))
+        JobView(job: Job(id: UUID(), title: "Sample Job",            number: "805-123-4567", description: "Job description goes here.", city: "Sample City", category: .construction, datePosted: Date(), imageURL: nil,    latitude: 34.0522, longitude: -118.2437))
             .environmentObject(HomeownerJobController())
             .environmentObject(AuthController())
             .environmentObject(JobController())

@@ -270,7 +270,9 @@ struct HoPostView: View {
                             city: city,
                             category: selectedCategories.first ?? .landscaping,
                             datePosted: Date(),
-                            imageURL: url
+                            imageURL: url,
+                            latitude: 0.0,
+                            longitude: 0.0
                         )
                         homeownerJobController.postJob(job: newJob, selectedImage: selectedImage)
                         resetFields()
@@ -296,7 +298,9 @@ struct HoPostView: View {
         .disabled(title.isEmpty || description.isEmpty || city.isEmpty || number.isEmpty || selectedImage == nil)
         .padding(.horizontal)
         .padding(.vertical, 0)
-        .padding(.bottom, 50)
+        .safeAreaInset(edge: .bottom) {
+            Color.clear.frame(height: 50)
+        }
     }
 
     // MARK: - Reset Fields

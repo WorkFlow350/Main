@@ -13,6 +13,7 @@ struct SplashScreenView: View {
                     .environmentObject(FlyerController())
                     .environmentObject(BidController())
                     .environmentObject(ContractorController())
+                    .environmentObject(ChatController())
             } else {
                 ZStack {
                     Color.black

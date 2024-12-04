@@ -90,7 +90,8 @@ class JobController: ObservableObject {
                     guard let imageURL = data["imageURL"] as? String else {
                         return print("Could not get job data")
                     }
-                    
+                    let latitude = data["latitude"] as? Double ?? 0.0
+                    let longitude = data["longitude"] as? Double ?? 0.0
                     let newJob = Job(id: id,
                                      title: title,
                                      number: number,
@@ -98,7 +99,9 @@ class JobController: ObservableObject {
                                      city: city,
                                      category: category,
                                      datePosted: datePosted,
-                                     imageURL: imageURL)
+                                     imageURL: imageURL,
+                                     latitude: latitude ?? 0.0,
+                                     longitude: longitude ?? 0.0)
                     self.jobsNotification.append(newJob)
                 }
             }
@@ -162,7 +165,9 @@ class JobController: ObservableObject {
                     city: data["city"] as? String ?? "",
                     category: JobCategory(rawValue: data["category"] as? String ?? "Landscaping") ?? .landscaping,
                     datePosted: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
-                    imageURL: data["imageURL"] as? String
+                    imageURL: data["imageURL"] as? String,
+                    latitude: data["latitude"] as? Double ?? 0.0,
+                    longitude: data["longitude"] as? Double ?? 0.0
                 )
             } ?? []
 
@@ -236,6 +241,38 @@ class JobController: ObservableObject {
             } else {
                 print("Job successfully posted.")
             }
+        }
+    }
+    //MARK: - get single job
+    func fetchSingleJob(bidJobId: String, completion: @escaping (Job?) -> Void) {
+        let db = Firestore.firestore()
+        db.collection("jobs").whereField("id", isEqualTo: bidJobId).getDocuments { snapshot, error in
+            if let error = error {
+                print("Error getting single job: \(error.localizedDescription)")
+                completion(nil)
+                return
+            }
+            
+            guard let document = snapshot?.documents.first else {
+                print("No job found for bidJobId: \(bidJobId)")
+                completion(nil)
+                return
+            }
+            
+            let data = document.data()
+            let job = Job(
+                id: UUID(uuidString: document.documentID) ?? UUID(),
+                title: data["title"] as? String ?? "",
+                number: data["number"] as? String ?? "",
+                description: data["description"] as? String ?? "",
+                city: data["city"] as? String ?? "",
+                category: JobCategory(rawValue: data["category"] as? String ?? "Landscaping") ?? .landscaping,
+                datePosted: (data["datePosted"] as? Timestamp)?.dateValue() ?? Date(),
+                imageURL: data["imageURL"] as? String,
+                latitude: data["latitude"] as? Double ?? 0.0,
+                longitude: data["longitude"] as? Double ?? 0.0
+            )
+            completion(job)
         }
     }
 

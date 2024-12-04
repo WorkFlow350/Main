@@ -50,6 +50,9 @@ struct HoFeedView: View {
                     }
                     .background(Color.clear)
                 }
+                .safeAreaInset(edge: .bottom) {
+                    Color.clear.frame(height: 50)
+                }
             }
             .onAppear {
                 flyerController.fetchFlyers()

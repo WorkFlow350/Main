@@ -170,9 +170,6 @@ struct CustomDescriptionPopup: View {
     var body: some View {
         if isPresented {
             ZStack {
-                Color.gray.opacity(0.3)
-                    .edgesIgnoringSafeArea(.all)
-
                 VStack(spacing: 20) {
                     Text(title)
                         .font(.headline)
@@ -222,6 +219,45 @@ struct CustomDescriptionPopup: View {
                 .padding(.horizontal, 20)
                 .shadow(radius: 10)
             }
+        }
+    }
+}
+
+// MARK: - Custom Text Editor
+struct CustomTextEditor: UIViewRepresentable {
+    @Binding var text: String
+
+    func makeUIView(context: Context) -> UITextView {
+        let textView = UITextView()
+        textView.textContainerInset = .init(top: 10, left: 10, bottom: 10, right: 10) // Add padding
+        textView.font = UIFont.systemFont(ofSize: 16) // Set font size
+        textView.backgroundColor = UIColor.white // Set background color
+        textView.layer.cornerRadius = 8 // Add corner radius
+        textView.layer.borderColor = UIColor.gray.withAlphaComponent(0.5).cgColor
+        textView.layer.borderWidth = 1
+        textView.textAlignment = .left // Align text to the top-left
+        textView.isScrollEnabled = true
+        textView.delegate = context.coordinator
+        return textView
+    }
+
+    func updateUIView(_ uiView: UITextView, context: Context) {
+        uiView.text = text
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+
+    class Coordinator: NSObject, UITextViewDelegate {
+        var parent: CustomTextEditor
+
+        init(_ parent: CustomTextEditor) {
+            self.parent = parent
+        }
+
+        func textViewDidChange(_ textView: UITextView) {
+            parent.text = textView.text
         }
     }
 }

@@ -5,13 +5,15 @@ import Firebase
 struct CoMainView: View {
     // MARK: - Tab Enumeration
     enum Tab {
-        case home, search, post, jobs, notifications
+        case home, search, post, jobs, chat
     }
 
     @State private var selectedTab: Tab = .home
     @State private var showProfileView = false
     @State private var profilePictureURL: String? = nil
+    @State private var receiverId: String = ""
     @EnvironmentObject var bidController: BidController
+    @EnvironmentObject var chatController: ChatController
 
     var body: some View {
         ZStack {
@@ -97,8 +99,8 @@ struct CoMainView: View {
                         CoPostView()
                     case .jobs:
                         CoMyJobsView()
-                    case .notifications:
-                        FAQPageViewCO()
+                    case .chat:
+                        CoConversationsView()
                     }
                 }
                 .animation(.smooth(duration: 0.1), value: selectedTab)
@@ -128,7 +130,7 @@ struct CoMainView: View {
             Spacer()
             tabBarButton(imageName: "note", text: "Jobs", tab: .jobs)
             Spacer()
-            tabBarButton(imageName: "questionmark.circle", text: "FAQ", tab: .notifications)
+            tabBarButton(imageName: "message", text: "Chat", tab: .chat)
             Spacer()
         }
         .padding()
@@ -174,5 +176,6 @@ struct CoMainView_Previews: PreviewProvider {
             .environmentObject(FlyerController())
             .environmentObject(BidController())
             .environmentObject(ContractorController())
+            .environmentObject(ChatController())
     }
 }

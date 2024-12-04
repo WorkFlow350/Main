@@ -16,7 +16,7 @@ struct SignInView: View {
     @EnvironmentObject var flyerController: FlyerController
     @EnvironmentObject var bidController: BidController
     @EnvironmentObject var contractorController: ContractorController
-
+    @EnvironmentObject var chatController: ChatController
 
     // MARK: - Body
     var body: some View {
@@ -65,6 +65,7 @@ struct SignInView: View {
                         .environmentObject(flyerController)
                         .environmentObject(bidController)
                         .environmentObject(contractorController)
+                        .environmentObject(chatController)
                 }
                 // MARK: - Sign-In Button
                 Button {
@@ -145,4 +146,5 @@ struct SignInView: View {
         .environmentObject(FlyerController())
         .environmentObject(BidController())
         .environmentObject(ContractorController())
+        .environmentObject(ChatController())
 }

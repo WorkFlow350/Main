@@ -52,16 +52,18 @@ struct JobDetailView: View {
                         .fontWeight(.bold)
                         .foregroundColor(.white)
                         .padding(.leading)
-
+                        .multilineTextAlignment(.leading)
                     // MARK: - Job Metadata
                     HStack {
                         Text(job.city)
                             .font(.caption)
                             .fontWeight(.bold)
                             .foregroundColor(.white)
+                            .multilineTextAlignment(.leading)
                         Text("• \(job.category.rawValue)")
                             .font(.caption)
                             .foregroundColor(.white)
+                            .multilineTextAlignment(.leading)
                     }
                     .padding(.leading)
                     Text(jobController.timeAgoSinceDate(job.datePosted))
@@ -79,6 +81,7 @@ struct JobDetailView: View {
                         Text(job.description)
                             .font(.body)
                             .foregroundColor(.white)
+                            .multilineTextAlignment(.leading)
                     }
                     .padding(.leading)
                     .padding(.top, 5)
@@ -103,7 +106,9 @@ struct JobDetailView_Previews: PreviewProvider {
             city: "Sample City",
             category: .landscaping,
             datePosted: Date(),
-            imageURL: "https://via.placeholder.com/300"
+            imageURL: "https://via.placeholder.com/300",
+            latitude: 34.0522,
+            longitude: -118.2437
         )
 
         JobDetailView(job: sampleJob)

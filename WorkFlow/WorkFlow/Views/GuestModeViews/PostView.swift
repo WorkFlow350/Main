@@ -1,6 +1,7 @@
 import SwiftUI
 import PhotosUI
 import FirebaseStorage
+import FirebaseAuth
 
 struct PostView: View {
     // MARK: - State Variables
@@ -189,7 +190,9 @@ struct PostView: View {
                             city: city,
                             category: selectedCategories.first ?? .landscaping,
                             datePosted: Date(),
-                            imageURL: url
+                            imageURL: url,
+                            latitude: 0.0,
+                            longitude: 0.0
                         )
                         jobController.postJob(job: newJob, selectedImage: selectedImage)
                         resetFields()
@@ -202,6 +205,7 @@ struct PostView: View {
                     if let url = url {
                         let newFlyer = ContractorProfile(
                             id: UUID(),
+                            contractorId: Auth.auth().currentUser?.uid ?? UUID().uuidString,
                             contractorName: title,
                             bio: description,
                             skills: selectedCategories.map { $0.rawValue },

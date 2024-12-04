@@ -24,6 +24,7 @@ struct SignUpView: View {
     @EnvironmentObject var flyerController: FlyerController
     @EnvironmentObject var bidController: BidController
     @EnvironmentObject var contractorController: ContractorController
+    @EnvironmentObject var chatController: ChatController
     
     // MARK: - Body
     var body: some View {
@@ -158,8 +159,11 @@ struct SignUpView: View {
                     } label: {
                         HStack(spacing: 3) {
                             Text("Already Have an Account?")
+                                .fontWeight(.bold)
+                                .foregroundColor(.blue)
                             Text("Sign In")
                                 .fontWeight(.bold)
+                                .foregroundColor(.blue)
                         }
                         .font(.system(size: 14))
                     }
@@ -213,5 +217,6 @@ struct SignUpView_Previews: PreviewProvider {
             .environmentObject(FlyerController())
             .environmentObject(BidController())
             .environmentObject(ContractorController())
+            .environmentObject(ChatController())
     }
 }

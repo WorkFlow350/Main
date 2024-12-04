@@ -317,6 +317,7 @@ struct ContractorProfileView: View {
                                 .font(.title3)
                                 .fontWeight(.bold)
                                 .foregroundColor(.white)
+                                .multilineTextAlignment(.leading)
                             Text("City: \(flyer.city)")
                                 .font(.subheadline)
                                 .foregroundColor(.white.opacity(0.8))

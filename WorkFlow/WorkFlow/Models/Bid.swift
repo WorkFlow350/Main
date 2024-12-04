@@ -11,8 +11,8 @@ struct Bid: Identifiable, Equatable {
     let description: String
     let status: bidStatus
     let bidDate: Date
-    let review: String
-    let jobRating: Double
+    var review: String
+    var jobRating: Double
     let number: String
     let conversationId: String 
 

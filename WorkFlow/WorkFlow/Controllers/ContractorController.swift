@@ -26,6 +26,7 @@ class ContractorController: ObservableObject {
                     print("Fetched flyer data: \(data)") // Debug print
                     return ContractorProfile(
                         id: UUID(uuidString: document.documentID) ?? UUID(),
+                        contractorId: data["contractorId"] as? String ?? "",
                         contractorName: data["contractorName"] as? String ?? "",
                         bio: data["bio"] as? String ?? "",
                         skills: data["skills"] as? [String] ?? [],
@@ -111,6 +112,7 @@ class ContractorController: ObservableObject {
                     let data = document.data()
                     return ContractorProfile(
                         id: UUID(uuidString: document.documentID) ?? UUID(),
+                        contractorId: data["contractorId"] as? String ?? "",
                         contractorName: data["contractorName"] as? String ?? "",
                         bio: data["bio"] as? String ?? "",
                         skills: data["skills"] as? [String] ?? [],

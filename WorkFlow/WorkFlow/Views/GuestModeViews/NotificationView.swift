@@ -25,7 +25,7 @@ struct NotificationView: View {
                         .frame(width: 40, height: 40)
                         .foregroundColor(.blue)
 
-                    Text("Sign Up to Access Notification Features")
+                    Text("Sign Up to Access Chat Features")
                         .font(.title2)
                         .fontWeight(.medium)
                         .foregroundColor(.white)

@@ -14,17 +14,17 @@ struct JobView: View {
                 .foregroundColor(.black)
                 .fontWeight(.bold)
                 .font(.system(size: 18))
-
+                .multilineTextAlignment(.leading)
             Text(job.description)
                 .font(.body)
                 .foregroundColor(.gray)
                 .font(.system(size: 14))
-
+                .multilineTextAlignment(.leading)
             Text(job.category.rawValue)
                 .font(.subheadline)
                 .foregroundColor(.blue)
                 .font(.system(size: 14))
-
+                .multilineTextAlignment(.leading)
             // MARK: - Image Section
             if let imageURL = job.imageURL, let url = URL(string: imageURL) {
                 if isFullScreen {

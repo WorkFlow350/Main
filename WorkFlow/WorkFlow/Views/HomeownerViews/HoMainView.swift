@@ -1,9 +1,17 @@
 import SwiftUI
 import Firebase
+import FirebaseAuth
 
 // MARK: - HoMainView
 struct HoMainView: View {
-
+    @EnvironmentObject var authController: AuthController
+    @EnvironmentObject var homeownerJobController: HomeownerJobController
+    @EnvironmentObject var jobController: JobController
+    @EnvironmentObject var flyerController: FlyerController
+    @EnvironmentObject var bidController: BidController
+    @EnvironmentObject var contractorController: ContractorController
+    @EnvironmentObject var chatController: ChatController
+    
     // MARK: - Tab Enum
     enum Tab {
         case home, search, post, bids, chat
@@ -78,6 +86,21 @@ struct HoMainView: View {
                         .padding(.trailing, 16)
                         .fullScreenCover(isPresented: $showProfileView) {
                             HomeownerProfileView()
+                                .environmentObject(homeownerJobController)
+                                .environmentObject(authController)
+                                .environmentObject(bidController)
+                                .onAppear {
+                                    homeownerJobController.fetchJobsForHomeowner(homeownerId: Auth.auth().currentUser?.uid ?? "")
+                                    bidController.jobBids2.removeAll()
+                                    homeownerJobController.homeownerJobs.forEach { job in
+                                        bidController.getBidsForJob2(job: job)
+                                        if let bids = bidController.jobBids2[job.id.uuidString] {
+                                            for bid in bids where bid.status == .completed {
+                                                bidController.fetchReviewForBid(bid: bid)
+                                            }
+                                        }
+                                    }
+                                }
                         }
                     }
                     .padding(.vertical, 10)
@@ -159,6 +182,31 @@ struct HoMainView: View {
             .foregroundColor(selectedTab == tab ? .black : .gray)
             .animation(.smooth(duration: 0.1), value: selectedTab)
         }
+    }
+    // Helper Function
+    private func fetchReviewForBid(bid: Bid) {
+        guard bid.review.isEmpty else {
+            print("Review already fetched for bid: \(bid.id)")
+            return
+        }
+
+        let db = Firestore.firestore()
+        db.collection("bids")
+            .document(bid.id)
+            .getDocument { snapshot, error in
+                if let data = snapshot?.data() {
+                    let review = data["review"] as? String ?? ""
+                    let jobRating = data["jobRating"] as? Double ?? 0.0
+
+                    DispatchQueue.main.async {
+                        bidController.updateBidReviewAndRating(
+                            bidId: bid.id,
+                            review: review,
+                            jobRating: jobRating
+                        )
+                    }
+                }
+            }
     }
 }
 

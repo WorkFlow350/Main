@@ -16,29 +16,6 @@ struct FlyerCellView: View {
     // MARK: - Body
     var body: some View {
         HStack {
-            // MARK: - Contractor Details
-            VStack(alignment: .leading, spacing: 4) {
-                Text(contractor.contractorName)
-                    .font(.headline)
-                    .fontWeight(.bold)
-                    .foregroundColor(.black)
-                    .lineLimit(2)
-                    .truncationMode(.tail)
-                    .minimumScaleFactor(0.8)
-                
-                Text("Service Area: \(contractor.city)")
-                    .font(.subheadline)
-                    .foregroundColor(.black)
-                
-                Text("Specialty: \(contractor.skills.joined(separator: ", "))")
-                    .font(.footnote)
-                    .foregroundColor(.black)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
-            }
-
-            Spacer()
-
             // MARK: - Profile Image
             if let imageUrl = contractor.imageURL, let url = URL(string: imageUrl) {
                 AsyncImage(url: url) { image in
@@ -59,6 +36,29 @@ struct FlyerCellView: View {
                     .foregroundColor(.gray)
                     .frame(width: 50, height: 50)
             }
+            // MARK: - Contractor Details
+            VStack(alignment: .leading, spacing: 4) {
+                Text(contractor.contractorName)
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundColor(.black)
+                    .lineLimit(2)
+                    .truncationMode(.tail)
+                    .minimumScaleFactor(0.8)
+                    .multilineTextAlignment(.leading)
+                Text("Service Area: \(contractor.city)")
+                    .font(.subheadline)
+                    .foregroundColor(.black)
+                    .multilineTextAlignment(.leading)
+                Text("Specialty: \(contractor.skills.joined(separator: ", "))")
+                    .font(.footnote)
+                    .foregroundColor(.black)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                    .multilineTextAlignment(.leading)
+            }
+
+            Spacer()
 
             // MARK: - Category Color Indicator
             Rectangle()

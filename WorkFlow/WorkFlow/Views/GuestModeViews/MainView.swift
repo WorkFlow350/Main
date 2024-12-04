@@ -4,7 +4,7 @@ import Firebase
 struct MainTabView: View {
     // MARK: - Tab Enum
     enum Tab {
-        case home, search, post, chat, notifications
+        case home, search, post, bids, chat
     }
     
     // MARK: - State Variables
@@ -108,9 +108,9 @@ struct MainTabView: View {
                         SearchView()
                     case .post:
                         PostView()
-                    case .chat:
+                    case .bids:
                         ChatView()
-                    case .notifications:
+                    case .chat:
                         NotificationView()
                     }
                 }
@@ -139,9 +139,9 @@ struct MainTabView: View {
             Spacer()
             tabBarButton(imageName: "plus.app.fill", text: "Post", tab: .post)
             Spacer()
-            tabBarButton(imageName: "note", text: "Bids", tab: .chat)
+            tabBarButton(imageName: "note", text: "Bids", tab: .bids)
             Spacer()
-            tabBarButton(imageName: "bell.fill", text: "Notifications", tab: .notifications)
+            tabBarButton(imageName: "message", text: "Chat", tab: .chat)
             Spacer()
         }
         .padding()

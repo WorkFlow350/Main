@@ -50,7 +50,7 @@ struct CoJobCellView: View {
     @State private var currentLowestBid: Double? = nil
     @State private var isBidPlaced = false
     @State private var multiColor = true
-
+    @State private var isBidDeclined: Bool = false
     
     // MARK: - Body
     var body: some View {
@@ -126,32 +126,47 @@ struct CoJobCellView: View {
                 }
 
                 VStack {
-                    if bidPlaced {
-                        if let bidStatus = bidStatus, bidStatus.lowercased() == "declined" {
-                            Text("Your bid was declined.")
-                                .font(.subheadline)
-                                .foregroundColor(.red)
-                                .padding(.bottom, 10)
+                    if isBidDeclined {
+                        Text("Your bid was declined.")
+                            .font(.subheadline)
+                            .foregroundColor(.red)
+                            .padding(.bottom, 10)
 
-                            Button(action: { showBidSheet = true }) {
-                                Text("Place a New Bid")
-                                    .frame(minWidth: 100, maxWidth: .infinity)
-                                    .padding()
-                                    .background(
-                                        LinearGradient(
-                                            gradient: Gradient(colors: [Color(hex: "#1E3A8A"), Color(hex: "#2563EB")]),
-                                            startPoint: .leading, endPoint: .trailing
-                                        )
+                        Button(action: {
+                            showBidSheet = true
+                        }) {
+                            Text("Place a New Bid")
+                                .frame(minWidth: 100, maxWidth: .infinity)
+                                .padding()
+                                .background(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [Color(hex: "#1E3A8A"), Color(hex: "#2563EB")]),
+                                        startPoint: .leading,
+                                        endPoint: .trailing
                                     )
-                                    .cornerRadius(20)
-                                    .foregroundColor(.white)
-                            }
-                            .padding(.horizontal)
-                            .padding(.bottom, 20)
-                        } else {
-                            TextShimmer(text: "Bid Placed", fontSize: 35, multiColors: .constant(true))
-                                .padding(.top, 10)
+                                )
+                                .cornerRadius(20)
+                                .foregroundColor(.white)
                         }
+                        .padding(.horizontal)
+                        .padding(.bottom, 20)
+                    } else if bidPlaced {
+                        Text("Bid Placed")
+                            .font(.headline)
+                            .foregroundColor(.green)
+                            .padding(.bottom, 10)
+
+                        Button(action: {}) {
+                            Text("Place Bid")
+                                .frame(minWidth: 100, maxWidth: .infinity)
+                                .padding()
+                                .background(Color.gray)
+                                .cornerRadius(20)
+                                .foregroundColor(.white)
+                        }
+                        .padding(.horizontal)
+                        .padding(.bottom, 20)
+                        .disabled(true)
                     } else {
                         Button(action: { showBidSheet = true }) {
                             Text("Place Bid")
@@ -160,7 +175,8 @@ struct CoJobCellView: View {
                                 .background(
                                     LinearGradient(
                                         gradient: Gradient(colors: [Color(hex: "#1E3A8A"), Color(hex: "#2563EB")]),
-                                        startPoint: .leading, endPoint: .trailing
+                                        startPoint: .leading,
+                                        endPoint: .trailing
                                     )
                                 )
                                 .cornerRadius(20)
@@ -168,7 +184,6 @@ struct CoJobCellView: View {
                         }
                         .padding(.horizontal)
                         .padding(.bottom, 20)
-                        .disabled(bidPlaced)
                     }
                 }
                 .sheet(isPresented: $showBidSheet) {
@@ -185,6 +200,10 @@ struct CoJobCellView: View {
         .fullScreenCover(isPresented: $isFullScreen) {
             FullScreenImageView(imageUrl: job.imageURL, isFullScreen: $isFullScreen)
         }
+        .onChange(of: bidController.jobBids) { _ in
+            updateBidStatus()
+            checkExistingBid()
+        }
         .onAppear {
             updateBidStatus()
             checkExistingBid()
@@ -196,6 +215,7 @@ struct CoJobCellView: View {
         }
         .onChange(of: bidController.jobBids) { _ in
             updateBidStatus()
+            checkExistingBid()
         }
         .onChange(of: bidController.coBids) { _ in
             updateBidStatus()
@@ -313,13 +333,32 @@ struct CoJobCellView: View {
     // MARK: - Helper Functions
     private func updateBidStatus() {
         guard let contractorId = authController.userSession?.uid else { return }
+
+        // Fetch the latest bid details
         let details = bidController.getBidDetails(for: job, contractorId: contractorId)
         bidStatus = details.status
         bidPrice = details.price
 
-        // Update bidPlaced based on the bid status
-        bidPlaced = bidStatus != nil && bidPrice != nil
+        // Update states based on the bid status
+        if let status = details.status {
+            switch status.lowercased() {
+            case "pending":
+                bidPlaced = true
+                isBidDeclined = false
+            case "declined":
+                bidPlaced = false
+                isBidDeclined = true
+            default:
+                bidPlaced = true
+                isBidDeclined = false
+            }
+        } else {
+            // No bid exists
+            bidPlaced = false
+            isBidDeclined = false
+        }
     }
+    
     // MARK: - Keyboard
     struct NumberKeypad: View {
         @Binding var bidPriceText: String
@@ -397,32 +436,41 @@ struct CoJobCellView: View {
             confirmationMessage = AlertMessage(message: "Please enter a valid bid amount.")
             return
         }
+
+        // Place the new bid
         bidController.placeBid(job: job, price: price, description: bidDescription)
-        bidPlaced = true
+
+        // Reset state variables
+        isBidDeclined = false
+        bidPlaced = false
+        bidStatus = nil
         showBidSheet = false
         bidPriceText = "$0"
         bidDescription = ""
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             bidController.getBidsForJob(job: job)
             updateBidStatus()
         }
-        UIApplication.shared.endEditing()
     }
     
-    // MARK: - Check if bid exists
+    // MARK: - Check If Bid exists
     private func checkExistingBid() {
         guard let contractorId = authController.userSession?.uid else { return }
         bidController.getBidsForJob(job: job)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             if let acceptedBid = bidController.jobBids.first(where: { $0.status == .accepted }) {
                 bidPlaced = true
+                isBidDeclined = false
                 confirmationMessage = AlertMessage(message: "This job already has an accepted bid.")
-            } else if let existingBid = bidController.jobBids.first(where: { $0.contractorId == contractorId && $0.status != .declined }) {
+            } else if let existingBid = bidController.jobBids.first(where: { $0.contractorId == contractorId }) {
                 bidPlaced = true
                 bidPrice = existingBid.price
                 bidStatus = existingBid.status.rawValue
+                isBidDeclined = existingBid.status.rawValue == "declined"
             } else {
                 bidPlaced = false
+                isBidDeclined = false
             }
         }
     }

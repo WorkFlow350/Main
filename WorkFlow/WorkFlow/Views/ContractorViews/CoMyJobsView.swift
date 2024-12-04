@@ -431,9 +431,10 @@ struct DetailedCoJobView: View {
         return formattedNumber
     }
     @State private var isCompleted = false
-    // MARK: - Action Buttons
+    @State private var showFireworks = false
+    
     private var actionButtons: some View {
-        HStack {
+        VStack {
             if !isCompleted {
                 Button(action: {
                     markAsCompletedWithAnimation()
@@ -448,20 +449,33 @@ struct DetailedCoJobView: View {
                 }
                 .transition(.opacity.combined(with: .scale))
             } else {
-                Text("Job Completed! 🎉")
-                    .font(.headline)
-                    .foregroundColor(.green)
-                    .transition(.scale)
+                VStack {
+                    Spacer() // Push content down to center vertically
+                    Text("Job Completed! 🎉")
+                        .font(.headline)
+                        .foregroundColor(.green)
+                        .transition(.scale)
+                    Spacer() // Push content up to center vertically
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity) // Take full space
+                .background(Color.clear) // Optional, to see layout clearly
             }
         }
         .padding(.top, 10)
+        .background(
+            showFireworks ? FireworksEffect().transition(.opacity) : nil
+        )
     }
     private func markAsCompletedWithAnimation() {
         withAnimation {
-            isCompleted = true // Trigger the fade-out of the button
+            markBidAsCompleted()
+            isCompleted = true
+            showFireworks = true
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            markBidAsCompleted() // Call the existing function after animation
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+            withAnimation {
+                showFireworks = false
+            }
         }
     }
     private func markBidAsCompleted() {
@@ -490,7 +504,7 @@ private func colorForStatus(_ status: Bid.bidStatus) -> Color {
     }
 }
 
-//MARK: - review section
+//MARK: - Review Section
 private func reviewSection(bid: Bid) -> some View {
     VStack(alignment: .leading) {
         Text("Review:")

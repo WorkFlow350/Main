@@ -59,54 +59,61 @@ struct ConversationCardView: View {
                     .font(.caption)
                     .foregroundColor(.gray)
             }
-
-            // Chevron Icon for Navigation
             Image(systemName: "chevron.right")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.gray)
         }
         .padding(12)
         .background(
-            RoundedRectangle(cornerRadius: 15)
-                .fill(Color.white)
-                .shadow(radius: 3)
+            BlurView(style: .systemThickMaterialLight)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
         )
+        .cornerRadius(12)
         .padding(.horizontal)
         .onAppear {
             fetchReceiverProfile()
         }
     }
 
-    // Format the timestamp for display
+    // MARK: - Format Date
     private func formatDate(_ timestamp: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM dd, yyyy, h:mm a"
         return formatter.string(from: timestamp)
     }
 
-    // Fetch receiver's name and profile picture
+    // MARK: - Ferch Profile
     private func fetchReceiverProfile() {
         guard let receiverId = conversation.participants.first(where: { $0 != Auth.auth().currentUser?.uid }) else {
-            receiverName = "Unknown"
+            DispatchQueue.main.async {
+                self.receiverName = "Unknown"
+                self.receiverImageURL = nil
+            }
             return
         }
-
-        chatController.fetchUserName(for: receiverId) { name in
-            DispatchQueue.main.async {
-                self.receiverName = name
+        // Fetch the receiver's name
+        if !receiverId.isEmpty {
+            chatController.fetchUserName(for: receiverId) { name in
+                DispatchQueue.main.async {
+                    self.receiverName = name
+                }
             }
-        }
-
-        chatController.fetchProfilePicture(for: receiverId) { imageURL in
+            // Fetch the receiver's profile picture
+            chatController.fetchProfilePicture(for: receiverId) { imageURL in
+                DispatchQueue.main.async {
+                    self.receiverImageURL = imageURL
+                }
+            }
+        } else {
             DispatchQueue.main.async {
-                self.receiverImageURL = imageURL
+                self.receiverName = "Unknown"
+                self.receiverImageURL = nil
             }
         }
     }
 }
 
 // MARK: - Preview
-
 struct ConversationCardView_Previews: PreviewProvider {
     static var previews: some View {
         let mockConversations = [

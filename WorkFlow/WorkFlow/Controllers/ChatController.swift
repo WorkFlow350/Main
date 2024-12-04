@@ -34,6 +34,13 @@ class ChatController: ObservableObject {
     
     // MARK: - Fetch Names
     func fetchUserName(for userId: String, completion: @escaping (String) -> Void) {
+        // Check if userId is valid
+        guard !userId.isEmpty else {
+            print("Error: User ID is empty.")
+            completion("Unknown")
+            return
+        }
+
         if let cachedName = userCache[userId] {
             completion(cachedName)
             return
@@ -400,5 +407,32 @@ class ChatController: ObservableObject {
         } catch {
             print("Failed to mark messages as read: \(error.localizedDescription)")
         }
+    }
+    
+    // MARK: - Check Existing 
+    func fetchExistingConversation(contractorId: String, homeownerId: String, completion: @escaping (String?) -> Void) {
+        db.collection("conversations")
+            .whereField("participants", arrayContains: contractorId)
+            .whereField("participants", arrayContains: homeownerId)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error fetching conversations: \(error.localizedDescription)")
+                    completion(nil)
+                    return
+                }
+
+                guard let documents = snapshot?.documents, !documents.isEmpty else {
+                    print("No conversation exists. Proceed to create one.")
+                    completion(nil)
+                    return
+                }
+
+                // If conversation exists
+                if let document = documents.first {
+                    let data = document.data()
+                    let conversationId = data["id"] as? String
+                    completion(conversationId)
+                }
+            }
     }
 }

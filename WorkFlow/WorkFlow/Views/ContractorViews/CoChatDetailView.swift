@@ -6,12 +6,14 @@ struct CoChatDetailView: View {
     @EnvironmentObject var authController: AuthController
     @EnvironmentObject var bidController: BidController
     @EnvironmentObject var jobController: JobController
+    @EnvironmentObject var flyerController: FlyerController
     let conversationId: String
     let receiverId: String
     @State private var newMessageText = ""
     @State private var retrievedBid: Bid?
     @State private var retrievedJob: Job?
-    
+    @State private var retrievedFlyer: ContractorProfile?
+
     private let chatBackgroundGradient = LinearGradient(
         gradient: Gradient(colors: [
             Color(red: 0.1, green: 0.2, blue: 0.5).opacity(1.0),
@@ -37,6 +39,14 @@ struct CoChatDetailView: View {
             }
         }
         .onAppear {
+            flyerController.fetchFlyerByConversation(conversationId: conversationId) { flyer in
+                if let flyer = flyer {
+                    retrievedFlyer = flyer
+                    print("Flyer retrieved: \(flyer.contractorName)")
+                } else {
+                    print("No flyer found for conversationId: \(conversationId)")
+                }
+            }
             bidController.fetchSingleBid(conversationId: conversationId) { bid in
                 if let bid = bid {
                     retrievedBid = bid
@@ -132,12 +142,11 @@ struct CoChatDetailView: View {
     
     //MARK: - status bar
     private var statusBar: some View {
-        HStack{
+        HStack {
             if let job = retrievedJob, let bid = retrievedBid {
                 Text("\(job.title):")
                     .font(.footnote)
                     .foregroundColor(.white)
-                
                 Text("\(bid.status.rawValue.capitalized)")
                     .font(.footnote)
                     .foregroundColor(
@@ -146,11 +155,19 @@ struct CoChatDetailView: View {
                             bid.status == .completed ? .blue :
                                 .orange
                     )
+            } else if let contractorProfile = retrievedFlyer {
+                Text("Flyer Title: \(contractorProfile.contractorName)")
+                    .font(.footnote)
+                    .foregroundColor(.white)
             } else {
-                Text("no job or bid data available")
+                Text("Conversation Details")
+                    .font(.footnote)
+                    .foregroundColor(.gray)
             }
         }
+        .padding()
     }
+    
     // MARK: - Send Message
     private func sendMessage() {
         Task {

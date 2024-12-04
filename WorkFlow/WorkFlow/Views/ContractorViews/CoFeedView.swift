@@ -148,21 +148,16 @@ struct CoFeedView: View {
             print("Excluding job: \(job.id.uuidString) - Status excluded")
             return false
         }
-        
-        // Add logic to filter out completed jobs
         if let existingBid = bidController.coBids.first(where: { $0.jobId == job.id.uuidString }) {
             if existingBid.status == .completed {
                 print("Excluding job: \(job.id.uuidString) - Status is completed")
                 return false
             }
         }
-        
-        // Apply category filter
         if let selectedCategory = selectedCategory, job.category != selectedCategory {
             print("Excluding job: \(job.id.uuidString) - Category mismatch")
             return false
         }
-        
         print("Including job: \(job.id.uuidString)")
         return true
     }
@@ -346,9 +341,7 @@ struct CoFeedView: View {
                         }
                     }
                 }
-                
                 Spacer()
-                
                 Rectangle()
                     .frame(width: 4)
                     .foregroundColor(categoryColor(for: job.category))
@@ -396,7 +389,6 @@ struct CoFeedView: View {
                 bidStatus = existingBid.status.rawValue
                 bidPrice = existingBid.price
             } else {
-                // Fetch bid from Firestore
                 bidController.fetchBid(byJobId: job.id.uuidString, contractorId: contractorId) { fetchedBid in
                     DispatchQueue.main.async {
                         if let fetchedBid = fetchedBid {

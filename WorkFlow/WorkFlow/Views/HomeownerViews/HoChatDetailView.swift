@@ -1,17 +1,20 @@
 import SwiftUI
 import FirebaseAuth
+import Firebase
 
 struct HoChatDetailView: View {
     @EnvironmentObject var chatController: ChatController
     @EnvironmentObject var authController: AuthController
     @EnvironmentObject var bidController: BidController
     @EnvironmentObject var jobController: JobController
+    @EnvironmentObject var flyerController: FlyerController
     let conversationId: String
     let receiverId: String
     @State private var newMessageText = ""
     @State private var retrievedBid: Bid?
     @State private var retrievedJob: Job?
     @State private var showSheet: Bool = false
+    @State private var retrievedContractorProfile: ContractorProfile?
     
     private let chatBackgroundGradient = LinearGradient(
         gradient: Gradient(colors: [
@@ -38,25 +41,34 @@ struct HoChatDetailView: View {
             }
         }
         .onAppear {
+            flyerController.fetchContractorProfile(contractorId: receiverId) { profile in
+                if let profile = profile {
+                    retrievedContractorProfile = profile
+                    print("Contractor profile retrieved: \(profile.contractorName)")
+                } else {
+                    print("No contractor profile found for receiverId: \(receiverId)")
+                }
+            }
+
             bidController.fetchSingleBid(conversationId: conversationId) { bid in
                 if let bid = bid {
                     retrievedBid = bid
-                    print("bid retrieved")
+                    print("Bid retrieved: \(bid.id)")
                     
                     if let bidId = retrievedBid?.jobId {
                         jobController.fetchSingleJob(bidJobId: bidId) { job in
                             if let job = job {
                                 retrievedJob = job
-                                print("job retrieved")
+                                print("Job retrieved: \(job.title)")
                             } else {
-                                print("no job found")
+                                print("No job found for jobId: \(bidId)")
                             }
                         }
                     } else {
-                        print("no jobid found in retrieved bid")
+                        print("No jobId found in retrieved bid.")
                     }
                 } else {
-                    print("no bid found")
+                    print("No bid found for conversationId: \(conversationId)")
                 }
             }
             
@@ -114,7 +126,7 @@ struct HoChatDetailView: View {
     private var chatInputBar: some View {
         HStack {
             if let bid = retrievedBid {
-                Button(action: {showSheet = true}) {
+                Button(action: { showSheet = true }) {
                     Image(systemName: "plus.app")
                         .resizable()
                         .frame(width: 24, height: 24)
@@ -127,24 +139,11 @@ struct HoChatDetailView: View {
                     DetailedBidView2(bid: bid)
                 }
                 .presentationDetents([.fraction(0.3)])
-              /*  NavigationLink(destination: DetailedBidView2(bid: bid)) {
-                    Image(systemName: "plus.app")
-                        .resizable()
-                        .frame(width: 24, height: 24)
-                        .padding(12)
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .clipShape(Circle())
-                }*/
-            } else {
-                Text("no bid found for chat input")
             }
-            
             TextField("Type a message", text: $newMessageText)
                 .padding(12)
                 .background(Color(.systemGray6))
                 .cornerRadius(20)
-            
             Button(action: sendMessage) {
                 Image(systemName: "paperplane.fill")
                     .resizable()
@@ -156,16 +155,16 @@ struct HoChatDetailView: View {
             }
         }
         .padding()
+        .background(Color.black.opacity(0.8))
     }
     
-    //MARK: - status bar
+    //MARK: - Status Bar
     private var statusBar: some View {
-        HStack{
+        HStack {
             if let job = retrievedJob, let bid = retrievedBid {
                 Text("\(job.title):")
                     .font(.footnote)
                     .foregroundColor(.white)
-                
                 Text("\(bid.status.rawValue.capitalized)")
                     .font(.footnote)
                     .foregroundColor(
@@ -174,11 +173,19 @@ struct HoChatDetailView: View {
                             bid.status == .completed ? .blue :
                                 .orange
                     )
+            } else if let contractorProfile = retrievedContractorProfile {
+                Text("Flyer Title: \(contractorProfile.contractorName)")
+                    .font(.footnote)
+                    .foregroundColor(.white)
             } else {
-                Text("no job or bid data available")
+                Text("Conversation Details")
+                    .font(.footnote)
+                    .foregroundColor(.gray)
             }
         }
+        .padding()
     }
+    
     // MARK: - Send Message
     private func sendMessage() {
         Task {
@@ -218,6 +225,7 @@ struct HoChatDetailView: View {
         }
     }
     
+    // MARK: - Bid Detail 2
     struct DetailedBidView2: View {
         let bid: Bid
         @EnvironmentObject var bidController: BidController

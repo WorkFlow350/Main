@@ -34,8 +34,8 @@ struct HomeownerProfileView: View {
     @State private var profilePictureURL: String? = nil
     @State private var isImagePickerPresented = false
     @State private var selectedImage: UIImage?
-    @State private var isReviewEditorPresented: Bool = false
-    @State private var review: String = ""
+    @State private var reviewEditorStates: [UUID: Bool] = [:]
+    @State private var reviews: [UUID: String] = [:]
     
     private let db = Firestore.firestore()
     private let storage = Storage.storage()
@@ -308,7 +308,6 @@ struct HomeownerProfileView: View {
                 .padding(.bottom, 5)
             
             ForEach(homeownerJobController.homeownerJobs) { job in
-                Group {
                 NavigationLink(destination: JobDetailView(job: job)) {
                     HStack {
                         if let imageURL = job.imageURL, let url = URL(string: imageURL) {
@@ -326,7 +325,17 @@ struct HomeownerProfileView: View {
                                     .clipShape(RoundedRectangle(cornerRadius: 15))
                             }
                         }
-                        jobCard(job: job, isReviewEditorPresented: $isReviewEditorPresented, review: $review)
+                        jobCard(
+                            job: job,
+                            isReviewEditorPresented: Binding(
+                                get: { reviewEditorStates[job.id] ?? false },
+                                set: { reviewEditorStates[job.id] = $0 }
+                            ),
+                            review: Binding(
+                                get: { reviews[job.id] ?? "" },
+                                set: { reviews[job.id] = $0 }
+                            )
+                        )
                     }
                     .frame(maxWidth: .infinity, minHeight: 120)
                     .padding()
@@ -344,21 +353,18 @@ struct HomeownerProfileView: View {
                             )
                     )
                     .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 2)
-                    }
                 }
                 .onAppear {
+                    if reviewEditorStates[job.id] == nil {
+                        reviewEditorStates[job.id] = false
+                    }
+                    if reviews[job.id] == nil {
+                        reviews[job.id] = ""
+                    }
                     bidController.getBidsForJob2(job: job)
                 }
             }
         }
-        .overlay(
-            CustomDescriptionPopup(
-                isPresented: $isReviewEditorPresented,
-                description: $review,
-                title: "Leave your review"
-                
-            )
-        )
         .padding(.horizontal)
         .padding(.top, 10)
     }
@@ -441,115 +447,239 @@ private func reviewButton(isReviewEditorPresented: Binding<Bool>, review: Bindin
         )
     }
 }
-//MARK: - review section
+//MARK: - Review Section
 private struct ReviewSection: View {
     let completedBid: Bid
     @EnvironmentObject var bidController: BidController
     @Binding var review: String
     @Binding var isReviewEditorPresented: Bool
     @Binding var jobRating: Double
-    var label = ""
-    var maximumRating = 5
-    var offImage: Image?
-    var onImage = Image(systemName: "star.fill")
-    var offColor = Color.black
-    var onColor = Color.blue
-    
+    @Binding var reviewSubmitted: Bool
+
+    @State private var draftReview: String = ""
+    @State private var isFetching: Bool = true
+
     var body: some View {
-        VStack {
-            reviewButton(isReviewEditorPresented: $isReviewEditorPresented, review: $review)
-                .padding(.vertical, 20)
-            HStack {
-                if !label.isEmpty {
-                    Text(label)
-                }
-                
-                ForEach(1...maximumRating, id: \.self) { number in
-                    let ratingNumber = Double(number)
-                    Button(action: {
-                        jobRating = ratingNumber
-                    }) {
-                        image(for: ratingNumber)
-                            .foregroundStyle(ratingNumber > jobRating ? offColor : onColor)
+        VStack(spacing: 20) {
+            if isFetching {
+                ProgressView()
+            } else if reviewSubmitted {
+                VStack(spacing: 10) {
+                    Text("Your Review")
+                        .font(.headline)
+                        .foregroundColor(.black)
+                    Divider()
+                    Text(review)
+                        .font(.body)
+                        .foregroundColor(.black)
+                        .padding()
+                        .background(Color.white)
+                        .cornerRadius(8)
+                    HStack {
+                        ForEach(1...5, id: \.self) { star in
+                            Image(systemName: star <= Int(jobRating) ? "star.fill" : "star")
+                                .foregroundColor(star <= Int(jobRating) ? .yellow : .gray)
+                                .font(.title2)
+                        }
                     }
                 }
-            }
-            
-            Button(action: {
-                bidController.leaveJobRating(bidId: completedBid.id, contractorId: completedBid.contractorId ,jobRating: jobRating)
-                bidController.leaveReview(bidId: completedBid.id, review: review)
-                review = ""
-                isReviewEditorPresented = false
-            }) {
-                Text("Post")
-                    .frame(minWidth: 100, maxWidth: 200)
-                    .padding()
-                    .background(
-                        LinearGradient(
-                            gradient: Gradient(colors: [Color(hex: "#1E3A8A"), Color(hex: "#2563EB")]),
-                            startPoint: .leading,
-                            endPoint: .trailing
+            } else {
+                VStack(spacing: 10) {
+                    Text("Leave a Review")
+                        .font(.headline)
+                        .foregroundColor(.black)
+                    
+                    Divider()
+
+                    CustomTextEditor(text: $draftReview)
+                        .frame(height: 100)
+                        .background(Color.white)
+                        .cornerRadius(8)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.gray.opacity(0.5), lineWidth: 1)
                         )
-                    )
-                    .cornerRadius(20)
-                    .foregroundColor(.white)
+                    HStack {
+                        ForEach(1...5, id: \.self) { star in
+                            Button(action: {
+                                jobRating = Double(star)
+                            }) {
+                                Image(systemName: star <= Int(jobRating) ? "star.fill" : "star")
+                                    .foregroundColor(star <= Int(jobRating) ? .yellow : .gray)
+                                    .font(.title2)
+                            }
+                        }
+                    }
+                    Button("Submit Review") {
+                        review = draftReview
+                        bidController.leaveReview(bidId: completedBid.id, review: review)
+                        bidController.leaveJobRating(
+                            bidId: completedBid.id,
+                            contractorId: completedBid.contractorId,
+                            jobRating: jobRating
+                        )
+                        reviewSubmitted = true
+                        isReviewEditorPresented = false
+                    }
+                    .disabled(draftReview.isEmpty || jobRating == 0)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(draftReview.isEmpty || jobRating == 0 ? Color.gray : Color.blue)
+                    .foregroundColor(.black)
+                    .cornerRadius(10)
+                    .opacity(draftReview.isEmpty || jobRating == 0 ? 0.5 : 1.0)
+                }
+                .padding()
             }
-            .disabled(review.isEmpty)
-            .padding(.horizontal)
-            .padding(.vertical, 20)
+        }
+        .padding()
+        .onAppear {
+            fetchReviewAndRating()
         }
     }
-    
-    func image(for number: Double) -> Image {
-        if number > jobRating {
-            return offImage ?? onImage
-        } else {
-            return onImage
-        }
+
+    private func fetchReviewAndRating() {
+        let db = Firestore.firestore()
+        db.collection("bids")
+            .document(completedBid.id)
+            .getDocument { snapshot, error in
+                if let error = error {
+                    print("Error fetching review: \(error.localizedDescription)")
+                    return
+                }
+                if let data = snapshot?.data() {
+                    self.review = data["review"] as? String ?? ""
+                    self.jobRating = data["jobRating"] as? Double ?? 0.0
+                    self.reviewSubmitted = !self.review.isEmpty
+                    self.draftReview = self.review
+                }
+                isFetching = false
+            }
     }
 }
     
-    //MARK: - Job card
-    private struct jobCard: View {
-        let job: Job
-        @EnvironmentObject var bidController: BidController
-        @Binding var isReviewEditorPresented: Bool
-        @Binding var review: String
-        @State private var jobRating: Double = 0.0
-        
-        
-        var body: some View {
-            VStack(alignment: .leading, spacing: 5) {
-                Text(job.title)
-                    .font(.title3)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
-                Text("City: \(job.city)")
-                    .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.8))
-                Text("Category: \(job.category.rawValue)")
-                    .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.8))
-                Text("Describtion: \(job.description)")
-                    .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.8))
-                    .lineLimit(2)
-                if let bids = bidController.jobBids2[job.id.uuidString],
-                   bids.contains(where: {$0.status == .completed}) {
-                    Text("Completed")
+//MARK: - Job card
+private struct jobCard: View {
+    let job: Job
+    @EnvironmentObject var bidController: BidController
+    @Binding var isReviewEditorPresented: Bool
+    @Binding var review: String
+    @State private var jobRating: Double = 0.0
+    @State private var reviewSubmitted: Bool = false
+    @State private var contractorName: String = "Loading..."
+    
+    var body: some View {
+        VStack(alignment: .leading) {
+            Text(job.title)
+                .font(.title3)
+                .fontWeight(.bold)
+                .foregroundColor(.white)
+                .multilineTextAlignment(.leading)
+            Text("City: \(job.city)")
+                .font(.subheadline)
+                .foregroundColor(.white.opacity(0.8))
+                .multilineTextAlignment(.leading)
+            Text("Category: \(job.category.rawValue)")
+                .font(.subheadline)
+                .foregroundColor(.white.opacity(0.8))
+                .multilineTextAlignment(.leading)
+            
+            if let bids = bidController.jobBids2[job.id.uuidString], !bids.isEmpty {
+                if let bid = bids.first(where: { $0.status == .completed }) {
+                    Text("Completed by: \(contractorName)")
                         .font(.subheadline)
                         .foregroundColor(.white.opacity(0.8))
-                    let completedBid = bids.first(where: {$0.status == .completed})!
-                    ReviewSection(completedBid: completedBid, review: $review, isReviewEditorPresented: $isReviewEditorPresented, jobRating: $jobRating)
+                        .multilineTextAlignment(.leading)
+                    Button(action: {
+                        isReviewEditorPresented = true
+                    }) {
+                        HStack {
+                            Text(!review.isEmpty || reviewSubmitted ? "View Review" : "Leave Review")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                                .padding(.vertical, 10)
+                                .padding(.horizontal, 20)
+                        }
+                        .background(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color.black.opacity(0.3),
+                                ]),
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .cornerRadius(10)
+                    }
+                    .sheet(isPresented: $isReviewEditorPresented, onDismiss: fetchReviewForBid) {
+                        ReviewSection(
+                            completedBid: bid,
+                            review: $review,
+                            isReviewEditorPresented: $isReviewEditorPresented,
+                            jobRating: $jobRating,
+                            reviewSubmitted: $reviewSubmitted
+                        )
+                        .environmentObject(bidController)
+                        .presentationDetents([.fraction(0.5)])
+                        .presentationDragIndicator(.visible)
+                    }
+                    .onAppear {
+                        fetchReviewForBid()
+                        fetchContractorName(bid.contractorId)
+                    }
+                } else if let bid = bids.first(where: { $0.status == .accepted }) {
+                    Text("Status: Accepted - Pending Completion")
+                        .font(.subheadline)
+                        .foregroundColor(.white.opacity(0.8))
+                        .multilineTextAlignment(.leading)
                 } else {
-                    Text("Not Yet Completed")
+                    Text("Status: Bid Pending")
                         .font(.subheadline)
                         .foregroundColor(.white.opacity(0.8))
+                        .multilineTextAlignment(.leading)
                 }
+            } else {
+                Text("Status: No Bid")
+                    .font(.subheadline)
+                    .foregroundColor(.white.opacity(0.8))
+                    .multilineTextAlignment(.leading)
             }
-            .padding(.leading, 10)
         }
     }
+    
+    private func fetchContractorName(_ contractorId: String) {
+        let db = Firestore.firestore()
+        db.collection("users")
+            .document(contractorId)
+            .getDocument { snapshot, error in
+                if let error = error {
+                    print("Error fetching contractor name: \(error.localizedDescription)")
+                    contractorName = "Unknown"
+                    return
+                }
+                if let data = snapshot?.data() {
+                    contractorName = data["name"] as? String ?? "Unknown"
+                }
+            }
+    }
+    
+    private func fetchReviewForBid() {
+        guard review.isEmpty else { return }
+        let db = Firestore.firestore()
+        if let bids = bidController.jobBids2[job.id.uuidString],
+           let bid = bids.first(where: { $0.status == .completed }) {
+            db.collection("bids")
+                .document(bid.id)
+                .getDocument { snapshot, error in
+                    if let data = snapshot?.data() {
+                        review = data["review"] as? String ?? ""
+                        jobRating = data["jobRating"] as? Double ?? 0.0
+                        reviewSubmitted = !review.isEmpty
+                    }
+                }
+        }
+    }
+}
     
     // MARK: - Preview
     struct HomeownerProfileView_Previews: PreviewProvider {

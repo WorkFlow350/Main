@@ -29,6 +29,36 @@ class BidController: ObservableObject {
         getBidsForContractor()
     }
     
+    // MARK: - Review Stuff
+    func fetchReviewForBid(bid: Bid) {
+        db.collection("bids").document(bid.id).getDocument { snapshot, error in
+            if let error = error {
+                print("Error fetching review for bid: \(error.localizedDescription)")
+                return
+            }
+            if let data = snapshot?.data() {
+                let review = data["review"] as? String ?? ""
+                let jobRating = data["jobRating"] as? Double ?? 0.0
+                
+                DispatchQueue.main.async {
+                    self.updateBidReviewAndRating(bidId: bid.id, review: review, jobRating: jobRating)
+                }
+            }
+        }
+    }
+    func updateBidReviewAndRating(bidId: String, review: String, jobRating: Double) {
+        for (jobId, bids) in jobBids2 {
+            if let index = bids.firstIndex(where: { $0.id == bidId }) {
+                var updatedBid = bids[index]
+                updatedBid.review = review
+                updatedBid.jobRating = jobRating
+                jobBids2[jobId]?[index] = updatedBid
+                print("Updated bid \(bidId) with review: \(review) and rating: \(jobRating)")
+                break
+            }
+        }
+    }
+    
     //MARK: - Date Formatter
     func timeAgoSincePost(_ date: Date) -> String {
         let formatter = DateComponentsFormatter()
@@ -227,6 +257,7 @@ class BidController: ObservableObject {
             }
             let profile = ContractorProfile(
                 id: UUID(uuidString: document!.documentID) ?? UUID(),
+                contractorId: data["contractorId"] as? String ?? "",
                 contractorName: data["name"] as? String ?? "Unknown",
                 bio: data["bio"] as? String ?? "",
                 skills: data["skills"] as? [String] ?? [],
@@ -315,7 +346,8 @@ class BidController: ObservableObject {
         }
     }
     
-    //MARK: - fetch bids for job but in dictionary
+    
+    //MARK: - Fetch bids for job but in dictionary
     func getBidsForJob2(job: Job) {
         listener3 = db.collection("bids").whereField("jobId", isEqualTo: job.id.uuidString).addSnapshotListener { snapshot, error in
             if let error = error {
@@ -349,7 +381,7 @@ class BidController: ObservableObject {
         }
     }
     
-    //MARK: - leave a review
+    //MARK: - Leave a review
     func leaveReview(bidId: String, review: String) {
         db.collection("bids").document(bidId).updateData(["review": review]) { error in
             if let error = error {
@@ -360,7 +392,7 @@ class BidController: ObservableObject {
             }
         }
     }
-    //MARK: - leave a rating
+    //MARK: - Leave a rating
     func leaveJobRating(bidId: String, contractorId: String, jobRating: Double) {
         db.collection("bids").document(bidId).updateData(["jobRating": jobRating]) { [weak self] error in
             if let error = error {
@@ -740,7 +772,46 @@ class BidController: ObservableObject {
                 }
             }
     }
-    //MARK: - fetch single Bid
+    
+    // MARK: - Completed
+    func checkIfJobIsClosed(jobId: UUID, completion: @escaping (Bool) -> Void) {
+        // Check for bids with "completed" status for the given job
+        db.collection("bids").whereField("jobId", isEqualTo: jobId.uuidString).getDocuments { snapshot, error in
+            if let error = error {
+                print("Error checking job closed status: \(error.localizedDescription)")
+                completion(false)
+                return
+            }
+
+            // Check if there's at least one "completed" bid for this job
+            let isClosed = snapshot?.documents.contains(where: { document in
+                let status = document.data()["status"] as? String
+                return status == "completed"
+            }) ?? false
+
+            completion(isClosed)
+        }
+    }
+    
+    // MARK: - Accepted
+    func checkIfJobHasAcceptedBid(jobId: UUID, completion: @escaping (Bool) -> Void) {
+        db.collection("bids").whereField("jobId", isEqualTo: jobId.uuidString).getDocuments { snapshot, error in
+            if let error = error {
+                print("Error checking accepted bid status: \(error.localizedDescription)")
+                completion(false)
+                return
+            }
+
+            let hasAccepted = snapshot?.documents.contains(where: { document in
+                let status = document.data()["status"] as? String
+                return status == "accepted"
+            }) ?? false
+
+            completion(hasAccepted)
+        }
+    }
+    
+    //MARK: - Fetch Single Bid
     func fetchSingleBid(conversationId: String, completion: @escaping (Bid?) -> Void) {
         db.collection("bids").whereField("conversationId", isEqualTo: conversationId).getDocuments { snapshot, error in
             if let error = error {

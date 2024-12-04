@@ -258,6 +258,7 @@ struct CoPostView: View {
                     if let url = url {
                         let newFlyer = ContractorProfile(
                             id: UUID(),
+                            contractorId: Auth.auth().currentUser?.uid ?? UUID().uuidString,
                             contractorName: title,
                             bio: description,
                             skills: selectedCategories.map { $0.rawValue },

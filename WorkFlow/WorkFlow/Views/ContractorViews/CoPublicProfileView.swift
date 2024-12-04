@@ -229,6 +229,7 @@ struct CoPublicProfileView: View {
                                 .font(.title3)
                                 .fontWeight(.bold)
                                 .foregroundColor(.white)
+                                .multilineTextAlignment(.leading)
                             Text("City: \(flyer.city)")
                                 .font(.subheadline)
                                 .foregroundColor(.white.opacity(0.8))
@@ -448,7 +449,6 @@ struct RatingView: View {
     var body: some View {
         VStack {
             HStack {
-                // Show the label if it's not empty
                 if !label.isEmpty {
                     Text(label)
                         .padding(.trailing, 8)
@@ -466,20 +466,15 @@ struct RatingView: View {
             }
         }
     }
-    
-    // Function to determine the image to display based on the rating
     private func image(for ratingNumber: Double) -> Image {
-        // If ratingNumber is less than or equal to the current rating, it's a filled star
         if ratingNumber <= Rating {
             return onImage
         }
-        // If ratingNumber is within a half-star range
         else if ratingNumber - 0.5 <= Rating && ratingNumber > Rating {
-            return Image(systemName: "star.leadinghalf.fill") // Half star image
+            return Image(systemName: "star.leadinghalf.fill")
         }
-        // Otherwise, it's an empty star
         else {
-            return offImage ?? Image(systemName: "star") // Empty star
+            return offImage ?? Image(systemName: "star")
         }
     }
 }

@@ -100,7 +100,10 @@ struct JobCellYView: View {
     @EnvironmentObject var bidController: BidController
     @EnvironmentObject var jobController: JobController
     @EnvironmentObject var homeownerJobController: HomeownerJobController
+    @State private var isJobClosed: Bool = false
+    @State private var hasAcceptedBid: Bool = false
     @State private var bidCount: Int = 0
+    
     var body: some View {
         HStack {
             if let imageURL = job.imageURL, let url = URL(string: imageURL) {
@@ -122,12 +125,12 @@ struct JobCellYView: View {
                 Text("\(job.city) - \(job.category.rawValue)")
                     .font(.subheadline)
                     .foregroundColor(.black)
-                
+                    .multilineTextAlignment(.leading)
                 Text(job.title)
                     .font(.headline)
                     .fontWeight(.bold)
                     .foregroundColor(.black)
-                
+                    .multilineTextAlignment(.leading)
                 HStack(spacing: 4) {
                     Image(systemName: "clock")
                         .font(.caption)
@@ -136,11 +139,26 @@ struct JobCellYView: View {
                         .font(.caption)
                         .foregroundColor(.gray)
                 }
-                
-                Text("Bids: \(bidCount)")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-                    .fontWeight(.bold)
+                HStack(spacing: 4) {
+                    Text("Bids: \(bidCount)")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                        .fontWeight(.bold)
+                    
+                    if isJobClosed {
+                        Text("Job Completed")
+                            .font(.caption)
+                            .foregroundColor(.blue)
+                            .fontWeight(.bold)
+                    } else if hasAcceptedBid {
+                        Text("Bid Accepted")
+                            .font(.caption)
+                            .foregroundColor(.green)
+                            .fontWeight(.bold)
+                    }
+                    
+                    Spacer()
+                }
             }
             
             Spacer()
@@ -162,6 +180,16 @@ struct JobCellYView: View {
             // Fetch the bid count when the view appears
             bidController.countBidsForJob(jobId: job.id) { count in
                 bidCount = count
+            }
+            
+            // Check if the job is closed
+            bidController.checkIfJobIsClosed(jobId: job.id) { isClosed in
+                isJobClosed = isClosed
+            }
+            
+            // Check if the job has an accepted bid
+            bidController.checkIfJobHasAcceptedBid(jobId: job.id) { hasAccepted in
+                hasAcceptedBid = hasAccepted
             }
         }
     }

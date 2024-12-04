@@ -30,12 +30,12 @@ struct JobCellView: View {
                 Text("\(job.city)  \(job.category.rawValue)")
                     .font(.subheadline)
                     .foregroundColor(.black)
-
+                    .multilineTextAlignment(.leading)
                 Text(job.title)
                     .font(.headline)
                     .fontWeight(.bold)
                     .foregroundColor(.black)
-
+                    .multilineTextAlignment(.leading)
                 Text(jobController.timeAgoSinceDate(job.datePosted))
                     .font(.caption)
                     .foregroundColor(.gray)

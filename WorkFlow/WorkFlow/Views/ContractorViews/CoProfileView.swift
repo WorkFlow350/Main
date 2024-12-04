@@ -288,7 +288,7 @@ struct ContractorProfileView: View {
     private var flyerSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             ForEach(contractorController.contractorFlyers, id: \.id) { flyer in
-                NavigationLink(destination: FlyerDetailView(contractor: flyer)) {
+                NavigationLink(destination: CoFlyerDetailView(contractor: flyer)) {
                     HStack {
                         if let imageURL = flyer.imageURL, let url = URL(string: imageURL) {
                             AsyncImage(url: url) { image in

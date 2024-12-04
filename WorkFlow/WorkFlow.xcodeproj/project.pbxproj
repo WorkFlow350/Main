@@ -27,6 +27,7 @@
 		9E5D1D542CF5228B00EB57E8 /* Fireworks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5D1D532CF5228300EB57E8 /* Fireworks.swift */; };
 		9E81DCE82CDDCF870028C952 /* CoJobCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E81DCE72CDDCF7E0028C952 /* CoJobCellView.swift */; };
 		9E8AC25B2CD9AF1400FDC557 /* ContractorController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E8AC25A2CD9AF0700FDC557 /* ContractorController.swift */; };
+		9E8C811C2D00F3BE009339B4 /* CoFlyerDetailPrivate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E8C811B2D00F3AC009339B4 /* CoFlyerDetailPrivate.swift */; };
 		9E95AB6E2CEEE029004ACC13 /* JobsMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E95AB6D2CEEE01E004ACC13 /* JobsMapView.swift */; };
 		9E95AB702CF02EF4004ACC13 /* ChatController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E95AB6F2CF02EEB004ACC13 /* ChatController.swift */; };
 		9E95AB722CF02F0F004ACC13 /* Chat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E95AB712CF02F0B004ACC13 /* Chat.swift */; };
@@ -115,6 +116,7 @@
 		9E5D1D532CF5228300EB57E8 /* Fireworks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Fireworks.swift; sourceTree = "<group>"; };
 		9E81DCE72CDDCF7E0028C952 /* CoJobCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoJobCellView.swift; sourceTree = "<group>"; };
 		9E8AC25A2CD9AF0700FDC557 /* ContractorController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContractorController.swift; sourceTree = "<group>"; };
+		9E8C811B2D00F3AC009339B4 /* CoFlyerDetailPrivate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoFlyerDetailPrivate.swift; sourceTree = "<group>"; };
 		9E95AB6D2CEEE01E004ACC13 /* JobsMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JobsMapView.swift; sourceTree = "<group>"; };
 		9E95AB6F2CF02EEB004ACC13 /* ChatController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatController.swift; sourceTree = "<group>"; };
 		9E95AB712CF02F0B004ACC13 /* Chat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Chat.swift; sourceTree = "<group>"; };
@@ -196,6 +198,7 @@
 		29165D472CC9B428009721B7 /* ContractorViews */ = {
 			isa = PBXGroup;
 			children = (
+				9E8C811B2D00F3AC009339B4 /* CoFlyerDetailPrivate.swift */,
 				29E3F7D32CF7EB00002356C3 /* CoChatDetailView.swift */,
 				291AAA682CCDF5C2008757E3 /* CoMainView.swift */,
 				29E204172CCF156100047F21 /* CoFeedView.swift */,
@@ -547,6 +550,7 @@
 				9EC418182CB4C1DC00F21C8F /* ChatView.swift in Sources */,
 				AA8714FD2CC84F1A00464D05 /* SignInView.swift in Sources */,
 				AA82E58F2CBF39F3009F916D /* FlyerCellView.swift in Sources */,
+				9E8C811C2D00F3BE009339B4 /* CoFlyerDetailPrivate.swift in Sources */,
 				29E2041A2CCF173D00047F21 /* CoSearchView.swift in Sources */,
 				9EC417F32CB4B5FD00F21C8F /* User.swift in Sources */,
 				9E95AB782CF122A0004ACC13 /* ConversationCardView.swift in Sources */,

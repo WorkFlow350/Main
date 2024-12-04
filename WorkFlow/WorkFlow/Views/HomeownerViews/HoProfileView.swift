@@ -420,16 +420,20 @@ struct BiographyView: View {
             .padding()
         }
     }
+    
 }
 
 // MARK: - review Box
 private func reviewButton(jobId: String, isReviewEditorPresented: Binding<Bool>, review: Binding<String>) -> some View {
-    Button(action: {
+
+    let localReview = ""
+    return Button(action: {
+        review.wrappedValue = localReview
         isReviewEditorPresented.wrappedValue = true
     }) {
         HStack {
-            Text(review.wrappedValue.isEmpty ? "review" : review.wrappedValue)
-                .foregroundColor(review.wrappedValue.isEmpty ? .gray : .black)
+            Text(localReview.isEmpty ? "Leave a review" : localReview)
+                .foregroundColor(localReview.isEmpty ? .gray : .black)
                 .padding(.vertical, 12)
                 .padding(.horizontal)
                 .lineLimit(1)
@@ -444,64 +448,75 @@ private func reviewButton(jobId: String, isReviewEditorPresented: Binding<Bool>,
                 .stroke(Color.gray.opacity(0.5), lineWidth: 1)
         )
     }
-}
+        .onChange(of: isReviewEditorPresented.wrappedValue) { newValue in
+              if !newValue {
+                  review.wrappedValue = localReview
+                  print("Review for job \(jobId) updated: \(review.wrappedValue)") //debug
+              }
+          }
+      }
+
 //MARK: - review section
 private struct ReviewSection: View {
-    let completedBid: Bid
-    @EnvironmentObject var bidController: BidController
-    @Binding var reviews: [String: String]
-    @Binding var ratings: [String: Double]
-    @Binding var isReviewEditorPresented: Bool
-    @State private var localReview: String = ""
-    @State private var localRating: Double = 0.0
+   let completedBid: Bid
+   @EnvironmentObject var bidController: BidController
+   @Binding var review: String
+   @Binding var isReviewEditorPresented: Bool
+   @Binding var jobRating: Double
+   @Binding var reviewPosted: Bool
+   @Binding var ratingPosted: Bool
 
-    var body: some View {
-        VStack {
-            if reviews[completedBid.id] != nil && ratings[completedBid.id] != nil {
-                ViewReviewSection(completedBid: completedBid, review: reviews[completedBid.id] ?? "", jobRating: ratings[completedBid.id] ?? 0.0)
-            } else {
-                TextField("Write your review", text: $localReview)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding()
+   var body: some View {
+       VStack {
+           if reviewPosted && ratingPosted {
+               ViewReviewSection(completedBid: completedBid, review: $review, jobRating: $jobRating)
+           } else {
+               if !reviewPosted {
+                   reviewButton(jobId: completedBid.id, isReviewEditorPresented: $isReviewEditorPresented, review: $review)
+                       .padding(.vertical, 20)
+               }
 
-                HStack {
-                    ForEach(1...5, id: \.self) { number in
-                        let ratingNumber = Double(number)
-                        Button(action: { localRating = ratingNumber }) {
-                            Image(systemName: ratingNumber <= localRating ? "star.fill" : "star")
-                                .foregroundColor(ratingNumber <= localRating ? .yellow : .gray)
-                        }
-                    }
-                }
-
-                Button(action: {
-                    if !localReview.isEmpty {
-                        reviews[completedBid.id] = localReview
-                        bidController.leaveReview(bidId: completedBid.id, jobId: completedBid.contractorId, review: localReview)
-                    }
-                    if localRating > 0 {
-                        ratings[completedBid.id] = localRating
-                        bidController.leaveJobRating(bidId: completedBid.id, jobId: completedBid.contractorId, jobRating: localRating)
-                    }
-                    isReviewEditorPresented = false
-                }) {
-                    Text("Post")
-                        .frame(minWidth: 100, maxWidth: 200)
-                        .padding()
-                        .background(
-                            LinearGradient(
-                                gradient: Gradient(colors: [Color(hex: "#1E3A8A"), Color(hex: "#2563EB")]),
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .cornerRadius(20)
-                        .foregroundColor(.white)
-                }
-                .disabled(localReview.isEmpty && localRating == 0)
-            }
-        }
-    }
+               if !ratingPosted {
+                   HStack {
+                       ForEach(1...5, id: \.self) { number in
+                           let ratingNumber = Double(number)
+                           Button(action: { jobRating = ratingNumber }) {
+                               RatingImageUtility.image(for: ratingNumber, rating: jobRating)
+                                   .foregroundStyle(ratingNumber > jobRating ? RatingImageUtility.offColor : RatingImageUtility.onColor)
+                           }
+                       }
+                   }
+               }
+               if !reviewPosted || !ratingPosted {
+                   Button(action: {
+                       if !review.isEmpty {
+                           reviewPosted = true
+                           bidController.leaveReview(bidId: completedBid.id, contractorId: completedBid.contractorId, review: review)
+                       }
+                       if jobRating > 0 {
+                           ratingPosted = true
+                           bidController.leaveJobRating(bidId: completedBid.id, contractorId: completedBid.contractorId, jobRating: jobRating)
+                       }
+                       isReviewEditorPresented = false
+                   }) {
+                       Text("Post")
+                           .frame(minWidth: 100, maxWidth: 200)
+                           .padding()
+                           .background(
+                               LinearGradient(
+                                   gradient: Gradient(colors: [Color(hex: "#1E3A8A"), Color(hex: "#2563EB")]),
+                                   startPoint: .leading,
+                                   endPoint: .trailing
+                               )
+                           )
+                           .cornerRadius(20)
+                           .foregroundColor(.white)
+                   }
+                   .disabled(review.isEmpty && jobRating == 0)
+               }
+           }
+       }
+   }
 }
 
 
@@ -509,12 +524,12 @@ private struct ReviewSection: View {
   //MARK: View Review Section View
 private struct ViewReviewSection: View {
     let completedBid: Bid
-    let review: String
-    let jobRating: Double
+    @Binding var review: String
+    @Binding var jobRating: Double
 
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
-            Text("Review: \(review)")
+            Text("Review: \(completedBid.review)")
                 .font(.subheadline)
                 .foregroundColor(.white.opacity(0.8))
             Text("Job Rating:")
@@ -532,55 +547,56 @@ private struct ViewReviewSection: View {
     
     //MARK: - Job card
 private struct JobCard: View {
-    let job: Job
-    @EnvironmentObject var bidController: BidController
-    @Binding var isReviewEditorPresented: Bool
-    @Binding var review: String
-    @Binding var reviewPosted: Bool
-    @Binding var ratingPosted: Bool
-    @State private var jobRating: Double = 0.0
+let job: Job
+@EnvironmentObject var bidController: BidController
+@Binding var isReviewEditorPresented: Bool
+@Binding var review: String
+@Binding var reviewPosted: Bool
+@Binding var ratingPosted: Bool
+@State private var jobRating: Double = 0.0
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: 5) {
-            Text(job.title)
-                .font(.title3)
-                .fontWeight(.bold)
-                .foregroundColor(.white)
-            Text("City: \(job.city)")
+var body: some View {
+    VStack(alignment: .leading, spacing: 5) {
+        Text(job.title)
+            .font(.title3)
+            .fontWeight(.bold)
+            .foregroundColor(.white)
+        Text("City: \(job.city)")
+            .font(.subheadline)
+            .foregroundColor(.white.opacity(0.8))
+        Text("Category: \(job.category.rawValue)")
+            .font(.subheadline)
+            .foregroundColor(.white.opacity(0.8))
+        Text("Description: \(job.description)")
+            .font(.subheadline)
+            .foregroundColor(.white.opacity(0.8))
+            .lineLimit(2)
+        
+        if let bids = bidController.jobBids2[job.id.uuidString],
+           let completedBid = bids.first(where: { $0.status == .completed }) {
+            Text("Completed")
                 .font(.subheadline)
                 .foregroundColor(.white.opacity(0.8))
-            Text("Category: \(job.category.rawValue)")
-                .font(.subheadline)
-                .foregroundColor(.white.opacity(0.8))
-            Text("Description: \(job.description)")
-                .font(.subheadline)
-                .foregroundColor(.white.opacity(0.8))
-                .lineLimit(2)
-            
-            if let bids = bidController.jobBids2[job.id.uuidString],
-               let completedBid = bids.first(where: { $0.status == .completed }) {
-                Text("Completed")
-                    .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.8))
-                ReviewSection(
-                    completedBid: completedBid,
-                    review: $review,
-                    isReviewEditorPresented: $isReviewEditorPresented,
-                    jobRating: $jobRating,
-                    reviewPosted: $reviewPosted,
-                    ratingPosted: $ratingPosted
-                )
-                .onAppear {
-                    loadExistingReview(from: completedBid)
-                }
-            } else {
-                Text("Not Yet Completed")
-                    .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.8))
+            ReviewSection(
+                completedBid: completedBid,
+                review: $review,
+                isReviewEditorPresented: $isReviewEditorPresented,
+                jobRating: $jobRating,
+                reviewPosted: $reviewPosted,
+                ratingPosted: $ratingPosted
+            )
+            .onAppear {
+                loadExistingReview(from: completedBid)
             }
+        } else {
+            Text("Not Yet Completed")
+                .font(.subheadline)
+                .foregroundColor(.white.opacity(0.8))
         }
-        .padding(.leading, 10)
     }
+    .padding(.leading, 10)
+}
+    
 
     private func loadExistingReview(from completedBid: Bid) {
         if !completedBid.review.isEmpty && completedBid.jobRating > 0 {

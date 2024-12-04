@@ -350,50 +350,25 @@ class BidController: ObservableObject {
     }
     
     //MARK: - leave a review
-    func leaveReview(bidId: String, jobId: String, review: String) {
-        let reviewData: [String: Any] = [
-            "review": review,
-            "timestamp": FieldValue.serverTimestamp()
-        ]
-        
-        db.collection("bids").document(bidId).updateData([
-            "reviews.\(jobId)": reviewData
-        ]) { error in
+    func leaveReview(bidId: String, contractorId: String, review: String) {
+        db.collection("bids").document(bidId).updateData(["review": review]) { [weak self] error in
             if let error = error {
-                print("Error updating review: \(error.localizedDescription)")
+                print("error updating review")
+                return
             } else {
-                print("Successfully updated review for job \(jobId)")
+                print("Successfully updated review")
             }
         }
     }
-
     //MARK: - leave a rating
-    func leaveJobRating(bidId: String, jobId: String, jobRating: Double) {
-        db.collection("bids").document(bidId).getDocument { [weak self] (document, error) in
+    func leaveJobRating(bidId: String, contractorId: String, jobRating: Double) {
+        db.collection("bids").document(bidId).updateData(["jobRating": jobRating]) { [weak self] error in
             if let error = error {
-                print("Error fetching bid document: \(error.localizedDescription)")
+                print("error updating job rating")
                 return
-            }
-            
-            guard let document = document, let contractorId = document.data()?["contractorId"] as? String else {
-                print("Error: Unable to retrieve contractorId from bid document")
-                return
-            }
-            
-            let ratingData = [
-                "rating": jobRating,
-                "timestamp": FieldValue.serverTimestamp()
-            ]
-            
-            self?.db.collection("bids").document(bidId).updateData([
-                "ratings.\(jobId)": ratingData
-            ]) { error in
-                if let error = error {
-                    print("Error updating job rating: \(error.localizedDescription)")
-                } else {
-                    print("Successfully updated job rating for job \(jobId)")
-                    self?.averageReviewsForContractor(ContractorId: contractorId)
-                }
+            } else {
+                print("Successfully updated job rating")
+                self?.averageReviewsForContractor(ContractorId: contractorId)
             }
         }
     }

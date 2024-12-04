@@ -350,7 +350,7 @@ class BidController: ObservableObject {
     }
     
     //MARK: - leave a review
-    func leaveReview(bidId: String, review: String) {
+    func leaveReview(bidId: String, contractorId: String, review: String) {
         db.collection("bids").document(bidId).updateData(["review": review]) { error in
             if let error = error {
                 print("error updating review")
